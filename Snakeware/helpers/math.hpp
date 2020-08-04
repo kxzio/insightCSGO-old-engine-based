@@ -94,6 +94,7 @@ namespace Math
 	float FastVecNormalize(Vector& vec);
 	bool IntersectionBoundingBox(const Vector& src, const Vector& dir, const Vector& min, const Vector& max, Vector* hit_point);
     void AngleVectors(const QAngle &angles, Vector& forward, Vector& right, Vector& up);
+	void FixVectors(const QAngle & angles, Vector * forward, Vector *right = nullptr, Vector *up = nullptr) ;
     void VectorAngles (const Vector& forward, QAngle& angles);
 	void VectorAngles2(const Vector& forward, Vector& angles);
 	void Vector_Angles(const Vector& forward, Vector& up, Vector& angles);

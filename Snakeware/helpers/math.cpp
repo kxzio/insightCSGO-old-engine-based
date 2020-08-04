@@ -180,7 +180,7 @@ namespace Math
 		return start_solid || (t1 < t2 && t1 >= 0.0f);
 	}
 
-	
+
 
 
 	float DistanceToRay(const Vector &pos, const Vector &rayStart, const Vector &rayEnd, float *along, Vector *pointOnRay)
@@ -226,7 +226,7 @@ namespace Math
 			+ a.y * b.y
 			+ a.z * b.z);
 	}
-	
+
 	//--------------------------------------------------------------------------------
 	float VectorDistance(const Vector& v1, const Vector& v2)
 	{
@@ -301,7 +301,7 @@ namespace Math
 			res = 0.f;
 		return res;
 	}
-    //--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	float NormalizeYaw(float yaw)
 	{
 		if (yaw > 180)
@@ -329,17 +329,17 @@ namespace Math
 
 
 	//--------------------------------------------------------------------------------
-    void ClampAngles(QAngle& angles)
-    {
-        if(angles.pitch > 89.0f) angles.pitch = 89.0f;
-        else if(angles.pitch < -89.0f) angles.pitch = -89.0f;
+	void ClampAngles(QAngle& angles)
+	{
+		if (angles.pitch > 89.0f) angles.pitch = 89.0f;
+		else if (angles.pitch < -89.0f) angles.pitch = -89.0f;
 
-        if(angles.yaw > 180.0f) angles.yaw = 180.0f;
-        else if(angles.yaw < -180.0f) angles.yaw = -180.0f;
+		if (angles.yaw > 180.0f) angles.yaw = 180.0f;
+		else if (angles.yaw < -180.0f) angles.yaw = -180.0f;
 
-        angles.roll = 0;
-    }
-    //--------------------------------------------------------------------------------
+		angles.roll = 0;
+	}
+	//--------------------------------------------------------------------------------
 
 	Vector Vector_Transform(Vector vector, matrix3x4_t matrix) {
 		return Vector(vector.Dot(matrix[0]) + matrix[0][3], vector.Dot(matrix[1]) + matrix[1][3], vector.Dot(matrix[2]) + matrix[2][3]);
@@ -354,8 +354,8 @@ namespace Math
 	{
 		VectorTransform2(&in1.x, in2, &out.x);
 	};
-    void VectorTransform(const Vector& in1, const matrix3x4_t& in2, Vector& out)
-    {
+	void VectorTransform(const Vector& in1, const matrix3x4_t& in2, Vector& out)
+	{
 		auto DotProduct = [](const Vector& a, const Vector& b) {
 			return (a.x * b.x + a.y * b.y + a.z * b.z);
 		};
@@ -363,26 +363,26 @@ namespace Math
 		out[0] = DotProduct(in1, Vector(in2[0][0], in2[0][1], in2[0][2])) + in2[0][3];
 		out[1] = DotProduct(in1, Vector(in2[1][0], in2[1][1], in2[1][2])) + in2[1][3];
 		out[2] = DotProduct(in1, Vector(in2[2][0], in2[2][1], in2[2][2])) + in2[2][3];
-    }
-    //--------------------------------------------------------------------------------
-    void AngleVectors(const QAngle &angles, Vector& forward)
-    {
-        float	sp, sy, cp, cy;
+	}
+	//--------------------------------------------------------------------------------
+	void AngleVectors(const QAngle &angles, Vector& forward)
+	{
+		float	sp, sy, cp, cy;
 
-        DirectX::XMScalarSinCos(&sp, &cp, DEG2RAD(angles[0]));
-        DirectX::XMScalarSinCos(&sy, &cy, DEG2RAD(angles[1]));
+		DirectX::XMScalarSinCos(&sp, &cp, DEG2RAD(angles[0]));
+		DirectX::XMScalarSinCos(&sy, &cy, DEG2RAD(angles[1]));
 
-        forward.x = cp*cy;
-        forward.y = cp*sy;
-        forward.z = -sp;
-    }
+		forward.x = cp * cy;
+		forward.y = cp * sy;
+		forward.z = -sp;
+	}
 	//---------------------------------------------------------------------------------
 
 
 	bool IntersectionBoundingBox(const Vector& src, const Vector& dir, const Vector& min, const Vector& max, Vector* hit_point) {
-		
+
 		// credits : @Soufiw 
-		
+
 		constexpr auto NUMDIM = 3;
 		constexpr auto RIGHT = 0;
 		constexpr auto LEFT = 1;
@@ -468,7 +468,7 @@ namespace Math
 		xr = _mm_mul_ss(xr, xt);
 		_mm_store_ss(out, xr);
 	}
-    //--------------------------------------------------------------------------------
+	//--------------------------------------------------------------------------------
 	float FastVecNormalize(Vector& vec)
 	{
 		const auto sqrlen = vec.LengthSqr() + 1.0e-10f;
@@ -480,7 +480,34 @@ namespace Math
 		return sqrlen * invlen;
 	}
 	//------------------------------------------------------------------------------
+	void FixVectors(const QAngle &angles, Vector *forward, Vector *right, Vector *up) {
+		float sr, sp, sy, cr, cp, cy;
 
+		SinCos(DEG2RAD(angles.pitch), &sp, &cp);
+		SinCos(DEG2RAD(angles.yaw), &sy, &cy);
+		SinCos(DEG2RAD(angles.roll), &sr, &cr);
+
+		if (forward)
+		{
+			forward->x = cp * cy;
+			forward->z = cp * sy;
+			forward->z = -sp;
+		}
+
+		if (right)
+		{
+			right->x = (-1 * sr*sp*cy + -1 * cr*-sy);
+			right->y = (-1 * sr*sp*sy + -1 * cr*cy);
+			right->z = -1 * sr*cp;
+		}
+
+		if (up)
+		{
+			up->x = (cr*sp*cy + -sr * -sy);
+			up->y = (cr*sp*sy + -sr * cy);
+			up->z = cr * cp;
+		}
+	}
     void AngleVectors(const QAngle &angles, Vector& forward, Vector& right, Vector& up)
     {
         float sr, sp, sy, cr, cp, cy;
