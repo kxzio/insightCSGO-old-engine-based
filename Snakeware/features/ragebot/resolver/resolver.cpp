@@ -2,6 +2,8 @@
 #include "../../../options.hpp"
 #include "../autowall/ragebot-autowall.h"
 #include <algorithm>
+
+
 float AngleNormalize(float angle) {
 	angle = fmodf(angle, 360.0f);
 	if (angle > 180)

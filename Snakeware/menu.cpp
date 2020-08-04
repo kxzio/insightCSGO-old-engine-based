@@ -1618,7 +1618,7 @@ void Menu::Render()
 
 		ImGuiWindow* window = GImGui->CurrentWindow;
 
-
+		// mat sneika shluha
 
 		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(0, 0), ImVec2(4000, 4000), ImColor(0.f, 0.f, 0.f, 0.3f));
 
