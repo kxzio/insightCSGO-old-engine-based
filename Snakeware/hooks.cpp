@@ -525,7 +525,6 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-			RageBot::Get().CreateMove(cmd);
 			Tickbase::Get().DoubleTap(cmd);
 		 
 
