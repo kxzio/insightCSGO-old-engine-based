@@ -354,12 +354,12 @@ public:
 	}
 
 	Vector& m_angAbsOrigin() {
-		typedef Vector& (__thiscall * OriginalFn)(void*);
-		if (this)
-			return ((OriginalFn)CallVFunction<OriginalFn>(this, 10))(this);
+		typedef Vector& (__thiscall * OriginalFn)(void*);  
+		if (this) return ((OriginalFn)CallVFunction<OriginalFn>(this, 10))(this);
+		return Vector(0, 0, 0);
 	}
 
-	/*Gladiator v2.1*/
+	/*   Gladiator v2.1     */
 	void InvalidateBoneCache();
 	void SetSnakewareAngles(QAngle angles);
 	void SetAbsAngles(const QAngle & angles);

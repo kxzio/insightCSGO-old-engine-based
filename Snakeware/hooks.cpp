@@ -519,12 +519,13 @@ namespace Hooks {
 		Prediction->PreStart();
 		Prediction->Start(cmd,g_LocalPlayer);
 		{
-			ProcessMissedShots();
+			
 			g_LegitBot.OnMove(cmd);
 			g_LegitBot.TriggerBot(cmd);
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
+			RageBot::Get().CreateMove(cmd);
 			Tickbase::Get().DoubleTap(cmd);
 		 
 
