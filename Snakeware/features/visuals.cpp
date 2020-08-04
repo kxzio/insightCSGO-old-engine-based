@@ -214,7 +214,7 @@ void Visuals::Player::RenderFlags()
 	const auto AddFlag = [&](std::string str, Color clr) -> void
 	{
 		
-		Render::Get().RenderText(str, ctx.bbox.right + 1 , ctx.bbox.top + Add - 1, 14.f, clr);
+		Render::Get().RenderTextPixel(str, ctx.bbox.right + 1 , ctx.bbox.top + Add - 1, 11.f, clr);
 		Add += 14;
 	};
 	// by snake <3 aka shitcoder
@@ -246,9 +246,9 @@ void Visuals::Player::RenderName()
 {
 	player_info_t info = ctx.pl->GetPlayerInfo();
 
-	auto sz = g_pDefaultFont->CalcTextSizeA(15.f, 400, 0.0f, info.szName);
+	auto sz = g_pESP->CalcTextSizeA(11.f, 400, 0.0f, info.szName);
 
-	Render::Get().RenderText(info.szName, ctx.feet_pos.x - sz.x / 2, ctx.head_pos.y - sz.y, 14.f, ctx.clr);
+	Render::Get().RenderTextPixel(info.szName, ctx.feet_pos.x - sz.x / 2, ctx.head_pos.y - sz.y, 10.f, ctx.clr);
 }
 //--------------------------------------------------------------------------------
 void Visuals::Player::RenderHealth()
@@ -302,8 +302,8 @@ void Visuals::Player::RenderWeaponName()
 	if (!weapon->GetCSWeaponData()) return;
 
 	auto text = weapon->GetCSWeaponData()->szWeaponName + 7;
-	auto sz = g_pDefaultFont->CalcTextSizeA(16.f, FLT_MAX, 0.0f, text);
-	Render::Get().RenderText(text, ctx.feet_pos.x, ctx.feet_pos.y, 16.f, ctx.clr, true, g_pDefaultFont);
+	auto sz = g_pESP->CalcTextSizeA(11.f, FLT_MAX, 0.0f, text);
+	Render::Get().RenderTextPixel(text, ctx.feet_pos.x, ctx.feet_pos.y, 10.f, ctx.clr, true, g_pESP);
 }
 //--------------------------------------------------------------------------------
 void Visuals::Player::RenderAmmo()
@@ -313,9 +313,9 @@ void Visuals::Player::RenderAmmo()
 	if (!weapon) return;
 	if (!weapon->GetCSWeaponData()) return;
 	const char * clip1 = std::string(std::to_string(weapon->m_iClip1())).c_str();
-	auto sz = g_pDefaultFont->CalcTextSizeA(15.f, FLT_MAX, 0.0f, clip1);
+	auto sz = g_pESP->CalcTextSizeA(15.f, FLT_MAX, 0.0f, clip1);
 
-	Render::Get().RenderText(clip1, ctx.feet_pos.x + sz.x, ctx.feet_pos.y, 15.f, ctx.clr, true, g_pDefaultFont);
+	Render::Get().RenderTextPixel(clip1, ctx.feet_pos.x + sz.x, ctx.feet_pos.y, 15.f, ctx.clr, true, g_pDefaultFont);
 
 
 }
@@ -404,7 +404,7 @@ void Visuals::RenderWeapon(C_BaseCombatWeapon* ent)
 	int w = bbox.right - bbox.left;
 
 
-	Render::Get().RenderText(name, ImVec2((bbox.left + w * 0.5f) - sz.x * 0.5f, bbox.bottom + 1), 14.f, g_Options.color_esp_weapons);
+	Render::Get().RenderText(name, ImVec2((bbox.left + w * 0.5f) - sz.x * 0.5f, bbox.bottom + 1), 14.f, g_Options.color_esp_weapons, g_pESP);
 }
 //--------------------------------------------------------------------------------
 void Visuals::RenderDefuseKit(C_BaseEntity* ent)

@@ -466,7 +466,7 @@ namespace Hooks {
 	bool __stdcall hkCreateMove(float smt, CUserCmd * cmd)
 	{
 		static auto original_fn = clientmode_hook.get_original< CreateMove_t >(index::CreateMove);
-		RageBot::Get().DropTarget();
+		//RageBot::Get().DropTarget();
 		if (!cmd || !cmd->command_number)
 			return  original_fn(g_ClientMode, smt, cmd);
 		
@@ -519,7 +519,6 @@ namespace Hooks {
 		Prediction->PreStart();
 		Prediction->Start(cmd,g_LocalPlayer);
 		{
-			ProcessMissedShots();
 			g_LegitBot.OnMove(cmd);
 			g_LegitBot.TriggerBot(cmd);
 			g_LegitBacktrack.OnMove(cmd);

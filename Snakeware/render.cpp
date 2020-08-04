@@ -15,6 +15,7 @@
 
 
 ImFont* g_pDefaultFont;
+ImFont* g_pESP;
 ImFont* g_pBig;
 ImFont* g_pSecondFont;
 
@@ -51,12 +52,18 @@ void Render::GetFonts() {
 		30.f);
 	
 	// esp font
+
 	// rebulided
 	g_pDefaultFont = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
 		Fonts::GoogleSansRegular,
 		119984,
 		16);
 	
+	g_pESP = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		Fonts::pixel,
+		65572,
+		16);
+
 
 	// font for watermark; just example
 	g_pSecondFont = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(

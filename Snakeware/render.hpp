@@ -18,6 +18,7 @@
 extern ImFont* g_pDefaultFont;
 extern ImFont* g_pBig;
 extern ImFont* g_pSecondFont;
+extern ImFont* g_pESP;
 
 
 class Vector;
@@ -109,6 +110,10 @@ public:
 	template <class T>
 	inline float RenderText(const std::string& text, T x, T y, float size, Color clr, bool center = false, ImFont* pFont = g_pDefaultFont) {
 		return RenderText(text, ImVec2(x, y), size, clr, center, false, pFont);
+	}
+	template <class T>
+	inline float RenderTextPixel(const std::string& text, T x, T y, float size, Color clr, bool center = false, ImFont* pFont = g_pDefaultFont) {
+		return RenderText(text, ImVec2(x, y), size, clr, center, true, g_pESP);
 	}
 	template <class T>
 	inline void RenderCircle(T x, T y, float radius, int points, Color color, float thickness = 1.f) {

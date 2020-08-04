@@ -5,7 +5,7 @@
 
 
 float CalculateLerp() {
-	static auto cl_interp     = g_CVar->FindVar("cl_interp1337");
+	static auto cl_interp     = g_CVar->FindVar("cl_interp");
 	static auto cl_updaterate = g_CVar->FindVar("cl_updaterate");
 	const auto update_rate    = cl_updaterate->GetInt();
 	const auto interp_ratio   = cl_interp->GetFloat();
@@ -577,6 +577,7 @@ bool CanFix () {
 
 	return false;
 }
+
 void Animations::FixLocalPlayer () {
 
 	auto animstate = g_LocalPlayer->GetPlayerAnimState();
