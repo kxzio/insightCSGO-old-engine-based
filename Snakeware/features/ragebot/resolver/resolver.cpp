@@ -34,18 +34,6 @@ float AngleDiff1337(float destAngle, float srcAngle) {
 
 void Resolver::Resolve(Animation * anim) {
 
-	auto OldGoalFeet = anim->anim_state->m_flGoalFeetYaw;
-	auto AyeAngles = Math::NormalizeYaw(anim->player->m_angEyeAngles().yaw);
-	auto Left = AyeAngles - 60;
-	auto Right = AyeAngles + 60;
-	
-	switch (Snakeware::MissedShots[anim->player->EntIndex()] % 3)
-	{
-	case 0: OldGoalFeet += Left;      break;
-	case 1: OldGoalFeet += Right;     break;
-	case 2: OldGoalFeet += AyeAngles; break;
-	}
-	Math::NormalizeYaw(OldGoalFeet);
-	anim->anim_state->m_flGoalFeetYaw = OldGoalFeet;
+	// shit
 	
 }

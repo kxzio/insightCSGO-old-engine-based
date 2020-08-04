@@ -2,51 +2,6 @@
 #include "../../helpers/math.hpp"
 #include "../ragebot/ragebot.h"
 
-void ProcessMissedShots() {
-	if (ShotSnapshots.size() == 0)
-		return;
-	auto& snapshot = ShotSnapshots.front();
-	if (fabs((g_LocalPlayer->m_nTickBase() * g_GlobalVars->interval_per_tick) - snapshot.time) > 1.f)
-	{
-		if (snapshot.weapon_fire) {
-			if (snapshot.bullet_impact)
-				EventLogs::Get().Add("ñan't register player-shot", Color(255, 0, 0));
-			else
-				EventLogs::Get().Add("can't register impact", Color(255, 0, 0));
-		}
-		ShotSnapshots.erase(ShotSnapshots.begin());
-		return;
-	}
-
-	if (snapshot.first_processed_time != -1.f) {
-		if (snapshot.damage == -1 && snapshot.weapon_fire && snapshot.bullet_impact && snapshot.record->player) {
-			std::string msg;
-			msg += "missed shot to " + snapshot.entity->GetName();
-			msg += snapshot.get_info();
-			bool spread = false;
-			if (snapshot.record->player) {
-				const auto studio_model = g_MdlInfo->GetStudioModel(snapshot.record->player->GetModel());
-
-				if (studio_model)
-				{
-					const auto angle = Math::CalculateAngle(snapshot.start, snapshot.impact);
-					Vector forward;
-					Math::AngleVectors2(angle, forward);
-					const auto end = snapshot.impact + forward * 2000.f;
-					if (!CanHitHitbox(snapshot.start, end, snapshot.record, studio_model, snapshot.hitbox))
-						spread = true;
-				}
-			}
-			if (spread)
-				msg += "spread-miss";
-			else {
-				Snakeware::MissedShots[snapshot.entity->EntIndex()]++;
-			}
-			EventLogs::Get().Add(msg, Color(255, 0, 0));
-			ShotSnapshots.erase(ShotSnapshots.begin());
-		}
-	}
-}
 
 
 
@@ -139,7 +94,7 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 	
 
 
-	ProcessMissedShots();
+
 
 
 
