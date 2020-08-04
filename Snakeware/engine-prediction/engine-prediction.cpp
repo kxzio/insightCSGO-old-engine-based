@@ -1,0 +1,76 @@
+#include "engine-prediction.h"
+#include "../options.hpp"
+void EnginePrediction::PreStart()
+{
+	if (Snakeware::g_flVelocityModifer < 1.f)
+		*(bool*)((uintptr_t)g_Prediction + 0x24) = true;
+
+	if (g_ClientState->m_nDeltaTick > 0)
+		g_Prediction->Update(g_ClientState->m_nDeltaTick, true, g_ClientState->last_command_ack, g_ClientState->m_nLastOutgoingCmd + g_ClientState->m_nChokedCmds);
+}
+
+void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
+
+
+	static auto oldorigin = g_LocalPlayer->m_vecOrigin();
+	unpred_vel = (g_LocalPlayer->m_vecOrigin() - oldorigin) * (1.0 / g_GlobalVars->interval_per_tick);
+	oldorigin = g_LocalPlayer->m_vecOrigin();
+
+	unpred_eyepos = g_LocalPlayer->GetEyePos();
+
+
+
+
+	old_vars.curtime = g_GlobalVars->curtime;
+	old_vars.frametime = g_GlobalVars->frametime;
+	old_vars.tickcount = g_GlobalVars->tickcount;
+
+	g_GlobalVars->curtime = TICKS_TO_TIME(local->m_nTickBase());
+	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
+	g_GlobalVars->tickcount = TIME_TO_TICKS(g_GlobalVars->curtime);
+
+	g_GameMovement->StartTrackPredictionErrors(local);
+	g_MoveHelper->SetHost(local);
+
+	memset(&data, 0, sizeof(data));
+
+	g_Prediction->SetupMove(local, cmd, g_MoveHelper, &data);
+	g_GameMovement->ProcessMovement(local, &data);
+	g_Prediction->FinishMove(local, cmd, &data);
+	unpred_eyepos = g_LocalPlayer->GetEyePos();
+}
+
+void EnginePrediction::Finish(C_BasePlayer* local) {
+	g_GameMovement->FinishTrackPredictionErrors(local);
+	g_MoveHelper->SetHost(nullptr);
+
+	g_GlobalVars->curtime = old_vars.curtime;
+	g_GlobalVars->frametime = old_vars.frametime;
+}
+// beta shit predict
+
+int EnginePrediction::get_tickbase()
+{
+	return g_LocalPlayer->m_nTickBase();
+}
+
+float EnginePrediction::get_curtime()
+{
+	return get_tickbase() * g_GlobalVars->interval_per_tick;
+}
+
+
+Vector EnginePrediction::get_unpred_vel() const
+{
+	return unpred_vel;
+}
+
+Vector EnginePrediction::get_pred_vel() const
+{
+	return pred_vel;
+}
+
+Vector EnginePrediction::get_unpred_eyepos() const
+{
+	return unpred_eyepos;
+}
