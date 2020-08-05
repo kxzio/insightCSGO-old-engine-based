@@ -481,6 +481,7 @@ namespace Hooks {
 		
 		g_Cmd.SetCommand(cmd);
 		Utils::ServerTime();
+
 		AntiHit::Get().getTickBase(cmd);
 		
 		AntiHit::Get().updateLbyBreaker(cmd);
@@ -493,6 +494,7 @@ namespace Hooks {
 
 
 		Miscellaneous::Get().KnifeBot(cmd);
+
 		Miscellaneous::Get().LeftKnife();
 		if (g_Options.misc_clantag)
 			Miscellaneous::Get().ClanTag();
@@ -517,6 +519,7 @@ namespace Hooks {
 
 		Snakeware::g_bOverrideVelMod = true;
 		Prediction->PreStart();
+
 		Prediction->Start(cmd,g_LocalPlayer);
 		{
 			g_LegitBot.OnMove(cmd);
@@ -526,8 +529,6 @@ namespace Hooks {
 			AntiHit::Get().createMove(cmd);
 			RageBot::Get().CreateMove(cmd);
 			Tickbase::Get().DoubleTap(cmd);
-		 
-
 			Miscellaneous::Get().SlowWalk(cmd);
 			 
 			

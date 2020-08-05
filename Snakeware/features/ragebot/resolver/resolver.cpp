@@ -37,19 +37,19 @@ float AngleDiff2(float destAngle, float srcAngle) {
 void Resolver::Resolve(Animation * anim) {
 
 
-	auto animState = anim->player->GetPlayerAnimState();;
-	if (!animState) return;
-	float relative = Math::CalcAngle(g_LocalPlayer->GetEyePos(), anim->player->m_vecOrigin()).yaw + 180.f;
-	float Left2 = animState->m_flEyeYaw + std::abs(relative - anim->player->m_angEyeAngles().yaw); // 
-	float Right2 = animState->m_flEyeYaw - std::abs(relative - anim->player->m_angEyeAngles().yaw); //
+	//auto animState = anim->player->GetPlayerAnimState();;
+	//if (!animState) return;
+	//float relative = Math::CalcAngle(g_LocalPlayer->GetEyePos(), anim->player->m_vecOrigin()).yaw + 180.f;
+	//float Left2 = animState->m_flEyeYaw + std::abs(relative - anim->player->m_angEyeAngles().yaw); // 
+	//float Right2 = animState->m_flEyeYaw - std::abs(relative - anim->player->m_angEyeAngles().yaw); //
 	// static checks
-	if (relative < anim->player->m_angEyeAngles().yaw)
-	{
-		animState->m_flGoalFeetYaw = Math::NormalizeYaw(Left2);
-	}
-	else if (relative > anim->player->m_angEyeAngles().yaw)
-	{
-		animState->m_flGoalFeetYaw = Math::NormalizeYaw(Right2);
-
-	}
+	//if (relative < anim->player->m_angEyeAngles().yaw)
+	//{
+	//	animState->m_flGoalFeetYaw = Math::NormalizeYaw(Left2);
+	//}
+	//else if (relative > anim->player->m_angEyeAngles().yaw)
+	//{
+	//	animState->m_flGoalFeetYaw = Math::NormalizeYaw(Right2);
+	//
+	//}
 }

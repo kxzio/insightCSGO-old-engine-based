@@ -710,7 +710,7 @@ void RageBot::QuickStop() {
 	}
 }
 
-void RageBot::CreateMove (CUserCmd* cmd) {
+void RageBot::CreateMove(CUserCmd* cmd) {
 
 	if (!g_Options.ragebot_enabled || !g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 	auto weapon = g_LocalPlayer->m_hActiveWeapon();
@@ -730,8 +730,6 @@ void RageBot::CreateMove (CUserCmd* cmd) {
 
 
 	bool in_air = !(g_LocalPlayer->m_fFlags() & FL_ONGROUND);
-	
-
 	
 
 	for (auto i = 1; i <= g_GlobalVars->maxClients; i++) {
@@ -776,6 +774,7 @@ void RageBot::CreateMove (CUserCmd* cmd) {
 			return;
 		}
 	//	auto can_shoot_if_fakeduck = !csgo->fake_duck || csgo->stand;
+
 		bool htchance = Hitchance(current_aim_position, false, best_anims, hitbox);
 
 	
@@ -794,11 +793,12 @@ void RageBot::CreateMove (CUserCmd* cmd) {
 
 			if (htchance &&  IsAbleToShoot()) {
 				
-					Snakeware::bSendPacket = true;
-				    cmd->buttons |= IN_ATTACK;
+				Snakeware::bSendPacket = true;
+				cmd->buttons |= IN_ATTACK;
 			}
 		}
 		if (htchance &&  IsAbleToShoot()) {
+
 			if (cmd->buttons & IN_ATTACK) {
 
 				cmd->viewangles = Math::CalcAngle(g_LocalPlayer->GetEyePos(), current_aim_position) - g_LocalPlayer->m_aimPunchAngle() * 2.f;
