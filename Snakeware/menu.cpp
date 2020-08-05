@@ -321,6 +321,7 @@ void RenderRageBotTab()
 
 		}
 		ImGui::EndChild();
+
 	}
 	break;
 	case 1:
@@ -505,7 +506,6 @@ void RenderRageBotTab()
 			}
 
 
-			ImGui::NextColumn();
 			ImGui::Text("Legitbot setting's");
 
 			ImGui::Combo("Aim-type", &settings->aim_type, aim_types, IM_ARRAYSIZE(aim_types));
@@ -724,12 +724,13 @@ void RenderEspTab()
 			ImGui::Checkbox("weapons enabled", &g_Options.chams_weapons);
 			if (g_Options.chams_weapons)
 				ImGui::Combo("gun-type", &g_Options.chams_weapons_type, chams_type, IM_ARRAYSIZE(chams_type));
-			/*	ImGui::Text("fake-chams");
+				ImGui::Text("fake-chams");
 				ImGui::Checkbox("fake-chams", &g_Options.chams_fake);
 				if (g_Options.chams_fake)
 				{
 					ImGui::Combo("fake-model", &g_Options.chams_fake_types, chams_type, IM_ARRAYSIZE(chams_type));
-				}*/
+				}
+
 			ImGui::Text("player-glow");
 			ImGui::Checkbox("glow enabled", &g_Options.glow_enabled);
 			ImGui::Checkbox("glow player's", &g_Options.glow_players);

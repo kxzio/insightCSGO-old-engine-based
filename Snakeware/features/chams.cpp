@@ -59,6 +59,11 @@ void Chams::OverrideMaterial(bool ignorez, int type, const Color& rgba)
 		rgba.r() / 255.0f,
 		rgba.g() / 255.0f,
 		rgba.b() / 255.0f);
+
+
+	material->AlphaModulate(rgba.a() / 255.0f);
+
+
 	g_MdlRender->ForcedMaterialOverride(material);
 }
 
@@ -89,8 +94,8 @@ void Chams::OnDrawModelExecute(
 			if (!enemy && g_Options.chams_player_enemies_only)
 				return;
 
-			const auto clr_front = enemy ? Color(g_Options.color_chams_player_enemy_visible) : Color(g_Options.color_chams_player_ally_visible);
-			const auto clr_back = enemy ? Color(g_Options.color_chams_player_enemy_occluded) : Color(g_Options.color_chams_player_ally_occluded);
+			const auto clr_front = enemy ? Color(g_Options.color_chams_player_enemy_visible[0], g_Options.color_chams_player_enemy_visible[1], g_Options.color_chams_player_enemy_visible[2], g_Options.color_chams_player_enemy_visible[3]) : Color(g_Options.color_chams_player_ally_visible[0], g_Options.color_chams_player_ally_visible[1], g_Options.color_chams_player_ally_visible[2], g_Options.color_chams_player_ally_visible[3]);
+			const auto clr_back = enemy ? Color(g_Options.color_chams_player_enemy_occluded[0], g_Options.color_chams_player_enemy_occluded[1], g_Options.color_chams_player_enemy_occluded[2], g_Options.color_chams_player_enemy_occluded[3]) : Color(g_Options.color_chams_player_ally_occluded[0], g_Options.color_chams_player_ally_occluded[1], g_Options.color_chams_player_ally_occluded[2], g_Options.color_chams_player_ally_occluded[3]);
 			
 			if (g_Options.chams_player_ignorez) {
 				OverrideMaterial(true ,g_Options.chams_player_type,clr_back);
@@ -109,7 +114,7 @@ void Chams::OnDrawModelExecute(
 			{
 				if (g_Options.chams_fake)
 				{
-					const auto color4ek = Color(g_Options.color_chams_fake);
+					const auto color4ek = Color(g_Options.color_chams_fake[0], g_Options.color_chams_fake[1], g_Options.color_chams_fake[2], g_Options.color_chams_fake[3]);
 					if (g_Input->m_fCameraInThirdPerson)
 					{
 						for (auto& i : Snakeware::FakeMatrix)
