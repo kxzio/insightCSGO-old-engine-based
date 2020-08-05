@@ -640,7 +640,7 @@ bool RageBot::IsAbleToShoot()  {
 	const auto is_knife = !is_zeus && weapon->GetCSWeaponData()->iWeaponType == WEAPONTYPE_KNIFE;
 	const auto weapontype = weapon->GetCSWeaponData()->iWeaponType;
 	if (weapontype == WEAPONTYPE_C4 || weapon->IsGrenade()) return false;
-	if (weapon->m_iClip1() < 1 && !is_knife)     return false;
+	if (weapon->m_iClip1() < 1 && !is_knife)    return false;
 
 	if (weapon->IsReloading())                  return false;
 

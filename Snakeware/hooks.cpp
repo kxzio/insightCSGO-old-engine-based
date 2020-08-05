@@ -466,7 +466,7 @@ namespace Hooks {
 	bool __stdcall hkCreateMove(float smt, CUserCmd * cmd)
 	{
 		static auto original_fn = clientmode_hook.get_original< CreateMove_t >(index::CreateMove);
-		//RageBot::Get().DropTarget();
+		RageBot::Get().DropTarget();
 		if (!cmd || !cmd->command_number)
 			return  original_fn(g_ClientMode, smt, cmd);
 		
@@ -474,7 +474,10 @@ namespace Hooks {
 			return  original_fn(g_ClientMode, smt, cmd);
 		Miscellaneous::Get().FakeFps();
 	
-		Snakeware::UnpredTick = g_GlobalVars->tickcount;
+		if (g_LocalPlayer->IsAlive()) {
+			RageBot::Get().DropTarget();
+			Snakeware::UnpredTick = g_GlobalVars->tickcount;
+		}
 		
 		uintptr_t *frame_ptr;
 		__asm mov frame_ptr, ebp;
@@ -524,7 +527,7 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-			RageBot::Get().CreateMove(cmd);
+		//	RageBot::Get().CreateMove(cmd); РейджБот пока не виновен
 			Tickbase::Get().DoubleTap(cmd);
 		 
 
@@ -770,7 +773,7 @@ namespace Hooks {
 			
 			//Animations::Get().FakeAnimation();
 			Miscellaneous::Get().CallLegitResolver();
-			Animations::Get().UpdatePlayerAnimations();
+			Animations::Get().UpdatePlayerAnimations();// Возможный виновник
 			Animations::Get().FixLocalPlayer();
 		}
 		if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_START)

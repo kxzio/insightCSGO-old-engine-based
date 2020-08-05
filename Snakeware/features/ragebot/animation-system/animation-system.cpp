@@ -222,8 +222,7 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 
 
 
-	for (auto i = 0; i < record->lag; i++)
-	{
+	for (auto i = 0; i < record->lag; i++) {
 
 		// move time forward.
 		const auto time = from->sim_time + TICKS_TO_TIME(i + 1);
@@ -279,8 +278,7 @@ void Animations::UpdatePlayerAnimations() {
 	for (auto it = animation_infos.begin(); it != animation_infos.end();) {
 		auto player = reinterpret_cast<C_BasePlayer*>(g_EntityList->GetClientEntityFromHandle(it->first));
 
-		if (!player || player != it->second.player || !player->IsAlive() || !g_LocalPlayer || !g_LocalPlayer->IsAlive())
-		{
+		if (!player || player != it->second.player || !player->IsAlive() || !g_LocalPlayer || !g_LocalPlayer->IsAlive()) 	{
 			if (player)
 				player->m_bClientSideAnimation() = true;
 			it = animation_infos.erase(it);
@@ -292,17 +290,17 @@ void Animations::UpdatePlayerAnimations() {
 
 
 	for (auto i = 1; i <= g_EngineClient->GetMaxClients(); ++i) {
-		const auto entity = C_BasePlayer::GetPlayerByIndex(i);
+		auto entity = static_cast<C_BasePlayer*> (g_EntityList->GetClientEntity(i));
 		if (!entity || !entity->IsPlayer())            continue;
 
 		if (!entity->IsAlive() || entity->IsDormant()) continue;
 
 		if (entity == g_LocalPlayer)                   continue;
-
-		if (entity != g_LocalPlayer && entity->m_iTeamNum() == g_LocalPlayer->m_iTeamNum() ) {
+		  
+		if (entity != g_LocalPlayer && entity->m_iTeamNum() == g_LocalPlayer->m_iTeamNum()) 
 			entity->m_bClientSideAnimation() = true;
-			continue;
-		}
+		
+		if (!entity->IsEnemy())                        continue;
 
 		if (animation_infos.find(entity->GetRefEHandle().ToInt()) == animation_infos.end())
 			animation_infos.insert_or_assign(entity->GetRefEHandle().ToInt(), AnimationInfo(entity, {}));
@@ -321,11 +319,6 @@ void Animations::UpdatePlayerAnimations() {
 			else
 				i = next(i);
 		}
-		auto resolverrecord = _animation.frames.emplace_front(new Animation(player, info.second.last_reliable_angle));
-				// erase frames out-of-range
-		Resolver::Get().Resolve(resolverrecord);
-		
-	 
 
 		// have we already seen this update?
 		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())
@@ -573,7 +566,7 @@ bool CanFix () {
 
 	if (g_Options.antihit_enabled)        return true;
 	if (g_Options.misc_legit_antihit)     return true;
-	if (g_Options.misc_fakelag_ticks > 1) return true;
+	if (g_Options.misc_fakelag_ticks > 2) return true;
 
 	return false;
 }
