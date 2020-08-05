@@ -54,6 +54,7 @@ Animation::Animation(C_BasePlayer* player) {
 	flags = player->m_fFlags();
 	eflags = player->m_iEFlags();
 	effects = player->GetEffect();
+	m_flFeetCycle = anim_state->m_flFeetCycle;
 
 	lag = TIME_TO_TICKS(player->m_flSimulationTime() - player->m_flOldSimulationTime());
 
@@ -123,6 +124,7 @@ void Extrapolate(C_BasePlayer* player, Vector& origin, Vector& velocity, int& fl
 
 
 void Animation::Restore(C_BasePlayer* player) const {
+	
 	player->m_vecVelocity() = velocity;
 	player->m_fFlags() = flags;
 	player->m_flDuckAmount() = duck;
@@ -131,10 +133,12 @@ void Animation::Restore(C_BasePlayer* player) const {
 	player->m_vecOrigin() = origin;
 	player->SetAbsOrigin(abs_origin);
 	player->m_flPoseParameter() = poses;
+	anim_state->m_flFeetCycle = m_flFeetCycle;
 }
 
 void Animation::Apply(C_BasePlayer* player) const {
 	player->m_flPoseParameter() = poses;
+	anim_state->m_flFeetCycle = m_flFeetCycle;
 	player->m_angEyeAngles() = eye_angles;
     player->m_vecVelocity() = velocity;
 	player->m_flLowerBodyYawTarget() = lby;
@@ -147,35 +151,43 @@ void Animation::Apply(C_BasePlayer* player) const {
 	}*/
 }
 
-void Animation::BulidServerBones(C_BasePlayer* player) {
-	const auto backup_occlusion_flags = *(int*)((uintptr_t)player + 0xA28);
-	const auto backup_occlusion_framecount = *(int*)((uintptr_t)player + 0xA30);
+void Animation::BulidServerBones(C_BasePlayer* player, matrix3x4_t* mat) {
+	// shit-pasted func...
+	// by @Snake
+	*(std::uint32_t*) ((std::uintptr_t) player + 0xA30) = g_GlobalVars->framecount;
+	*(std::uint32_t*) ((std::uintptr_t) player + 0xA28) = 0;
 
-	if (player != g_LocalPlayer) {
-		*(int*)((uintptr_t)player + 0xA28) = 0;
-		*(int*)((uintptr_t)player + 0xA30) = 0;
-	}
+	// prev_bone_mask
+	*(std::uint32_t*) ((std::uintptr_t) player + 0x269C) = 0;
+	
+	const auto iks = *(std::uint8_t*) ((std::uintptr_t) player + 0x64);
+	const auto eflags = *(std::uint32_t*) ((std::uintptr_t) player + 0xE4);
+	const auto mask = *(std::uint32_t*) ((std::uintptr_t) player + 0x2698);
+	const auto prev_bone_mask = *(std::uint32_t*) ((std::uintptr_t) player + 0x269C);
+	const auto effects = *(std::uint32_t*) ((std::uintptr_t) player + 0xEC);
 
-	player->GetReadableBones() = player->GetWritableBones() = 0;
+	// use inverse kinematics
+	*(std::uint8_t*) ((std::uintptr_t) player + 0x64) &= ~2;
+
+	// removes interp
+	*(std::uint32_t*) ((std::uintptr_t) player + 0xE4) |= 8;
+	*(std::uint32_t*) ((std::uintptr_t) player + 0xEC) |= 8;
+
+	
+	// bone mask
+	*(std::uint32_t*) ((std::uintptr_t) player + 0x2698) |= 512;
+	// previous bone mask
+	*(std::uint32_t*) ((std::uintptr_t) player + 0x269C) = 0;
 
 	player->InvalidateBoneCache();
+	player->SetupBones(mat, 128, 0x7FF00, g_GlobalVars->curtime);
+	
 
-	player->GetEffect() |= 0x8;
-
-	const auto backup_bone_array = player->GetBoneArrayForWrite();
-	player->GetBoneArrayForWrite() = bones;
-
-	//Snakeware::UpdateMatrix = true;
-	player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
-	//Snakeware::UpdateMatrix = false;
-
-	player->GetBoneArrayForWrite() = backup_bone_array;
-	if (player != g_LocalPlayer) {
-		*(int*)((uintptr_t)player + 0xA28) = backup_occlusion_flags;
-		*(int*)((uintptr_t)player + 0xA30) = backup_occlusion_framecount;
-	}
-
-	player->GetEffect() &= ~0x8;
+	
+	*(std::uint32_t*) ((std::uintptr_t) player + 0x2698) = mask;
+	*(std::uint8_t*) ((std::uintptr_t) player + 0x64) = iks;
+	*(std::uint32_t*) ((std::uintptr_t) player + 0xE4) = eflags;
+	*(std::uint32_t*) ((std::uintptr_t) player + 0xEC) = effects;
 }
 
 void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* from)
@@ -364,29 +376,37 @@ void Animations::UpdatePlayerAnimations() {
 		backup->Restore(player);
 
 		// use uninterpolated data to generate our bone matrix
-		record->BulidServerBones(player);
+		record->BulidServerBones(player,nullptr); //prikoll
 	}
 	
 }
 void Animations::UpdatePlayer(C_BasePlayer* player) {
-	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>(
-		reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) +2);
+	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>( reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) +2);
 
+	//Violanes reverse + otv3 + rifk7 fixes + any trash by snake 
 
-	//// make a backup of globals
+	// make a backup of globals
+	const auto interpolation = g_GlobalVars->interpolation_amount;
 	const auto backup_frametime = g_GlobalVars->frametime;
 	const auto backup_curtime = g_GlobalVars->curtime;
+	const auto backup_realtime = g_GlobalVars->realtime;
 	const auto old_flags = player->m_fFlags();
+	// Эту хуйню надо сторить но поскольку внутри анимфикса мы получаем уже новый тайм то этого делать не надо
+	int nextTick = player->m_flSimulationTime / g_GlobalVars->interval_per_tick + 1; 
 
 	// get player anim state
 	auto state = player->GetPlayerAnimState();
 
-	if (state->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount)
-		state->m_iLastClientSideAnimationUpdateFramecount -= 1.f;
+	if (state->m_iLastClientSideAnimationUpdateFramecount >= nextTick) {
+		state->m_iLastClientSideAnimationUpdateFramecount  = nextTick - 1;
+	}
 
 	// fixes for networked players
+	g_GlobalVars->interpolation_amount = 0.f;
 	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
 	g_GlobalVars->curtime = player->m_flSimulationTime();
+	g_GlobalVars->realtime = player->m_flSimulationTime();
+	
 	player->m_iEFlags() &= ~0x1000;
 
 	player->m_vecAbsVelocity() = player->m_vecVelocity ();
@@ -394,7 +414,6 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	if (player->GetAnimOverlay(5)->m_flWeight > 0.0f)
 		player->m_fFlags() |= FL_ONGROUND;
 
-	//player->InvalidatePhysicsRecursive(ANIMATION_CHANGED);
 
 	// make sure we keep track of the original invalidation state
 	const auto old_invalidation = enable_bone_cache_invalidation;
@@ -406,15 +425,16 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	player->m_bClientSideAnimation() = false;
 
 
-
 	player->InvalidatePhysics(0x2A);
 
 	// we don't want to enable cache invalidation by accident
 	enable_bone_cache_invalidation = old_invalidation;
 
 	// restore globals
+	g_GlobalVars->interpolation_amount = interpolation;
 	g_GlobalVars->curtime = backup_curtime;
 	g_GlobalVars->frametime = backup_frametime;
+	g_GlobalVars->curtime = backup_realtime;
 
 	player->m_fFlags() = old_flags;
 }
@@ -456,8 +476,7 @@ std::optional<Animation*> Animations::get_latest_animation(C_BasePlayer* player)
 }
 
 
-std::optional<Animation*> Animations::get_oldest_animation(C_BasePlayer* player)
-{
+std::optional<Animation*> Animations::get_oldest_animation(C_BasePlayer* player) {
 	const auto info = animation_infos.find(player->GetRefEHandle().ToInt());
 
 	if (info == animation_infos.end() || info->second.frames.empty())
@@ -477,8 +496,7 @@ std::optional<Animation*> Animations::get_oldest_animation(C_BasePlayer* player)
 
 
 
-std::optional<Animation*> Animations::get_latest_firing_animation(C_BasePlayer* player)
-{
+std::optional<Animation*> Animations::get_latest_firing_animation(C_BasePlayer* player) {
 	const auto info = animation_infos.find(player->GetRefEHandle().ToInt());
 
 	if (info == animation_infos.end() || info->second.frames.empty())
