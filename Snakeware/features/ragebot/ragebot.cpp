@@ -813,7 +813,7 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 			if (cmd->buttons & IN_ATTACK) {
 
 				cmd->viewangles = Math::CalcAngle(g_LocalPlayer->GetEyePos(), current_aim_position) - g_LocalPlayer->m_aimPunchAngle() * 2.f;
-				cmd->tick_count = TIME_TO_TICKS(best_anims->sim_time + LagCompensation::Get().GetLerpTime()) + 1;
+				cmd->tick_count = TIME_TO_TICKS(best_anims->sim_time + LagCompensation::Get().GetLerpTime()) - 1;
 				last_shot_angle = cmd->viewangles;
 
 				ShotSnapshot snapshot;
