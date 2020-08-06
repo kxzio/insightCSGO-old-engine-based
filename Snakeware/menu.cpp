@@ -1536,7 +1536,7 @@ void RenderConfigTab()
 			ImGui::ColorEdit4("bullet-tracer", g_Options.color_bullet_tracer);
 			ImGui::ColorEdit4("molotov-timer", g_Options.color_molotov);
 		}
-
+		ImGui::EndChild();
 
 	}
 	break;

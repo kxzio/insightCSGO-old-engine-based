@@ -640,7 +640,7 @@ bool RageBot::IsAbleToShoot()  {
 	const auto is_knife = !is_zeus && weapon->GetCSWeaponData()->iWeaponType == WEAPONTYPE_KNIFE;
 	const auto weapontype = weapon->GetCSWeaponData()->iWeaponType;
 	if (weapontype == WEAPONTYPE_C4 || weapon->IsGrenade()) return false;
-	if (weapon->m_iClip1() < 1 && !is_knife)     return false;
+	if (weapon->m_iClip1() < 1 && !is_knife)    return false;
 
 	if (weapon->IsReloading())                  return false;
 
@@ -769,7 +769,8 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 	static int delay = 0;
 	did_dt = false;
 	if (hitbox != -1 && target_index != -1 && best_anims && current_aim_position != Vector(0, 0, 0)) {
-		if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && weapon->m_zoomLevel() == 0) {
+		if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && weapon->m_zoomLevel() == 0) { 
+			// Ќе работает по причине сломанный нетвар "zoomlevel"
 			cmd->buttons |= IN_ATTACK2;
 			return;
 		}
