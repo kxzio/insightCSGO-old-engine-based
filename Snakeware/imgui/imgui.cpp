@@ -5275,7 +5275,7 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                 if (!(flags & ImGuiWindowFlags_ChildWindow) && !(flags & ImGuiWindowFlags_Popup) && !(flags & ImGuiWindowFlags_Tooltip)) {
 
 
-              
+                    
                     ImU32 bg_col = ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha);
 
                     float alpha = 1.0f;
@@ -5284,9 +5284,25 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                     if (alpha != 1.0f)
                         bg_col = (bg_col & ~IM_COL32_A_MASK) | (IM_F32_TO_INT8_SAT(alpha) << IM_COL32_A_SHIFT);
 
-                    window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
-					window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha));
-                    window->DrawList->PopClipRect();
+                    if (name == "coded by snake | ba1m0v")
+                    {
+
+                        
+                         window->DrawList->AddRectFilled(ImVec2(0, 0), ImVec2(0, 0) + ImVec2(4200, 4200), ImColor(0.f, 0.f, 0.f, 0.4f));
+                        
+                    }
+                    if (name == "Radar")
+                    {
+                        window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
+                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, 0.7f));
+                        window->DrawList->PopClipRect();
+                    }
+                    else
+                    {
+                        window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
+                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha));
+                        window->DrawList->PopClipRect();
+                    }
 
 
 
