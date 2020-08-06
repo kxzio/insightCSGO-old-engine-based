@@ -214,14 +214,14 @@ void RenderRageBotTab()
 		ImGui::SetCursorPos(ImVec2(22 + 310 + 17 + 10, 100));
 
 
-		
+		static int curGroup = 0;
+		const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP" };
 
 
 		ImGui::BeginChild("Weapon", ImVec2(310, 118), true);
 		{
 
-			static int curGroup = 0;
-			const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP" };
+
 
 			ImGui::Text(" ");
 

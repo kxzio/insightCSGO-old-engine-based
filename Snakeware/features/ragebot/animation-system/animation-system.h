@@ -11,7 +11,7 @@ struct Animation
 	explicit Animation(C_BasePlayer* player, QAngle last_reliable_angle);
 	void Restore(C_BasePlayer* player) const;
 	void Apply(C_BasePlayer* player) const;
-	void BulidServerBones(C_BasePlayer * player, matrix3x4_t* mat);
+	void BulidServerBones(C_BasePlayer* player);
 
 	bool is_valid(float range, float max_unlag);
 	bool is_valid_extended();
@@ -74,23 +74,23 @@ public:
 public:
 
 
-	
+
 
 	void UpdatePlayerAnimations();
 
-	void UpdatePlayer(C_BasePlayer * player);
+	void UpdatePlayer(C_BasePlayer* player);
 
-	Animations::AnimationInfo * GetAnimInfo(C_BasePlayer * player);
+	Animations::AnimationInfo* GetAnimInfo(C_BasePlayer* player);
 
-	std::optional<Animation*> get_latest_animation(C_BasePlayer * player);
+	std::optional<Animation*> get_latest_animation(C_BasePlayer* player);
 
 
 
-	
 
-	std::optional<Animation*> get_oldest_animation(C_BasePlayer * player);
 
-	std::optional<Animation*> get_latest_firing_animation(C_BasePlayer * player);
+	std::optional<Animation*> get_oldest_animation(C_BasePlayer* player);
+
+	std::optional<Animation*> get_latest_firing_animation(C_BasePlayer* player);
 
 	void FakeAnimation();
 

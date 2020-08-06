@@ -737,6 +737,10 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 
 	for (auto i = 1; i <= g_GlobalVars->maxClients; i++) {
 		auto pEntity = static_cast<C_BasePlayer*> (g_EntityList->GetClientEntity(i));
+
+		if (!pEntity) continue;
+
+		if (!pEntity->IsPlayer())      continue;
 		if  (pEntity == nullptr)       continue;
 		if  (pEntity == g_LocalPlayer) continue;
 		if  (!pEntity->IsAlive()) {
