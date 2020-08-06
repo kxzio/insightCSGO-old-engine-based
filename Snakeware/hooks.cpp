@@ -530,7 +530,7 @@ namespace Hooks {
 		if (g_Options.remove_flash)
 			g_LocalPlayer->m_flFlashDuration() = g_Options.esp_flash_ammount;
 		
-
+	
 		GrenadePredict.trace(cmd); // trace lines
 		Miscellaneous::Get().Fakelag(cmd);
 
