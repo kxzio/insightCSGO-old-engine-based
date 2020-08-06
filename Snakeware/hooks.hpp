@@ -76,6 +76,7 @@ namespace Hooks
 	bool  __fastcall InPrediction(IPrediction* prediction, uint32_t);
 	void __stdcall   HkSetupMove(C_BasePlayer* m_pPlayer, CUserCmd* m_pCmd, IMoveHelper* m_pMoveHelper, CMoveData* m_pMoveData);
 	void __fastcall  HkRunCommand(void* ecx, void* edx, C_BasePlayer* player, CUserCmd* ucmd, IMoveHelper* moveHelper);
+	bool  __fastcall hkIsConnected();
 	bool __fastcall WriteUsercmdDeltaToBuffer_hook(void* ECX, void* EDX, int nSlot, bf_write* buf, int from, int to, bool isNewCmd);
     long __stdcall hkEndScene(IDirect3DDevice9* device);
     long __stdcall hkReset(IDirect3DDevice9* device, D3DPRESENT_PARAMETERS* pPresentationParameters);

@@ -196,7 +196,7 @@ void RenderRageBotTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::Checkbox("Enabled", &g_Options.ragebot_enabled);
+			ImGui::Checkbox("Enabled##rage", &g_Options.ragebot_enabled);
 			ImGui::Checkbox("Hitchance const", &g_Options.ragebot_hitchance_consider);
 			ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj);
 			ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot);
@@ -214,14 +214,14 @@ void RenderRageBotTab()
 		ImGui::SetCursorPos(ImVec2(22 + 310 + 17 + 10, 100));
 
 
-		static int curGroup = 0;
+		
 
 
 		ImGui::BeginChild("Weapon", ImVec2(310, 118), true);
 		{
 
-
-			const char* weapon[] = { "Pistols", "Rifles", "Smg" , "Shotguns","Auto","Scout","Awp" };
+			static int curGroup = 0;
+			const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP" };
 
 			ImGui::Text(" ");
 
@@ -234,15 +234,15 @@ void RenderRageBotTab()
 			case 1:
 				curGroup = WEAPON_GROUPS::RIFLES; break;
 			case 2:
-				curGroup = WEAPON_GROUPS::SHOTGUNS; break;
+				curGroup = WEAPON_GROUPS::SMG; break;
 			case 3:
-				curGroup = WEAPON_GROUPS::SCOUT; break;
+				curGroup = WEAPON_GROUPS::SHOTGUNS; break;
 			case 4:
 				curGroup = WEAPON_GROUPS::AUTO; break;
 			case 5:
-				curGroup = WEAPON_GROUPS::AWP; break;
+				curGroup = WEAPON_GROUPS::SCOUT; break;
 			case 6:
-				curGroup = WEAPON_GROUPS::SMG; break;
+				curGroup = WEAPON_GROUPS::AWP; break;
 			case 7:
 				curGroup = WEAPON_GROUPS::UNKNOWN; break;
 			}
@@ -1094,7 +1094,7 @@ void RenderMiscTab()
 				ImGui::Hotkey("##3rdkey", &g_Options.misc_thirdperson_key, ImVec2(150, 20));
 				//	ImGui::SliderFloat("distance", &g_Options.misc_thirdperson_dist, 0.f, 150.f);
 			}
-
+			ImGui::Checkbox("unlock inventory-access", &g_Options.misc_unlock_inventory);
 			ImGui::Checkbox("left-knife", &g_Options.misc_left_knife);
 			ImGui::Checkbox("fake-fps", &g_Options.misc_fake_fps);
 			ImGui::Checkbox("show-ranks", &g_Options.misc_showranks);
