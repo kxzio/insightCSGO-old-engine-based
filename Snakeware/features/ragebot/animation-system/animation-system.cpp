@@ -180,7 +180,7 @@ void Animation::BulidServerBones(C_BasePlayer* player, matrix3x4_t* mat) {
 	*(std::uint32_t*) ((std::uintptr_t) player + 0x269C) = 0;
 
 	player->InvalidateBoneCache();
-	player->SetupBones(mat, 128, 0x7FF00, g_GlobalVars->curtime);
+	player->SetupBones(mat, 128, BONE_USED_BY_ANYTHING, g_GlobalVars->curtime);
 	
 
 	
@@ -302,7 +302,7 @@ void Animations::UpdatePlayerAnimations() {
 
 
 	for (auto i = 1; i <= g_EngineClient->GetMaxClients(); ++i) {
-		auto entity = static_cast<C_BasePlayer*> (g_EntityList->GetClientEntity(i));
+		auto entity = C_BasePlayer::GetPlayerByIndex(i);
 		if (!entity || !entity->IsPlayer())            continue;
 
 		if (!entity->IsAlive() || entity->IsDormant()) continue;
@@ -392,13 +392,14 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	const auto backup_realtime = g_GlobalVars->realtime;
 	const auto old_flags = player->m_fFlags();
 	// Эту хуйню надо сторить но поскольку внутри анимфикса мы получаем уже новый тайм то этого делать не надо
-	int nextTick = player->m_flSimulationTime() / g_GlobalVars->interval_per_tick + 1; 
+	int nextTick = player->m_flSimulationTime / g_GlobalVars->interval_per_tick + 1; 
+
 
 	// get player anim state
 	auto state = player->GetPlayerAnimState();
 
-	if (state->m_iLastClientSideAnimationUpdateFramecount >= nextTick) {
-		state->m_iLastClientSideAnimationUpdateFramecount  = nextTick - 1;
+	if (state->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount) {
+		state->m_iLastClientSideAnimationUpdateFramecount  -=  1;
 	}
 
 	// fixes for networked players

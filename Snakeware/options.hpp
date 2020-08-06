@@ -254,6 +254,7 @@ public:
 		// MISC
 		//
 		OPTION(bool, misc_bhop, false);
+		OPTION(bool, misc_unlock_inventory, false);
 		OPTION(bool, misc_exaggerated_ragdolls, false);
 		OPTION(int, misc_exaggerated_ragdolls_force, 10);
 		OPTION(bool, misc_fake_fps, false);

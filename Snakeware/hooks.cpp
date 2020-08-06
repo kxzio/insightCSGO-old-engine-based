@@ -85,6 +85,7 @@ namespace Hooks {
 		sv_cheats.hook_index(index::SvCheatsGetBool, hkSvCheatsGetBool);
 		engine_hook.hook_index(index::AspectRatio, GetScreenAspectRatio);
 		engine_hook.hook_index(index::IsHLTV, hkIsHLTV);
+		//engine_hook.hook_index(27, hkIsConnected);
 		engine_hook.hook_index(32, hkIsBoxVisible);
 	
 		
@@ -332,6 +333,19 @@ namespace Hooks {
 
 		return IsHLTV(IEngineClient);
 	}
+
+	bool  __fastcall hkIsConnected () {
+		if (!g_EngineClient) return false;
+		using IsConnectedT = bool(__thiscall*)(void*);
+	
+		static const auto IsLoadout = Utils::PatternScan(GetModuleHandleA("client.dll"), "84 C0 75 04 B0 01 5F");
+
+		if (g_Options.misc_unlock_inventory && _ReturnAddress() == IsLoadout)
+			return false;
+
+		return engine_hook.get_original< IsConnectedT >(27);
+	}
+
 
 	//-------------------------------------------------------------------------------
 	bool __fastcall WriteUsercmdDeltaToBuffer_hook(void* ECX, void* EDX, int nSlot, bf_write* buf, int from, int to, bool isNewCmd)

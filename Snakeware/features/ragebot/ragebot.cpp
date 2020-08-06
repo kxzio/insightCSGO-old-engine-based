@@ -654,6 +654,7 @@ bool RageBot::IsAbleToShoot()  {
 }
 
 void RageBot::DropTarget () {
+
 	target_index = -1;
 	best_distance = INT_MAX;
 	fired_in_that_tick = false;
@@ -713,6 +714,7 @@ void RageBot::QuickStop() {
 void RageBot::CreateMove(CUserCmd* cmd) {
 
 	if (!g_Options.ragebot_enabled || !g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
+
 	auto weapon = g_LocalPlayer->m_hActiveWeapon();
 	CurrentCmd = cmd;
 	if (!weapon) return;
@@ -728,15 +730,16 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 
 	RageBot::Get().shot = false;
 
+	
 
 	bool in_air = !(g_LocalPlayer->m_fFlags() & FL_ONGROUND);
 	
 
 	for (auto i = 1; i <= g_GlobalVars->maxClients; i++) {
 		auto pEntity = static_cast<C_BasePlayer*> (g_EntityList->GetClientEntity(i));
-		if (pEntity == nullptr)       continue;
-		if (pEntity == g_LocalPlayer) continue;
-		if (!pEntity->IsAlive()) {
+		if  (pEntity == nullptr)       continue;
+		if  (pEntity == g_LocalPlayer) continue;
+		if  (!pEntity->IsAlive()) {
 			Snakeware::MissedShots[pEntity->EntIndex()] = 0;
 			continue;
 		}
@@ -768,18 +771,21 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 
 	static int delay = 0;
 	did_dt = false;
+
+		
+
 	if (hitbox != -1 && target_index != -1 && best_anims && current_aim_position != Vector(0, 0, 0)) {
-		if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && weapon->m_zoomLevel() == 0) { 
-			// Не работает по причине сломанный нетвар "zoomlevel"
-			cmd->buttons |= IN_ATTACK2;
+
+	     // С этого момента чек не проходит получчч
+		if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && !g_LocalPlayer->m_bIsScoped()) { 
+			cmd->buttons |= IN_ZOOM;
 			return;
 		}
-	//	auto can_shoot_if_fakeduck = !csgo->fake_duck || csgo->stand;
+	
 
 		bool htchance = Hitchance(current_aim_position, false, best_anims, hitbox);
 
 	
-
 		static int dt_shot_tick = 20;
 		auto wpn_info = weapon->GetCSWeaponData();
 		if (g_LocalPlayer->m_fFlags() & FL_ONGROUND && !GetAsyncKeyState(g_Options.misc_slowwalk_key)) {
@@ -803,9 +809,9 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 			if (cmd->buttons & IN_ATTACK) {
 
 				cmd->viewangles = Math::CalcAngle(g_LocalPlayer->GetEyePos(), current_aim_position) - g_LocalPlayer->m_aimPunchAngle() * 2.f;
-
-				cmd->tick_count = TIME_TO_TICKS(best_anims->sim_time + LagCompensation::Get().GetLerpTime());
+				cmd->tick_count = TIME_TO_TICKS(best_anims->sim_time + LagCompensation::Get().GetLerpTime()) + 1;
 				last_shot_angle = cmd->viewangles;
+
 				ShotSnapshot snapshot;
 				//tick_record record;
 				snapshot.entity = best_anims->player;
