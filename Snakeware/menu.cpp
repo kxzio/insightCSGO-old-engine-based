@@ -1613,7 +1613,7 @@ void Menu::Render()
 	ImGui::SetNextWindowSizeConstraints(ImVec2(691 , 520), ImVec2(691, 520));
 
 
-	if (ImGui::Begin("coded by snake | ba1m0v ", &_visible , ImGuiWindowFlags_NoTitleBar || ImGuiWindowFlags_NoScrollbar)) {
+	if (ImGui::Begin("coded by snake | ba1m0v", &_visible , ImGuiWindowFlags_NoTitleBar || ImGuiWindowFlags_NoScrollbar || ImGuiWindowFlags_BackForce )) {
 		static char* menu_tab_names[] = { "RAGEBOT","LEGITBOT", "VISUALS", "OTHER" ,"SKINS", "CONFIG" };
 		static int active_menu_tab = 0;
 
@@ -1736,9 +1736,9 @@ void Menu::CreateStyle()
 	_style.Colors[ImGuiCol_FrameBg] = ImVec4(0.14f, 0.13f, 0.14f, 1.f);
 	_style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.14f, 0.13f, 0.14f, 0.8f);
 	_style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.11, 0.11, 0.11, 1.f);
-	_style.Colors[ImGuiCol_TitleBg] = ImVec4(.52f, 0.f, 0.52f, .7f);
-	_style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(.52f, 0.f, 0.52f, .7);
-	_style.Colors[ImGuiCol_TitleBgActive] = ImVec4(.52f, 0.f, 0.52f, .7f);
+	_style.Colors[ImGuiCol_TitleBg] = ImVec4(0.16f, 0.15f, 0.16f, 1.0f);
+	_style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.16f, 0.15f, 0.16f, 1.0f);
+	_style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.16f, 0.15f, 0.16f, 1.0f);
 	_style.Colors[ImGuiCol_MenuBarBg] = ImVec4(.52f, 0.f, 0.52f, .7f);;
 	_style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.95f);
 	_style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.50f, 0.50f, 0.50f, 0.30f); //main half
