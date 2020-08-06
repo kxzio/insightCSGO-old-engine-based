@@ -832,7 +832,8 @@ void RenderEspTab()
 				ImGui::Text("postprocessing:");
 				ImGui::Checkbox("nightmode", &g_Options.esp_nightmode);
 				if (g_Options.esp_nightmode)
-					ImGui::SliderInt("nightmode bright", &g_Options.esp_nightmode_bright, 0, 100);
+					ImGui::SliderInt("Nightmode bright", &g_Options.esp_nightmode_bright, 0, 100);
+
 				ImGui::Checkbox("fullbright", &g_Options.esp_fullbright);
 
 
@@ -1531,10 +1532,13 @@ void RenderConfigTab()
 			ImGui::ColorEdit4("weapon color", g_Options.color_chams_weapons);
 			ImGui::Text("world :");
 			ImGui::ColorEdit4("offscreen esp", g_Options.color_esp_offscreen);
-			ImGui::ColorEdit4("sky color[nightmode]", g_Options.sky_color);
+			ImGui::ColorEdit4("World [nightmode] ", g_Options.world_color);
+			ImGui::ColorEdit4("Props [nightmode] ", g_Options.prop_color);
+			ImGui::ColorEdit4("Sky [nightmode]", g_Options.sky_color);
 			ImGui::ColorEdit4("hitmarker", g_Options.color_hitmarker);
 			ImGui::ColorEdit4("bullet-tracer", g_Options.color_bullet_tracer);
 			ImGui::ColorEdit4("molotov-timer", g_Options.color_molotov);
+
 		}
 		ImGui::EndChild();
 
@@ -1615,7 +1619,7 @@ void Menu::Render()
 
 	if (ImGui::Begin("coded by snake | ba1m0v", &_visible , ImGuiWindowFlags_NoTitleBar || ImGuiWindowFlags_NoScrollbar || ImGuiWindowFlags_BackForce )) {
 		static char* menu_tab_names[] = { "RAGEBOT","LEGITBOT", "VISUALS", "OTHER" ,"SKINS", "CONFIG" };
-		static int active_menu_tab = 0;
+		static int active_menu_tab = -1;
 
 		ImGuiWindow* window = GImGui->CurrentWindow;
 

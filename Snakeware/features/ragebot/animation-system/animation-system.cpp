@@ -392,7 +392,7 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	const auto backup_realtime = g_GlobalVars->realtime;
 	const auto old_flags = player->m_fFlags();
 	// Эту хуйню надо сторить но поскольку внутри анимфикса мы получаем уже новый тайм то этого делать не надо
-	int nextTick = player->m_flSimulationTime / g_GlobalVars->interval_per_tick + 1; 
+	int nextTick = player->m_flSimulationTime() / g_GlobalVars->interval_per_tick + 1; 
 
 	// get player anim state
 	auto state = player->GetPlayerAnimState();

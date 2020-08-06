@@ -530,7 +530,7 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-		//	RageBot::Get().CreateMove(cmd); РейджБот пока не виновен
+			RageBot::Get().CreateMove(cmd); //РейджБот пока не виновен
 			Tickbase::Get().DoubleTap(cmd);
 			Miscellaneous::Get().SlowWalk(cmd);
 			 
@@ -548,6 +548,8 @@ namespace Hooks {
 		*(bool*)(*frame_ptr - 0x1C) = Snakeware::bSendPacket;
 		
 		g_Nightmode.Run();
+
+
 		if (g_Options.misc_anti_untrusted)
 			Math::Normalize3(cmd->viewangles);
 

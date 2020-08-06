@@ -351,7 +351,11 @@ public:
 		float color_chams_player_enemy_visible[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 		float color_chams_player_enemy_occluded[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 		float color_chams_arms_visible[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
-		float sky_color[3] = { 1.f, 0.f, 1.f };
+		float sky_color[4] = { 1.f, 0.f, 1.f };
+		float world_color[4] = { 1.f, 0.f, 1.f };
+		float prop_color[4] = { 1.f, 0.f, 1.f };
+		int prop_material;
+
 		
 		OPTION(Color, color_chams_arms_occluded, Color(0, 128, 255));
 		OPTION(Color, color_watermark, Color(0, 128, 255)); // no menu config cuz its useless
