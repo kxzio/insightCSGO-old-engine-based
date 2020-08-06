@@ -148,12 +148,13 @@ void Animation::Apply(C_BasePlayer* player) const {
 }
 
 void Animation::BulidServerBones(C_BasePlayer* player) {
-	const auto backup_occlusion_flags = *(int*)((uintptr_t)player + 0xA28);
-	const auto backup_occlusion_framecount = *(int*)((uintptr_t)player + 0xA30);
+
+	const auto backup_occlusion_flags = player->GetOcclusionFlags();
+	const auto backup_occlusion_framecount = player->GetOcclusionFramecount();
 
 	if (player != g_LocalPlayer) {
-		*(int*)((uintptr_t)player + 0xA28) = 0;
-		*(int*)((uintptr_t)player + 0xA30) = 0;
+		player->GetOcclusionFlags() = 0;
+		player->GetOcclusionFramecount() = 0;
 	}
 
 	player->GetReadableBones() = player->GetWritableBones() = 0;
@@ -165,17 +166,18 @@ void Animation::BulidServerBones(C_BasePlayer* player) {
 	const auto backup_bone_array = player->GetBoneArrayForWrite();
 	player->GetBoneArrayForWrite() = bones;
 
-	//Snakeware::UpdateMatrix = true;
+
 	player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
-	//Snakeware::UpdateMatrix = false;
+	
 
 	player->GetBoneArrayForWrite() = backup_bone_array;
 	if (player != g_LocalPlayer) {
-		*(int*)((uintptr_t)player + 0xA28) = backup_occlusion_flags;
-		*(int*)((uintptr_t)player + 0xA30) = backup_occlusion_framecount;
+		player->GetOcclusionFlags()      = backup_occlusion_flags;
+		player->GetOcclusionFramecount() = backup_occlusion_framecount;
 	}
 
 	player->GetEffect() &= ~0x8;
+
 }
 
 void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* from)

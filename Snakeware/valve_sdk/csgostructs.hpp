@@ -5,6 +5,7 @@
 #include "../helpers/utils.hpp"
 
 #define Assert( _exp ) ((void)0)
+#define OFFSET(func, type, offset) type& func { return *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(this) + offset); }
 #define FOFFSET( type, ptr, offset ) ( *( type* ) ( ( std::uintptr_t ) (ptr) + ( offset ) ) )
 #define NETVAR(type, name, table, netvar)                           \
     type& name##() const {                                          \
@@ -279,6 +280,7 @@ public:
 	{
 		return static_cast<C_BasePlayer*>(GetEntityByIndex(i));
 	}
+
 	
 	NETVAR(bool, m_bHasDefuser, "DT_CSPlayer", "m_bHasDefuser");
 	NETVAR(bool, m_bGunGameImmunity, "DT_CSPlayer", "m_bGunGameImmunity");
@@ -391,6 +393,23 @@ public:
 	uint32_t& GetWritableBones () {
 		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0x26B0);
 	}
+
+	uint32_t& GetOcclusionFlags() {
+		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0xA28);
+	}
+	float& GetLastBoneSetupTime()
+	{
+		return *reinterpret_cast<float*>(uintptr_t(this) + 0x2924);
+	}
+	uint32_t& GetMostRecentModelBoneCounter()
+	{
+		return *reinterpret_cast<uint32_t*>(uintptr_t(this) + 0x2690);
+	}
+	
+	uint32_t& GetOcclusionFramecount() {
+		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0xA30);
+	}
+
 	int &GetEffect()
 	{
 		static unsigned int _GetEffect = Utils::FindInDataMap(GetPredDescMap(), "m_fEffects");
