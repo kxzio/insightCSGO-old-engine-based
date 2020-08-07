@@ -561,7 +561,7 @@ namespace Hooks {
 		// SendPacket standart
 		*(bool*)(*frame_ptr - 0x1C) = Snakeware::bSendPacket;
 		
-		g_Nightmode.Run();
+		
 
 
 		if (g_Options.misc_anti_untrusted)
@@ -729,7 +729,7 @@ namespace Hooks {
 
 		Miscellaneous::Get().BloomEffect();
 		Miscellaneous::Get().ModelAmbient();
-
+		g_Nightmode.Run(); //ba1mov = paster
 
 		if (g_LocalPlayer && g_LocalPlayer->IsAlive())
 		{

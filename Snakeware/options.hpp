@@ -352,9 +352,9 @@ public:
 		float color_chams_player_enemy_visible[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 		float color_chams_player_enemy_occluded[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 		float color_chams_arms_visible[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
-		float sky_color[4] = { 1.f, 0.f, 1.f };
-		float world_color[4] = { 1.f, 0.f, 1.f };
-		float prop_color[4] = { 1.f, 0.f, 1.f };
+		float sky_color[4] = { 1.f, 0.f, 1.f, 0.9f };
+		float world_color[4] = { 1.f, 0.f, 1.f, 1.f };
+		float prop_color[4] = { 1.f, 0.f, 1.f, 0.9f };
 		int prop_material;
 
 		

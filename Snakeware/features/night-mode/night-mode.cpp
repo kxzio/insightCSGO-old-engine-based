@@ -7,16 +7,14 @@ Nightmode g_Nightmode;
 static ConVar* old_sky_name;
 bool executed = false;
 
-void Nightmode::Run() noexcept {
-
-
-	if (g_Options.esp_nightmode)
-	{
-		Nightmode::Apply();
+void Nightmode::Run() noexcept { 
+	// shitcode fixed
+	if (!g_EngineClient->IsInGame() && !g_EngineClient->IsConnected()) return;
+	if (g_Options.esp_nightmode ) {
+		Apply();
 	}
-	else
-	{
-		Nightmode::Remove();
+	else if (!g_Options.esp_nightmode) {
+		Remove();
 	}
 
 
@@ -35,16 +33,14 @@ void Nightmode::Apply() noexcept {
 	
 
 	
-	if (!local_player)
-		return;
+	if (!local_player) return; // why ?
 
-	if ((WorldColorVar != g_Options.world_color) || (PropColorVar != g_Options.prop_color) || (SkyColorVar != g_Options.sky_color))
-	{
+	if ((WorldColorVar != g_Options.world_color) || (PropColorVar != g_Options.prop_color) || (SkyColorVar != g_Options.sky_color)) {
+
 		for (MaterialHandle_t i = g_MatSystem->FirstMaterial(); i != g_MatSystem->InvalidMaterial(); i = g_MatSystem->NextMaterial(i)) {
 			auto material = g_MatSystem->GetMaterial(i);
 
-			if (!material)
-				continue;
+			if (!material) continue;
 
 			if (strstr(material->GetTextureGroupName(),          "World")) {
 				material->ColorModulate(g_Options.world_color[0] + brightness, g_Options.world_color[1] + brightness, g_Options.world_color[2] + brightness);

@@ -20,7 +20,9 @@ public :
 
 	void DetectDesyncSide(C_BasePlayer * player);
 
-	void Resolve(Animation * anim);
+	void Resolve(C_BasePlayer * player);
+
+	void ResolvePitch(C_BasePlayer * player);
 
 };
 
