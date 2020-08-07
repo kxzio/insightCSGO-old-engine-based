@@ -352,9 +352,9 @@ public:
 		float color_chams_player_enemy_visible[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 		float color_chams_player_enemy_occluded[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
 		float color_chams_arms_visible[4] = { 0.1f, 0.1f, 0.1f, 1.0f };
-		float sky_color[4] = { 1.f, 0.f, 1.f, 0.9f };
-		float world_color[4] = { 1.f, 0.f, 1.f, 1.f };
-		float prop_color[4] = { 1.f, 0.f, 1.f, 0.9f };
+		float sky_color[4] = { 1.f, 0.f, 1.f };
+		float world_color[4] = { 1.f, 0.f, 1.f };
+		float prop_color[4] = { 1.f, 0.f, 1.f };
 		int prop_material;
 
 		
@@ -388,9 +388,6 @@ public:
 
 
 		OPTION(bool,  ragebot_enabled   , false);
-		OPTION(bool,  ragebot_autowall, false);
-		OPTION(bool,  ragebot_remove_recoil, false);
-		OPTION(bool,  ragebot_autofire, false);
 		OPTION(bool,  ragebot_hitchance_consider, false);
 		OPTION(bool,  ragebot_position_adj, false);
 		OPTION(bool,  ragebot_backshoot, false);
@@ -407,17 +404,14 @@ public:
 		bool  ragebot_baim_if_lethal[9] = { false, false, false, false, false, false, false, false };
 		bool  ragebot_adaptive_baim[9] = { false, false, false, false, false, false, false, false };
 		float ragebot_mindamage[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
-		float ragebot_vis_mindamage[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_mindamage_override[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_hitchance[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_pointscale[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_bodyscale[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
-		float ragebot_otherscale[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_baim_if_hp[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		int ragebot_bodyaim_type[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		OPTION(int, ragebot_mindamage_override_key, 22);
 		OPTION(int, ragebot_baim_key, 23);
-		OPTION(int, ragebot_fov, 228);
 		OPTION(int, ragebot_max_miss, 5);
 		bool            ragebot_hitbox[8][9] = { false, false, false, false, false, false, false, false };
 		bool            ragebot_baimhitbox[8][9] = { false, false, false, false, false, false, false, false };

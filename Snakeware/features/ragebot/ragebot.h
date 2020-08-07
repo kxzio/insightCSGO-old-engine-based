@@ -5,51 +5,87 @@
 #include "animation-system/animation-system.h"
 #include <time.h>
 
-#define CHECK_VALID( _v ) 0
-#define square( x ) ( x * x )
-class RageBot : public Singleton <RageBot> {
-public:
-	struct AimInfo {
-		AimInfo(const Vector position, const float damage, Animation* animation, const bool alt_attack,
-			const Vector center, const float radius, const float rs, const int hitbox)
-			: position(position), damage(damage), animation(animation), alt_attack(alt_attack),
-			center(center), radius(radius), rs(rs), hitbox(hitbox) { }
-
-		Vector     position{};
-		float      damage{};
-		Animation* animation{};
-		bool       alt_attack{};
-		Vector     center{};
-		float      radius{}, rs{};
-		int        hitbox{};
-	};
-	C_BaseCombatWeapon* local_weapon;
-	QAngle              engine_angles;
-	static void VectorSubtractForFOV(const Vector& a, const Vector& b, Vector& c) {
-		CHECK_VALID(a);
-		CHECK_VALID(b);
-		c.x = a.x - b.x;
-		c.y = a.y - b.y;
-		c.z = a.z - b.z;
-	}
-	static void Normalize(Vector& vIn, Vector& vOut) {
-		float flLen = vIn.Length();
-		if (flLen == 0) {
-			vOut.Init(0, 0, 1);
-			return;
-		}
-		flLen = 1 / flLen;
-		vOut.Init(vIn.x * flLen, vIn.y * flLen, vIn.z * flLen);
-	}
-
-	static float FovToPlayer(Vector AimPos);
-	static bool  IsViable(C_BasePlayer* entity);
-	static void  QuickStop(CUserCmd* pCmd);
-	static void  CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet);
-	static std::vector<AimInfo> select_multipoint(Animation* animation, int box);
-	static std::optional<AimInfo> scan_record_gun(C_BasePlayer* local, Animation* animation);
-	inline static std::optional<float> last_pitch = std::nullopt;
-private:
-	static std::optional<AimInfo> scan_record(C_BasePlayer* local, Animation* animation);
-	static bool                   is_breaking_lagcomp(Animation* animation);
+class ShotSnapshot { public:
+	C_BasePlayer* entity;
+	std::string hitbox_where_shot;
+	std::string resolver;
+	float time;
+	float first_processed_time;
+	bool weapon_fire, bullet_impact;
+	int hitgroup_hit;
+	int damage;
+	int hitbox;
+	Animation* record;
+	QAngle eyeangles;
+	Vector  impact, start;
+	int backtrack;
+	matrix3x4_t* pMat;
+	std::string get_info();
 };
+extern      std::vector<ShotSnapshot> ShotSnapshots;
+extern bool CanHitHitbox(const Vector start, const Vector end, Animation* _animation, studiohdr_t* hdr, int box);
+
+struct CLastHitted {
+	int        hitbox, point_id;
+	Animation* anims;
+};
+struct AutostopInfo {
+	float call_time;
+	bool  did_stop;
+};
+class RageBot : public Singleton<RageBot> { public:
+	Animation backup_anims[65];
+	void BackupPlayer(Animation*);
+	void SetAnims(Animation*);
+	void RestorePlayer(Animation*);
+	Vector HeadScan(Animation* backshoot, int & hitbox, float & best_damage, float min_dmg);
+	Vector PrimaryScan(Animation* anims, int & hitbox, float & simtime, float & best_damage, float min_dmg);
+	std::vector<int> GetHitboxesToScan(C_BasePlayer*);
+	std::vector<Vector> GetMultipoints(C_BasePlayer*, int, matrix3x4_t[128]);
+	Vector FullScan(Animation* anims, int &hitbox, float &simtime, float &best_damage, float min_dmg);
+	Vector GetPoint(C_BasePlayer * pBaseEntity, int iHitbox, matrix3x4_t BoneMatrix[128]);
+	int GetTicksToShoot();
+	int GetTicksToStop();
+	bool HoldFiringAnimation();
+	void FastStop();
+	Vector GetVisualHitbox(C_BasePlayer* ent, int ihitbox);
+	Vector GetAimVector(C_BasePlayer*, float &, Vector&, Animation*&, int&);
+	bool Hitchance(Vector, bool, Animation*, int&);
+	bool IsAbleToShoot();
+	void DropTarget();
+	int target_index = -1;
+	float best_distance;
+	bool did_dt;
+	bool aimbotted_in_current_tick;
+	bool fired_in_that_tick;
+	float current_aim_simulationtime;
+	int current_minusticks;
+	Vector current_aim_position;
+	bool lby_backtrack;
+	Vector current_aim_player_origin;
+	bool shot;
+	bool Shooting;
+	Vector Target;
+	bool hitchanced;
+	bool fired;
+	Vector Angles;
+	void QuickStop(CUserCmd* cmd);
+	void CreateMove(CUserCmd* cmd);
+	bool last_tick_shooted;
+	bool target_lethal;
+	bool Shooted[65];
+	bool Hitted[65];
+	matrix3x4_t BoneMatrix[128];
+	int GetCurrentPriorityHitbox(C_BasePlayer* pEntity);
+	bool HeadAiming;
+	Animation* target_anims;
+	ShotSnapshot last_hitted[65];
+	QAngle last_shot_angle;
+	float LerpTime();
+	clock_t last_shot_tick;
+	void DrawCapsule(Animation*);
+private :
+	CUserCmd* CurrentCmd = nullptr;
+};
+
+

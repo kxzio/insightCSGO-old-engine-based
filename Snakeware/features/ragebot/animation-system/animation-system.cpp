@@ -323,10 +323,10 @@ void Animations::UpdatePlayerAnimations() {
 			else
 				i = next(i);
 		}
-	
-		// trash code
-		Resolver::Get().Resolve     (player);
-		Resolver::Get().ResolvePitch(player);
+		auto resolverrecord = _animation.frames.emplace_front(new Animation(player, info.second.last_reliable_angle));
+		// erase frames out-of-range
+		Resolver::Get().Resolve(resolverrecord);
+
 
 
 		// have we already seen this update?
@@ -378,15 +378,13 @@ void Animations::UpdatePlayerAnimations() {
 
 }
 void Animations::UpdatePlayer(C_BasePlayer* player) {
-	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>(reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) + 2);
+	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>(
+		reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) + 2);
 
 
 	//// make a backup of globals
-	const auto backup_abs_frametime = g_GlobalVars->absoluteframetime;
 	const auto backup_frametime = g_GlobalVars->frametime;
 	const auto backup_curtime = g_GlobalVars->curtime;
-	const auto backup_realtime = g_GlobalVars->realtime;
-	const auto interpolation = g_GlobalVars->interpolation_amount;
 	const auto old_flags = player->m_fFlags();
 
 	// get player anim state
@@ -396,14 +394,10 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 		state->m_iLastClientSideAnimationUpdateFramecount -= 1.f;
 
 	// fixes for networked players
-	g_GlobalVars->interpolation_amount = 0.f;
 	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
-	g_GlobalVars->absoluteframetime = g_GlobalVars->interval_per_tick;
 	g_GlobalVars->curtime = player->m_flSimulationTime();
-	g_GlobalVars->realtime = player->m_flSimulationTime();
-
-	 
 	player->m_iEFlags() &= ~0x1000;
+
 	player->m_vecAbsVelocity() = player->m_vecVelocity();
 
 	if (player->GetAnimOverlay(5)->m_flWeight > 0.0f)
@@ -428,11 +422,8 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	enable_bone_cache_invalidation = old_invalidation;
 
 	// restore globals
-	g_GlobalVars->interpolation_amount = interpolation;
-	g_GlobalVars->curtime              = backup_curtime;
-	g_GlobalVars->realtime             = backup_realtime;
-	g_GlobalVars->frametime            = backup_frametime;
-	g_GlobalVars->absoluteframetime    = backup_abs_frametime;
+	g_GlobalVars->curtime = backup_curtime;
+	g_GlobalVars->frametime = backup_frametime;
 
 	player->m_fFlags() = old_flags;
 }

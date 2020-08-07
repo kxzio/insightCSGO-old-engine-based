@@ -311,10 +311,6 @@ namespace Math
 
 		return yaw;
 	}
-	 float NormalizeAngleYaw(float angle)
-	{
-		return remainderf(angle, 360.0f);
-	}
 
 	void NormalizeAngles(QAngle& angles)
 	{
