@@ -216,7 +216,7 @@ void RenderRageBotTab()
 
 
 		static int curGroup = 0;
-		const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP" };
+		const char* weapon[] = { "Pistols", "Rifles", "Shotguns" , "Scout", "Auto", "AWP", "SMG" };
 
 
 		ImGui::BeginChild("Weapon", ImVec2(310, 118), true);
@@ -235,15 +235,15 @@ void RenderRageBotTab()
 			case 1:
 				curGroup = WEAPON_GROUPS::RIFLES; break;
 			case 2:
-				curGroup = WEAPON_GROUPS::SMG; break;
-			case 3:
 				curGroup = WEAPON_GROUPS::SHOTGUNS; break;
+			case 3:
+				curGroup = WEAPON_GROUPS::SCOUT; break;
 			case 4:
 				curGroup = WEAPON_GROUPS::AUTO; break;
 			case 5:
-				curGroup = WEAPON_GROUPS::SCOUT; break;
-			case 6:
 				curGroup = WEAPON_GROUPS::AWP; break;
+			case 6:
+				curGroup = WEAPON_GROUPS::SMG; break;
 			case 7:
 				curGroup = WEAPON_GROUPS::UNKNOWN; break;
 			}

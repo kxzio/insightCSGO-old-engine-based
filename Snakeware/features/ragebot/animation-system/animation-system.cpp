@@ -382,6 +382,7 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 
 
 	//// make a backup of globals
+	const auto backup_abs_frametime = g_GlobalVars->absoluteframetime;
 	const auto backup_frametime = g_GlobalVars->frametime;
 	const auto backup_curtime = g_GlobalVars->curtime;
 	const auto backup_realtime = g_GlobalVars->realtime;
@@ -397,8 +398,10 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	// fixes for networked players
 	g_GlobalVars->interpolation_amount = 0.f;
 	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
+	g_GlobalVars->absoluteframetime = g_GlobalVars->interval_per_tick;
 	g_GlobalVars->curtime = player->m_flSimulationTime();
 	g_GlobalVars->realtime = player->m_flSimulationTime();
+
 	 
 	player->m_iEFlags() &= ~0x1000;
 	player->m_vecAbsVelocity() = player->m_vecVelocity();
@@ -429,6 +432,7 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	g_GlobalVars->curtime              = backup_curtime;
 	g_GlobalVars->realtime             = backup_realtime;
 	g_GlobalVars->frametime            = backup_frametime;
+	g_GlobalVars->absoluteframetime    = backup_abs_frametime;
 
 	player->m_fFlags() = old_flags;
 }

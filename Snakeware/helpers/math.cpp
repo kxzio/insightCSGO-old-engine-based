@@ -311,7 +311,7 @@ namespace Math
 
 		return yaw;
 	}
-	inline float NormalizeAngleYaw(float angle)
+	 float NormalizeAngleYaw(float angle)
 	{
 		return remainderf(angle, 360.0f);
 	}

@@ -81,7 +81,7 @@ namespace Math
 	{
 		return to * percent + from * (1.f - percent);
 	}
-	inline float NormalizeAngleYaw(float angle);
+	 float NormalizeAngleYaw(float angle);
 	float NormalizeYaw(float yaw);
 	void NormalizeAngles(QAngle& angles);
     void ClampAngles(QAngle& angles);

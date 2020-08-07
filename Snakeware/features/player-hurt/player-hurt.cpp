@@ -4,6 +4,7 @@
 #include "../../render.hpp"
 #include "../../helpers/math.hpp"
 #include "../../features/ragebot/ragebot.h"
+#include "../../features/ragebot/resolver/resolver.h"
 static void DrawHitbox(C_BasePlayer * pPlayer, Color col, float duration)
 {
 	if (!pPlayer)
@@ -72,6 +73,34 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 		Color Hitbox = Color(g_Options.color_shot_hitboxes);
 		if (attacker == g_EngineClient->GetLocalPlayer() && userid != g_EngineClient->GetLocalPlayer())
 			DrawHitbox(Player,Hitbox, g_Options.shot_hitboxes_duration);
+	}
+
+
+	if (g_Options.ragebot_enabled) {
+		int32_t userid = event->GetInt("userid");
+		auto    player = C_BasePlayer::GetPlayerByUserId(userid);
+		if      (!player)  return;
+
+		int32_t idx = player->EntIndex();
+		auto &player_recs = Resolver::Get().resolveInfo[idx];
+
+		if (!player->IsDormant()) {
+			int32_t local_id = g_EngineClient->GetLocalPlayer();
+			int32_t attacker = g_EngineClient->GetPlayerForUserID(event->GetInt("attacker"));
+
+			if (attacker == local_id) {
+				
+				int32_t tickcount = g_GlobalVars->tickcount;
+
+				if (tickHitWall == tickcount)   {
+					player_recs.m_nShotsMissed = originalShotsMissed;
+				}
+				if (tickcount != tickHitPlayer) {
+					tickHitPlayer = tickcount;
+					player_recs.m_nShotsMissed = 0;
+				}
+			}
+		}
 	}
 	
 	

@@ -24,33 +24,24 @@ void UpdateConfig () {
 }
 
 
-int RageBot::GetCurrentPriorityHitbox(C_BasePlayer* pEntity) {
+int RageBot::GetCurrentPriorityHitbox (C_BasePlayer* pEntity) {
+
 	auto weapon = g_LocalPlayer->m_hActiveWeapon();
-	if (!weapon)
-		return -1;
+	if (!weapon)                   return -1;
+	if (!g_LocalPlayer->IsAlive()) return -1;
 
-	if (!g_LocalPlayer->IsAlive())
-		return -1;
+	bool can_baim_on_miss = g_Options.ragebot_max_miss > 0 && Snakeware::MissedShots[pEntity->EntIndex()] > g_Options.ragebot_max_miss;
 
-	bool can_baim_on_miss = g_Options.ragebot_max_miss > 0
-		&& Snakeware::MissedShots[pEntity->EntIndex()] > g_Options.ragebot_max_miss;
+	if (!pEntity->IsAlive()) return -1;
+	if (weapon->IsZeus())    return (int)HITBOX_PELVIS;
+	if (g_Options.ragebot_baim_in_air[curGroup] && !(pEntity->m_fFlags() & FL_ONGROUND))                                             return (int)HITBOX_PELVIS;
+	if (g_Options.ragebot_baim_in_move[curGroup] && pEntity->m_fFlags() & FL_ONGROUND && pEntity->m_vecVelocity().Length2D() >= 169) return (int)HITBOX_PELVIS;
+	if (can_baim_on_miss)                                               return (int)HITBOX_PELVIS;
+	if (pEntity->m_iHealth() <= g_Options.ragebot_baim_if_hp[curGroup]) return (int)HITBOX_PELVIS;
+	if (GetAsyncKeyState(g_Options.ragebot_baim_key))                   return (int)HITBOX_PELVIS;
+	if (pEntity->BadMatrix())                                           return (int)HITBOX_PELVIS;
 
-	if (!pEntity->IsAlive())
-		return -1;
-	if (weapon->IsZeus())
-		return (int)HITBOX_PELVIS;
-	if (g_Options.ragebot_baim_in_air[curGroup] && !(pEntity->m_fFlags() & FL_ONGROUND))
-		return (int)HITBOX_PELVIS;
-	if (g_Options.ragebot_baim_in_move[curGroup] && pEntity->m_fFlags() & FL_ONGROUND && pEntity->m_vecVelocity().Length2D() >= 169)
-		return (int)HITBOX_PELVIS;
-	if (can_baim_on_miss) // sh1ttt
-		return (int)HITBOX_PELVIS;
-	if (pEntity->m_iHealth() <= g_Options.ragebot_baim_if_hp[curGroup])
-		return (int)HITBOX_PELVIS;
-	if (GetAsyncKeyState(g_Options.ragebot_baim_key))
-		return (int)HITBOX_PELVIS;
-	if (pEntity->BadMatrix())
-		return (int)HITBOX_PELVIS;
+	//Default return :
 	return 0;
 }
 std::vector<int> RageBot::GetHitboxesToScan(C_BasePlayer* pEntity) {
@@ -64,31 +55,27 @@ std::vector<int> RageBot::GetHitboxesToScan(C_BasePlayer* pEntity) {
 		return hitboxes;
 	}
 
-	if (GetCurrentPriorityHitbox(pEntity) == (int)HITBOX_PELVIS) // baim
-	{
-		if (g_Options.ragebot_baimhitbox[0][curGroup])
-		{
+	if (GetCurrentPriorityHitbox(pEntity) == (int)HITBOX_PELVIS)  {
+		//Baim hitboxes ?
+		if (g_Options.ragebot_baimhitbox[0][curGroup]) {
 			hitboxes.push_back((int)HITBOX_CHEST);
 		}
 
-		if (g_Options.ragebot_baimhitbox[1][curGroup])
-		{
+		if (g_Options.ragebot_baimhitbox[1][curGroup]) {
 			hitboxes.push_back((int)HITBOX_STOMACH);
 		}
-		if (g_Options.ragebot_baimhitbox[2][curGroup])
-		{
+
+		if (g_Options.ragebot_baimhitbox[2][curGroup]) {
 			hitboxes.push_back((int)HITBOX_PELVIS);
 		}
 
-		return hitboxes;
+        return hitboxes;
 	}
 
-	if (g_Options.ragebot_hitbox[0][curGroup])
-	{
+	if (g_Options.ragebot_hitbox[0][curGroup]) {
 		hitboxes.push_back((int)HITBOX_HEAD);
 	}
-	if (g_Options.ragebot_hitbox[1][curGroup])
-	{
+	if (g_Options.ragebot_hitbox[1][curGroup]) {
 		hitboxes.push_back((int)HITBOX_NECK);
 	}
 	if (g_Options.ragebot_hitbox[2][curGroup]) {
@@ -122,55 +109,49 @@ std::vector<int> RageBot::GetHitboxesToScan(C_BasePlayer* pEntity) {
 
 	}
 
-
-
 	return hitboxes;
 }
 
-
-
-
-
-void RageBot::BackupPlayer(Animation* anims) {
+// Work with this.
+void RageBot::BackupPlayer (Animation* anims) {
 	auto i = anims->player->EntIndex();
-	backup_anims[i].origin = anims->player->m_vecOrigin();
+	backup_anims[i].origin     = anims->player->m_vecOrigin();
 	backup_anims[i].abs_origin = anims->player->m_angAbsOrigin();
-	backup_anims[i].obb_mins = anims->player->m_vecMins();
-	backup_anims[i].obb_maxs = anims->player->m_vecMaxs();
+	backup_anims[i].obb_mins   = anims->player->m_vecMins();
+	backup_anims[i].obb_maxs   = anims->player->m_vecMaxs();
 
 }
-void RageBot::SetAnims(Animation* anims) {
+void RageBot::SetAnims    (Animation* anims) {
 
 	anims->player->m_vecOrigin() = anims->origin;
-	anims->player->SetAbsOrigin(anims->abs_origin);
-	anims->player->m_vecMins() = anims->obb_mins;
-	anims->player->m_vecMaxs() = anims->obb_maxs;
+	anims->player->SetAbsOrigin  (anims->abs_origin);
+	anims->player->m_vecMins()   = anims->obb_mins;
+	anims->player->m_vecMaxs()   = anims->obb_maxs;
 	
 }
 void RageBot::RestorePlayer(Animation* anims) {
 	auto i = anims->player->EntIndex();
 	anims->player->m_vecOrigin() = backup_anims[i].origin;
-	anims->player->SetAbsOrigin(backup_anims[i].abs_origin);
-	anims->player->m_vecMins() = backup_anims[i].obb_mins;
-	anims->player->m_vecMaxs() = backup_anims[i].obb_maxs;
+	anims->player->SetAbsOrigin  (backup_anims[i].abs_origin);
+	anims->player->m_vecMins()   = backup_anims[i].obb_mins;
+	anims->player->m_vecMaxs()   = backup_anims[i].obb_maxs;
 
 }
+//Мы немного не так работает с рестором.
 
 
-Vector RageBot::GetPoint(C_BasePlayer* pBaseEntity, int iHitbox, matrix3x4_t BoneMatrix[128])
-{
+Vector RageBot::GetPoint (C_BasePlayer* pBaseEntity, int iHitbox, matrix3x4_t BoneMatrix[128]) {
 	std::vector<Vector> vPoints;
 
-	if (!pBaseEntity) return Vector(0, 0, 0);
+	if (!pBaseEntity)     return Vector(0, 0, 0);
 
 	studiohdr_t* pStudioModel = g_MdlInfo->GetStudioModel(pBaseEntity->GetModel());
 	mstudiohitboxset_t* set = pStudioModel->GetHitboxSet(0);
 
-	if (!set) return Vector(0, 0, 0);
+	if (!set)             return Vector(0, 0, 0);
 
 	mstudiobbox_t* untransformedBox = set->GetHitbox(iHitbox);
-	if (!untransformedBox)
-		return Vector(0, 0, 0);
+	if (!untransformedBox) return Vector(0, 0, 0);
 
 	Vector vecMin = { 0, 0, 0 };
 	Math::VectorTransformWrapper(untransformedBox->bbmin, BoneMatrix[untransformedBox->bone], vecMin);
@@ -179,8 +160,7 @@ Vector RageBot::GetPoint(C_BasePlayer* pBaseEntity, int iHitbox, matrix3x4_t Bon
 	Math::VectorTransformWrapper(untransformedBox->bbmax, BoneMatrix[untransformedBox->bone], vecMax);
 
 	float mod = untransformedBox->m_flRadius != -1.f ? untransformedBox->m_flRadius : 0.f;
-	Vector max;
-	Vector min;
+	Vector max, min;
 
 	Math::VectorTransform(untransformedBox->bbmax + mod, BoneMatrix[untransformedBox->bone], max);
 	Math::VectorTransform(untransformedBox->bbmin - mod, BoneMatrix[untransformedBox->bone], min);
@@ -191,11 +171,9 @@ Vector RageBot::GetPoint(C_BasePlayer* pBaseEntity, int iHitbox, matrix3x4_t Bon
 
 
 
-void BulidSeeds()
-{
-	if (!precomputed_seeds.empty())
-		return;
+void BulidSeeds () {
 
+	if (!precomputed_seeds.empty()) return;
 	for (auto i = 0; i < total_seeds; i++) {
 		RandomSeed(i + 1);
 
@@ -206,9 +184,8 @@ void BulidSeeds()
 	}
 }
 
-bool HitTraces(Animation* _animation, const Vector position, const float chance, int box)
-{
-	BulidSeeds();
+bool HitTraces (Animation* _animation, const Vector position, const float chance, int box) {
+	BulidSeeds ();
 
 	const auto weapon = g_LocalPlayer->m_hActiveWeapon();
 
@@ -223,8 +200,7 @@ bool HitTraces(Animation* _animation, const Vector position, const float chance,
 	if (!studio_model) return false;
 
 	// performance optimization.
-	if ((g_LocalPlayer->GetEyePos() - position).Length2D() > info->flRange)
-		return false;
+	if ((g_LocalPlayer->GetEyePos() - position).Length2D() > info->flRange) return false;
 
 	// setup calculation parameters.
 	const auto id = weapon->m_Item().m_iItemDefinitionIndex();
@@ -253,8 +229,7 @@ bool HitTraces(Animation* _animation, const Vector position, const float chance,
 	std::tuple<float, float, float>* seed;
 
 	// use look-up-table to find average hit probability.
-	for (auto i = 0u; i < total_seeds; i++)  // NOLINT(modernize-loop-convert)
-	{
+	for (auto i = 0u; i < total_seeds; i++)   {
 		// get seed.
 		seed = &precomputed_seeds[i];
 
@@ -278,8 +253,7 @@ bool HitTraces(Animation* _animation, const Vector position, const float chance,
 			if (CanHitHitbox(start, end, _animation, studio_model, box))
 				current++;
 		}
-		else
-		{
+		else  {
 			trace_t tr;
 			Ray_t ray;
 
@@ -301,24 +275,22 @@ bool HitTraces(Animation* _animation, const Vector position, const float chance,
 			return false;
 	}
 
-	return static_cast<float>(current) / static_cast<float>(total_seeds) >= chance;
+	       return static_cast<float>(current) / static_cast<float>(total_seeds) >= chance;
 }
 
 std::vector<Vector> RageBot::GetMultipoints(C_BasePlayer* pBaseEntity, int iHitbox, matrix3x4_t BoneMatrix[128]) {
 	std::vector<Vector> vPoints;
 
-	if (!pBaseEntity)
-		return vPoints;
+	if (!pBaseEntity)       return vPoints;
 
-	studiohdr_t* pStudioModel = g_MdlInfo->GetStudioModel(pBaseEntity->GetModel());
+	studiohdr_t*        pStudioModel       = g_MdlInfo->GetStudioModel(pBaseEntity->GetModel());
 	mstudiohitboxset_t* set = pStudioModel->GetHitboxSet(0);
 
-	if (!set)
-		return vPoints;
+	if (!set)              return vPoints;
 
 	mstudiobbox_t* untransformedBox = set->GetHitbox(iHitbox);
-	if (!untransformedBox)
-		return vPoints;
+
+	if (!untransformedBox) return vPoints;
 
 	Vector vecMin = { 0, 0, 0 };
 	Math::VectorTransformWrapper(untransformedBox->bbmin, BoneMatrix[untransformedBox->bone], vecMin);
@@ -356,8 +328,10 @@ std::vector<Vector> RageBot::GetMultipoints(C_BasePlayer* pBaseEntity, int iHitb
 			return max;
 		return val;
 	};
+
 	Vector curAngles = Math::CalculateAngle(center, g_LocalPlayer->GetEyePos());
 	Vector forward;
+
 	Math::AngleVectors2(curAngles, forward);
 	Vector right = forward.Cross(Vector(0, 0, 1));
 	Vector left = Vector(-right.x, -right.y, right.z);
@@ -406,7 +380,6 @@ std::vector<Vector> RageBot::GetMultipoints(C_BasePlayer* pBaseEntity, int iHitb
 		vPoints[2] += left  * (untransformedBox->m_flRadius * ps);
 	}
 
-
 	return vPoints;
 }
 
@@ -415,8 +388,10 @@ Vector RageBot::HeadScan(Animation* anims, int& hitbox, float& best_damage, floa
 	memcpy(BoneMatrix, anims->bones, sizeof(matrix3x4_t[128]));
 	SetAnims(anims);
 	int health = anims->player->m_iHealth();
+
 	if (min_dmg > health)
 		min_dmg = health + 1;
+
 	std::vector<Vector> Points = GetMultipoints(anims->player, 0, BoneMatrix);
 	for (auto HitBox : Points) {
 
@@ -441,8 +416,9 @@ Vector RageBot::PrimaryScan(Animation* anims, int& hitbox, float& simtime, float
 	const auto damage = min_dmg;
 	auto best_point = Vector(0, 0, 0);
 	auto health = anims->player->m_iHealth();
-	if (min_dmg > health)
-		min_dmg = health + 1;
+
+	if (min_dmg > health) min_dmg = health + 1;
+
 	auto priority_hitbox = GetCurrentPriorityHitbox(anims->player);
 
 	static const std::vector<int> hitboxes = {
@@ -523,14 +499,14 @@ Vector RageBot::FullScan (Animation* anims, int& hitbox, float& simtime, float& 
 		}
 	}
 
-	for (auto HitboxID : hitboxes)
-	{
+	for (auto HitboxID : hitboxes) {
+
 		std::vector<Vector> Points = GetMultipoints(anims->player, HitboxID, BoneMatrix);
-		for (int k = 0; k < Points.size(); k++)
-		{
+		for (int k = 0; k < Points.size(); k++) {
+
 			auto info = AutoWall::Get().Think(Points[k], anims->player);
-			if ((info.m_damage > min_dmg && info.m_damage > best_damage))
-			{
+
+			if ((info.m_damage > min_dmg && info.m_damage > best_damage)) {
 				hitbox = HitboxID;
 				best_point = Points[k];
 				best_damage = info.m_damage;
@@ -538,8 +514,8 @@ Vector RageBot::FullScan (Animation* anims, int& hitbox, float& simtime, float& 
 		}
 	}
 
-	if (best_damage > anims->player->m_iHealth() + 2)
-		target_lethal = true;
+	if (best_damage > anims->player->m_iHealth() + 2)  target_lethal = true;
+
 	RestorePlayer(anims);
 	return best_point;
 }
@@ -626,6 +602,7 @@ bool RageBot::Hitchance(Vector Aimpoint, bool backtrack, Animation* best, int& h
 	auto weapon = g_LocalPlayer->m_hActiveWeapon();
 	if (!weapon)  return false;
 	bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
+
 	if (g_Options.ragebot_alternative_hitchance || r8)
 		return weapon->Hitchance() > g_Options.ragebot_hitchance[curGroup] * (1.7 * (1.f - r8));
 	else
@@ -650,33 +627,31 @@ bool RageBot::IsAbleToShoot()  {
 
 	if (g_LocalPlayer->m_flNextAttack() > time) return false;
 
-
 	return true;
-
 }
 
 void RageBot::DropTarget () {
+	target_index          = -1;
+	best_distance         = INT_MAX;
+	fired_in_that_tick    = false;
+	current_aim_position  = Vector();
+	shot                  = false;
 
-	target_index = -1;
-	best_distance = INT_MAX;
-	fired_in_that_tick = false;
-	current_aim_position = Vector();
-	shot = false;
-	AutoWall::Get().reset();
+	AutoWall::Get().reset(); //Reset autowall target's
 }
 
 std::string HitboxToString(int id) {
 	switch (id) {
-	case 0: return "head";  break;
-	case 1: return "neck"; break;
-	case 2: return "pelvis"; break;
-	case 3: return "stomach"; break;
-	case 4: return "lower chest"; break;
-	case 5: return "chest"; break;
-	case 6: return "upper chest"; break;
-	case 7: return "right thigh"; break;
-	case 8: return "left thigh"; break;
-	case 9: return "right leg"; break;
+	case 0:  return "head";  break;
+	case 1:  return "neck"; break;
+	case 2:  return "pelvis"; break;
+	case 3:  return "stomach"; break;
+	case 4:  return "lower chest"; break;
+	case 5:  return "chest"; break;
+	case 6:  return "upper chest"; break;
+	case 7:  return "right thigh"; break;
+	case 8:  return "left thigh"; break;
+	case 9:  return "right leg"; break;
 	case 10: return "left leg"; break;
 	case 11: return "right foot"; break;
 	case 12: return "left foot"; break;
@@ -689,18 +664,17 @@ std::string HitboxToString(int id) {
 		break;
 	}
 }
-void RageBot::QuickStop(CUserCmd* cmd) {
 
-	
-	auto CurrentVelocityLength = g_LocalPlayer->m_vecVelocity().Length();
+void RageBot::QuickStop () { 
+	auto CurrentVelocityLength = EnginePrediction::Get().get_unpred_vel().Length2D(); 
+	//Наша так сказать локал скорость в критмуве после предикшена немного неправильная т.к мы отправляем сетапхост данные в предикшене.
 	
 	float speed;
-	int AccuracyMode = g_Options.ragebot_autostop_type[curGroup];
-	int scalespeed;
-	auto weapon = g_LocalPlayer->m_hActiveWeapon();
+	int   AccuracyMode = g_Options.ragebot_autostop_type[curGroup];
+	int   scalespeed;
+	auto  weapon = g_LocalPlayer->m_hActiveWeapon();
 
-	switch (AccuracyMode)
-	{
+	switch (AccuracyMode) {
 		case 0:  speed = 25 / (CurrentVelocityLength / 17.4); break;//default accuracy
 		case 1:  speed = 25 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
 		case 2:  speed = 25 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
@@ -710,45 +684,44 @@ void RageBot::QuickStop(CUserCmd* cmd) {
 	bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
 
 		
-	float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
-	if (min_speed <= 3.f) return;
+	float min_speed = (float)(Math::FASTSQRT((CurrentCmd->forwardmove) * (CurrentCmd->forwardmove) + (CurrentCmd->sidemove) * (CurrentCmd->sidemove) + (CurrentCmd->upmove) * (CurrentCmd->upmove)));
+	  
+	if (min_speed <= 3.f)              return;
 
+    if (CurrentCmd->buttons & IN_DUCK) speed *= 2.94117647f;
 
+	if (min_speed <= speed)            return;
 
-		if (cmd->buttons & IN_DUCK)
-			speed *= 2.94117647f;
+	float finalSpeed         = (speed / min_speed);
 
-		if (min_speed <= speed) return;
-
-		float finalSpeed = (speed / min_speed);
-
-		cmd->forwardmove *= finalSpeed;
-		cmd->sidemove *= finalSpeed;
-		cmd->upmove *= finalSpeed;
-	
-
-
-
+	CurrentCmd->forwardmove *= finalSpeed;
+	CurrentCmd->sidemove    *= finalSpeed;
+	CurrentCmd->upmove      *= finalSpeed;
 }
+
+void RageBot::QuickCrouch() {
+	auto CurrentVelocityLength = EnginePrediction::Get().get_unpred_vel().Length2D();
+	if (CurrentVelocityLength < 15) return;
+	CurrentCmd->buttons |= IN_DUCK;
+}
+
 
 void RageBot::CreateMove(CUserCmd* cmd) {
 
 	if (!g_Options.ragebot_enabled || !g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 
 	auto weapon = g_LocalPlayer->m_hActiveWeapon();
-	CurrentCmd = cmd;
+	CurrentCmd  = cmd;
 	if (!weapon) return;
-	UpdateConfig();
-	int curhitbox;
+	UpdateConfig ();
+	int curhitbox, box;
 	Animation* best_anims = nullptr;
-	int hitbox = -1;
+	int hitbox            = -1;
 
-	float simtime = 0;
-	Vector minus_origin = Vector(0, 0, 0);
-	Animation* anims = nullptr;
-	int box;
-
-	RageBot::Get().shot = false;
+	float      simtime      = 0;
+	Vector     minus_origin = Vector(0, 0, 0);
+	Animation* anims        = nullptr;
+	RageBot::Get().shot     = false;
 
 	
 
@@ -758,8 +731,7 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 	for (auto i = 1; i <= g_GlobalVars->maxClients; i++) {
 		auto pEntity = static_cast<C_BasePlayer*> (g_EntityList->GetClientEntity(i));
 
-		if (!pEntity) continue;
-
+		if (!pEntity)                  continue;
 		if (!pEntity->IsPlayer())      continue;
 		if  (pEntity == nullptr)       continue;
 		if  (pEntity == g_LocalPlayer) continue;
@@ -772,16 +744,14 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 		if (pEntity->IsDormant())                                 continue;
 		if (pEntity->m_bGunGameImmunity())                        continue;
 		if (g_Options.ragebot_delayshot[curGroup]) {
-			if (pEntity->m_flSimulationTime() == pEntity->m_flOldSimulationTime()) continue;
+	        if (pEntity->m_flSimulationTime() == pEntity->m_flOldSimulationTime()) continue;
 		}
 		target_lethal = false;
 		Vector aim_position = GetAimVector(pEntity, simtime, minus_origin, anims, box);
 
 		if (!anims) continue;
 		int health = pEntity->m_iHealth();
-		if (best_distance > health
-			&& anims->player == pEntity && aim_position != Vector(0, 0, 0))
-		{
+		if (best_distance > health && anims->player == pEntity && aim_position != Vector(0, 0, 0)) {
 			best_distance = health;
 			target_index = i;
 			current_aim_position = aim_position;
@@ -793,29 +763,28 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 		}
 	}
 
-	static int delay = 0;
-	did_dt = false;
-
-		
+	
 
 	if (hitbox != -1 && target_index != -1 && best_anims && current_aim_position != Vector(0, 0, 0)) {
 
-	     // С этого момента чек не проходит получчч
 		if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && !g_LocalPlayer->m_bIsScoped()) { 
 			cmd->buttons |= IN_ZOOM;
 			return;
 		}
 	
-
 		bool htchance = Hitchance(current_aim_position, false, best_anims, hitbox);
 
-	
-		static int dt_shot_tick = 20;
+		
 		auto wpn_info = weapon->GetCSWeaponData();
+
 		if (g_LocalPlayer->m_fFlags() & FL_ONGROUND && !GetAsyncKeyState(g_Options.misc_slowwalk_key)) {
-			if (!weapon->IsZeus() && g_Options.ragebot_autostop[curGroup]) {
-				// Quick stop call.
-				QuickStop(cmd);
+			if (!weapon->IsZeus()) {
+				// Quick stop call. 
+				if (g_Options.ragebot_autostop[curGroup])
+				   QuickStop  ();
+
+				if (g_Options.ragebot_autocrouch[curGroup])
+				   QuickCrouch ();
 
 			}
 		}
@@ -865,47 +834,39 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 		shot = true;
 }
 
-std::string ShotSnapshot::get_info()
-{
+std::string ShotSnapshot::get_info() {
 	return std::string();
 }
 
-bool CanHitHitbox(const Vector start, const Vector end, Animation * _animation, studiohdr_t * hdr, int box)
-{
+bool CanHitHitbox(const Vector start, const Vector end, Animation * _animation, studiohdr_t * hdr, int box) {
 	studiohdr_t* pStudioModel = g_MdlInfo->GetStudioModel(_animation->player->GetModel());
 	mstudiohitboxset_t* set = pStudioModel->GetHitboxSet(0);
 
-	if (!set)
-		return false;
+	if (!set)           return false;
 
 	mstudiobbox_t* studio_box = set->GetHitbox(box);
-	if (!studio_box)
-		return false;
+	if (!studio_box)    return false;
 
 	Vector min, max;
 
 	const auto is_capsule = studio_box->m_flRadius != -1.f;
 
-	if (is_capsule)
-	{
+	if (is_capsule) {
 		Math::VectorTransform(studio_box->bbmin, _animation->bones[studio_box->bone], min);
 		Math::VectorTransform(studio_box->bbmax, _animation->bones[studio_box->bone], max);
 		const auto dist = Math::Segment2Segment(start, end, min, max);
 
-		if (dist < studio_box->m_flRadius)
-			return true;
+		if (dist < studio_box->m_flRadius)     return true;
 	}
 
-	if (!is_capsule)
-	{
+	if (!is_capsule) {
 		Math::VectorTransform(Math::VectorRotate(studio_box->bbmin, studio_box->bbmin), _animation->bones[studio_box->bone], min);
 		Math::VectorTransform(Math::VectorRotate(studio_box->bbmax, studio_box->rotation), _animation->bones[studio_box->bone], max);
 
 		Math::vector_i_transform(start, _animation->bones[studio_box->bone], min);
 		Math::vector_i_rotate(end, _animation->bones[studio_box->bone], max);
 
-		if (Math::intersect_line_with_bb(min, max, studio_box->bbmin, studio_box->bbmax))
-			return true;
+		if (Math::intersect_line_with_bb(min, max, studio_box->bbmin, studio_box->bbmax))  return true;
 	}
 
 	return false;

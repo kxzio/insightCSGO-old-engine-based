@@ -85,7 +85,7 @@ namespace Hooks {
 		sv_cheats.hook_index(index::SvCheatsGetBool, hkSvCheatsGetBool);
 		engine_hook.hook_index(index::AspectRatio, GetScreenAspectRatio);
 		engine_hook.hook_index(index::IsHLTV, hkIsHLTV);
-		//engine_hook.hook_index(27, hkIsConnected);
+		engine_hook.hook_index(27, hkIsConnected);
 		engine_hook.hook_index(32, hkIsBoxVisible);
 	
 		
@@ -729,7 +729,7 @@ namespace Hooks {
 
 		Miscellaneous::Get().BloomEffect();
 		Miscellaneous::Get().ModelAmbient();
-		g_Nightmode.Run(); //ba1mov = paster
+		// g_Nightmode.Run(); //ba1mov = paster
 
 		if (g_LocalPlayer && g_LocalPlayer->IsAlive())
 		{
