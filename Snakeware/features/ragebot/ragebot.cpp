@@ -544,7 +544,7 @@ Vector RageBot::FullScan (Animation* anims, int& hitbox, float& simtime, float& 
 	return best_point;
 }
 
-
+int HitchanceValue;
 
 Vector RageBot::GetAimVector(C_BasePlayer *pTarget, float &simtime, Vector &, Animation *&best_anims, int &hitbox) {
 	if (GetHitboxesToScan(pTarget).size() == 0) return Vector(0, 0, 0);
@@ -555,6 +555,8 @@ Vector RageBot::GetAimVector(C_BasePlayer *pTarget, float &simtime, Vector &, An
 	}
 	else
 		m_damage = g_LocalPlayer->m_hActiveWeapon()->IsZeus() ? 100.f : g_Options.ragebot_mindamage[curGroup];
+
+
 
 	auto latest_animation = Animations::Get().get_latest_animation(pTarget);
 	auto record           = latest_animation;
@@ -687,28 +689,46 @@ std::string HitboxToString(int id) {
 		break;
 	}
 }
-void RageBot::QuickStop() {
+void RageBot::QuickStop(CUserCmd* cmd) {
 
-	auto Velocity = EnginePrediction::Get().get_unpred_vel();
-	const auto speed = Velocity.Length();
-	if (speed > 15.f) {
-		QAngle dir;
-		Math::VectorAngles(Velocity, dir);
-		dir.yaw = CurrentCmd->viewangles.yaw - dir.yaw;
+	
+	auto CurrentVelocityLength = g_LocalPlayer->m_vecVelocity().Length();
+	
+	float speed;
+	int AccuracyMode = g_Options.ragebot_autostop_type[curGroup];
+	int scalespeed;
+	auto weapon = g_LocalPlayer->m_hActiveWeapon();
 
-		Vector new_move;
-		Math::FixVectors(dir, &new_move);
-		const auto max = std::max(std::fabs(CurrentCmd->forwardmove), std::fabs(CurrentCmd->sidemove));
-		const auto mult = 450.f / max;
-		new_move *= -mult;
-
-		CurrentCmd->forwardmove = new_move.x;
-		CurrentCmd->sidemove = new_move.y;
+	switch (AccuracyMode)
+	{
+		case 0:  speed = 25 / (CurrentVelocityLength / 17.4); break;//default accuracy
+		case 1:  speed = 25 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
+		case 2:  speed = 25 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
+		case 3:  speed = 0.3;                                 break;//full stop 
 	}
-	else {
-		CurrentCmd->forwardmove = 0.f;
-		CurrentCmd->sidemove = 0.f;
-	}
+
+	bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
+
+		
+	float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
+	if (min_speed <= 3.f) return;
+
+
+
+		if (cmd->buttons & IN_DUCK)
+			speed *= 2.94117647f;
+
+		if (min_speed <= speed) return;
+
+		float finalSpeed = (speed / min_speed);
+
+		cmd->forwardmove *= finalSpeed;
+		cmd->sidemove *= finalSpeed;
+		cmd->upmove *= finalSpeed;
+	
+
+
+
 }
 
 void RageBot::CreateMove(CUserCmd* cmd) {
@@ -795,7 +815,7 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 		if (g_LocalPlayer->m_fFlags() & FL_ONGROUND && !GetAsyncKeyState(g_Options.misc_slowwalk_key)) {
 			if (!weapon->IsZeus() && g_Options.ragebot_autostop[curGroup]) {
 				// Quick stop call.
-				QuickStop();
+				QuickStop(cmd);
 
 			}
 		}

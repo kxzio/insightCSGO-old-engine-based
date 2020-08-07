@@ -69,7 +69,7 @@ class RageBot : public Singleton<RageBot> { public:
 	bool hitchanced;
 	bool fired;
 	Vector Angles;
-	void QuickStop();
+	void QuickStop(CUserCmd* cmd);
 	void CreateMove(CUserCmd* cmd);
 	bool last_tick_shooted;
 	bool target_lethal;

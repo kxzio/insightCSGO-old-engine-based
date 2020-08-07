@@ -208,6 +208,7 @@ void RenderRageBotTab()
 			ImGui::Hotkey("##t4Keybind", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
 
 
+
 		}
 		ImGui::EndChild();
 
@@ -265,6 +266,9 @@ void RenderRageBotTab()
 			ImGui::Checkbox("Delay shot", &g_Options.ragebot_delayshot[curGroup]);
 			ImGui::Checkbox("Auto-scope", &g_Options.ragebot_autoscope[curGroup]);
 			ImGui::Checkbox("Auto-stop", &g_Options.ragebot_autostop[curGroup]);
+			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
+			const char* autostop_if[] = { "If low hitchance","Always" };
+			ImGui::Combo("Autostop type", &g_Options.ragebot_autostop_type[curGroup], autostop, ARRAYSIZE(autostop));
 			ImGui::Checkbox("Auto-crouch", &g_Options.ragebot_autocrouch[curGroup]);
 			ImGui::SliderFloat("Baim if hp lower than :", &g_Options.ragebot_baim_if_hp[curGroup], 0, 100);
 			static std::string prevValue = "Select";
