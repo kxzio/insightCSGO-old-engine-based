@@ -4,6 +4,7 @@
 #include "../../helpers/input.hpp"
 #include "legit-autowall/legit-autowall.h"
 #include <chrono>
+#include "../../Protected/enginer.h"
 //--------------------------------------------------------------------------------
 bool LegitBot::IsRcs() {
 	return g_LocalPlayer->m_iShotsFired() >= settings.rcs_start + 1;
@@ -26,7 +27,7 @@ float LegitBot::GetFovToPlayer(QAngle viewAngle, QAngle aimAngle) {
 }
 //--------------------------------------------------------------------------------
 bool LegitBot::IsLineGoesThroughSmoke(Vector vStartPos, Vector vEndPos) {
-	static auto LineGoesThroughSmokeFn = (bool(*)(Vector vStartPos, Vector vEndPos))Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 83 EC 08 8B 15 ? ? ? ? 0F 57 C0");
+	static auto LineGoesThroughSmokeFn = (bool(*)(Vector vStartPos, Vector vEndPos))Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "55 8B EC 83 EC 08 8B 15 ? ? ? ? 0F 57 C0");
 	return LineGoesThroughSmokeFn(vStartPos, vEndPos);
 }
 //--------------------------------------------------------------------------------

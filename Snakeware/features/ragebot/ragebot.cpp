@@ -9,6 +9,8 @@ int curGroup;
 static const int total_seeds = 255;
 std::vector<ShotSnapshot> ShotSnapshots;
 static std::vector<std::tuple<float, float, float>> precomputed_seeds = {};
+bool HitchanceValue;
+
 void UpdateConfig () {
 	C_BaseCombatWeapon* weapon = g_LocalPlayer->m_hActiveWeapon();
 
@@ -492,6 +494,19 @@ Vector RageBot::FullScan (Animation* anims, int& hitbox, float& simtime, float& 
 		(int)HITBOX_STOMACH,
 		(int)PELVIS,
 	};
+
+	int BodyCondition;
+
+	switch (g_Options.ragebot_bodyaim_type[curGroup])
+	{
+
+	case 0:   BodyCondition = 0;   break; //Default condition of hitscan method
+	case 1:   BodyCondition = 1;   break; //Normal condition of hitscan method
+	case 2:   BodyCondition = 2;   break; //Priority condition of hitscan method
+	case 3:   BodyCondition = 3;   break; //Maximum condition of hitscan method
+
+	}
+
 	bool baim_if_lethal = g_Options.ragebot_baim_if_lethal[curGroup];
 	if (baim_if_lethal || g_Options.ragebot_adaptive_baim[curGroup]) {
 		for (auto HitboxID : baim_hitboxes) {
@@ -512,15 +527,7 @@ Vector RageBot::FullScan (Animation* anims, int& hitbox, float& simtime, float& 
 			RestorePlayer(anims);
 			return best_point;
 		}
-		if (best_damage > 0 && g_Options.ragebot_adaptive_baim[curGroup]) {
-		
-				if (best_damage < health)
-					target_lethal = false;
-				RestorePlayer(anims);
-				return best_point;
-			
 
-		}
 	}
 
 	for (auto HitboxID : hitboxes)
@@ -544,7 +551,6 @@ Vector RageBot::FullScan (Animation* anims, int& hitbox, float& simtime, float& 
 	return best_point;
 }
 
-int HitchanceValue;
 
 Vector RageBot::GetAimVector(C_BasePlayer *pTarget, float &simtime, Vector &, Animation *&best_anims, int &hitbox) {
 	if (GetHitboxesToScan(pTarget).size() == 0) return Vector(0, 0, 0);
@@ -689,9 +695,10 @@ std::string HitboxToString(int id) {
 		break;
 	}
 }
+
 void RageBot::QuickStop(CUserCmd* cmd) {
 
-	
+	//self coded by ba1mka
 	auto CurrentVelocityLength = g_LocalPlayer->m_vecVelocity().Length();
 	
 	float speed;
@@ -699,21 +706,19 @@ void RageBot::QuickStop(CUserCmd* cmd) {
 	int scalespeed;
 	auto weapon = g_LocalPlayer->m_hActiveWeapon();
 
-	switch (AccuracyMode)
+
+	switch (g_Options.ragebot_autostop_type[curGroup])
 	{
 		case 0:  speed = 25 / (CurrentVelocityLength / 17.4); break;//default accuracy
-		case 1:  speed = 25 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
-		case 2:  speed = 25 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
+		case 1:  speed = 22 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
+		case 2:  speed = 26 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
 		case 3:  speed = 0.3;                                 break;//full stop 
 	}
 
 	bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
 
-		
-	float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
-	if (min_speed <= 3.f) return;
-
-
+		float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
+		if (min_speed <= 3.f) return;
 
 		if (cmd->buttons & IN_DUCK)
 			speed *= 2.94117647f;
@@ -729,6 +734,16 @@ void RageBot::QuickStop(CUserCmd* cmd) {
 
 
 
+}
+
+void AutoCrouch(CUserCmd* cmd)
+{
+	auto weapon = g_LocalPlayer->m_hActiveWeapon();
+
+	if (g_Options.ragebot_autocrouch[curGroup]) {
+		cmd->buttons |= IN_DUCK;
+		return;
+	}
 }
 
 void RageBot::CreateMove(CUserCmd* cmd) {
@@ -808,7 +823,7 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 	
 
 		bool htchance = Hitchance(current_aim_position, false, best_anims, hitbox);
-
+		HitchanceValue = htchance;
 	
 		static int dt_shot_tick = 20;
 		auto wpn_info = weapon->GetCSWeaponData();
@@ -817,7 +832,9 @@ void RageBot::CreateMove(CUserCmd* cmd) {
 				// Quick stop call.
 				QuickStop(cmd);
 
+
 			}
+			AutoCrouch(cmd);
 		}
 
 		if (g_Options.ragebot_autofire[curGroup]) {

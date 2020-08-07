@@ -14,7 +14,7 @@
     <ProjectGuid>{F3E42845-8D56-4BB3-821D-8163AB1337F0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CSGOSimple</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>Snakeware[CSGO]</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -196,6 +196,7 @@
     <ClInclude Include="imgui\Other.h" />
     <ClInclude Include="imgui\smoke.h" />
     <ClInclude Include="materials\Materials.h" />
+    <ClInclude Include="Protected\enginer.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="skin-changer\item_definitions.h" />
     <ClInclude Include="skin-changer\kit_parser.h" />

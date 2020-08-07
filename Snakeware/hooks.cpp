@@ -28,6 +28,7 @@
 #include "features/tickbase-shift/tickbase-exploits.h"
 // material system
 #include "materials/Materials.h"
+#include "Protected/enginer.h"
 #define Snake
 #pragma intrinsic(_ReturnAddress)  
 float real_angle = 0.0f;
@@ -325,8 +326,8 @@ namespace Hooks {
 		typedef bool(__thiscall* IsHLTVFn)(IVEngineClient*);
 		static auto IsHLTV = engine_hook.get_original< IsHLTVFn >(index::IsHLTV);
 
-		static const auto Retutn2SetupVelocity = Utils::PatternScan(GetModuleHandleA("client.dll"), "84 C0 75 38 8B 0D ? ? ? ? 8B 01 8B 80");
-		static const auto Return2AccumLayers   = Utils::PatternScan(GetModuleHandleA("client.dll"), "84 C0 75 0D F6 87");
+		static const auto Retutn2SetupVelocity = Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "84 C0 75 38 8B 0D ? ? ? ? 8B 01 8B 80");
+		static const auto Return2AccumLayers   = Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "84 C0 75 0D F6 87");
 		if (_ReturnAddress() == (uint32_t*)(Return2AccumLayers) && IEngineClient->IsInGame())   return true;
 
 		if (_ReturnAddress() == (uint32_t*)(Retutn2SetupVelocity) && IEngineClient->IsInGame()) return true;
@@ -561,8 +562,6 @@ namespace Hooks {
 		// SendPacket standart
 		*(bool*)(*frame_ptr - 0x1C) = Snakeware::bSendPacket;
 		
-		g_Nightmode.Run();
-
 
 		if (g_Options.misc_anti_untrusted)
 			Math::Normalize3(cmd->viewangles);

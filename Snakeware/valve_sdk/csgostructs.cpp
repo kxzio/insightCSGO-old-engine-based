@@ -2,6 +2,7 @@
 #include "../Helpers/Math.hpp"
 #include "../Helpers/Utils.hpp"
 #include <iterator>
+#include "../Protected/enginer.h"
 //increase it if valve added some funcs to baseentity :lillulmoa:
 constexpr auto VALVE_ADDED_FUNCS = 0ull;
 
@@ -283,7 +284,7 @@ bool C_BasePlayer::IsLocalPlayer() const
 void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angle)
 {
 	using fn = void(__vectorcall*)(void*, void*, float, float, float, void*);
-	static auto ret = reinterpret_cast<fn>(Utils::PatternScan(GetModuleHandleA("client.dll"),"55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 F3 0F 11 54 24"));
+	static auto ret = reinterpret_cast<fn>(Utils::PatternScan(GetModuleHandleA(solution::Get().Module),"55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 F3 0F 11 54 24"));
 
 	if (!ret || !state)
 		return;
@@ -294,7 +295,7 @@ void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angl
 void C_BasePlayer::ResetAnimationState(CCSGOPlayerAnimState *state)
 {
 	using ResetAnimState_t = void(__thiscall*)(CCSGOPlayerAnimState*);
-	static auto ResetAnimState = (ResetAnimState_t)Utils::PatternScan(GetModuleHandleA("client.dll"), "56 6A 01 68 ? ? ? ? 8B F1");
+	static auto ResetAnimState = (ResetAnimState_t)Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "56 6A 01 68 ? ? ? ? 8B F1");
 	if (!ResetAnimState)
 		return;
 
@@ -304,7 +305,7 @@ void C_BasePlayer::ResetAnimationState(CCSGOPlayerAnimState *state)
 void C_BasePlayer::CreateAnimationState(CCSGOPlayerAnimState *state)
 {
 	using CreateAnimState_t = void(__thiscall*)(CCSGOPlayerAnimState*, C_BasePlayer*);
-	static auto CreateAnimState = (CreateAnimState_t)Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 56 8B F1 B9 ? ? ? ? C7 46");
+	static auto CreateAnimState = (CreateAnimState_t)Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "55 8B EC 56 8B F1 B9 ? ? ? ? C7 46");
 	if (!CreateAnimState)
 		return;
 
@@ -583,7 +584,7 @@ bool C_BasePlayer::IsNotTarget() {
 
 void C_BasePlayer::InvalidateBoneCache()
 {
-	static DWORD addr = (DWORD)Utils::PatternScan(GetModuleHandleA("client.dll"), "80 3D ? ? ? ? ? 74 16 A1 ? ? ? ? 48 C7 81");
+	static DWORD addr = (DWORD)Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "80 3D ? ? ? ? ? 74 16 A1 ? ? ? ? 48 C7 81");
 
 	*(int*)((uintptr_t)this + 0xA30) = g_GlobalVars->framecount; //we'll skip occlusion checks now
 	*(int*)((uintptr_t)this + 0xA28) = 0;//clear occlusion flags
@@ -608,7 +609,7 @@ void C_BasePlayer::SetSnakewareAngles(QAngle angles)
 void C_BasePlayer::SetAbsAngles(const QAngle &angles)
 {
 	using SetAbsAnglesFn = void(__thiscall*)(void*, const QAngle &angles);
-	static SetAbsAnglesFn SetAbsAngles = (SetAbsAnglesFn)Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1 E8");
+	static SetAbsAnglesFn SetAbsAngles = (SetAbsAnglesFn)Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "55 8B EC 83 E4 F8 83 EC 64 53 56 57 8B F1 E8");
 	// by @justice1337                                                                                      
 	SetAbsAngles(this, angles);
 }
@@ -633,7 +634,7 @@ void C_BasePlayer::SetAbsOrigin(const Vector &origin)
 	static SetAbsOriginFn SetAbsOrigin;
 
 	if (!SetAbsOrigin)
-		SetAbsOrigin = (SetAbsOriginFn)((DWORD)Utils::PatternScan(GetModuleHandleA("client.dll"),("55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8")));
+		SetAbsOrigin = (SetAbsOriginFn)((DWORD)Utils::PatternScan(GetModuleHandleA(solution::Get().Module),("55 8B EC 83 E4 F8 51 53 56 57 8B F1 E8")));
 
 	SetAbsOrigin(this, origin);
 }
@@ -643,7 +644,7 @@ void C_BasePlayer::SetAbsOrigin(const Vector &origin)
 void C_BasePlayer::InvalidatePhysics(int32_t flags)
 {
 	static const auto invalidate_physics_recursive = reinterpret_cast<void(__thiscall*)(C_BasePlayer*, int32_t)>(
-		Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 83 E4 F8 83 EC 0C 53 8B 5D 08 8B C3 56"));
+		Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "55 8B EC 83 E4 F8 83 EC 0C 53 8B 5D 08 8B C3 56"));
 	invalidate_physics_recursive(this, flags);
 }
 

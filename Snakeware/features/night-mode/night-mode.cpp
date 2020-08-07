@@ -6,12 +6,15 @@ Nightmode g_Nightmode;
 
 static ConVar* old_sky_name;
 bool executed = false;
+bool NighmoveActive = true;
+int BRUH = 1;
 
 void Nightmode::Run() noexcept {
 
 
 	if (g_Options.esp_nightmode)
 	{
+		
 		Nightmode::Apply();
 	}
 	else
@@ -28,17 +31,17 @@ void Nightmode::Apply() noexcept {
 	static auto r_3dsky	   = g_CVar->FindVar("r_3dsky");
 	auto local_player      = reinterpret_cast<C_BasePlayer*>(g_EntityList->GetClientEntity(g_EngineClient->GetLocalPlayer()));
 	old_sky_name           = g_CVar->FindVar("sv_skyname");
-	float brightness       = g_Options.esp_nightmode_bright / 100.f;
-	float WorldColorVar[4] = { g_Options.world_color[0], g_Options.world_color[1], g_Options.world_color[2], g_Options.world_color[3] };
-	float PropColorVar[4]  = { g_Options.prop_color[0], g_Options.prop_color[1], g_Options.prop_color[2], g_Options.prop_color[3] };
-	float SkyColorVar[4]   = { g_Options.sky_color[0], g_Options.sky_color[1], g_Options.sky_color[2], g_Options.sky_color[3] };
-	
+	float brightness       = g_Options.esp_nightmode_bright;
 
 	
 	if (!local_player)
 		return;
 
-	if ((WorldColorVar != g_Options.world_color) || (PropColorVar != g_Options.prop_color) || (SkyColorVar != g_Options.sky_color))
+	BRUH++;
+
+	std::clamp(BRUH, 0, g_Options.esp_nightmode_bright);
+
+	if ((BRUH != g_Options.esp_nightmode_bright))
 	{
 		for (MaterialHandle_t i = g_MatSystem->FirstMaterial(); i != g_MatSystem->InvalidMaterial(); i = g_MatSystem->NextMaterial(i)) {
 			auto material = g_MatSystem->GetMaterial(i);
@@ -47,17 +50,16 @@ void Nightmode::Apply() noexcept {
 				continue;
 
 			if (strstr(material->GetTextureGroupName(),          "World")) {
-				material->ColorModulate(g_Options.world_color[0] + brightness, g_Options.world_color[1] + brightness, g_Options.world_color[2] + brightness);
-				material->AlphaModulate(g_Options.world_color[3]);//set alpha to texture: WORLD
+				material->ColorModulate(brightness / 100.f, brightness / 100.f, brightness / 100.f);
+				//material->AlphaModulate(g_Options.world_color[3]);//set alpha to texture: WORLD
 			}
 			else if (strstr(material->GetTextureGroupName(),     "StaticProp")) {
-				material->ColorModulate(g_Options.prop_color[0] + brightness, g_Options.prop_color[1] + brightness, g_Options.prop_color[2] + brightness);
-				material->AlphaModulate(g_Options.prop_color[3]);//set alpha to texture:  PROPS
+				material->ColorModulate(brightness / 100.f, brightness / 100.f, brightness / 100.f);
+				//material->AlphaModulate(g_Options.prop_color[3]);//set alpha to texture:  PROPS
 
 			}
-			if (strstr(material->GetTextureGroupName(), "SkyBox")) {
-				material->ColorModulate(g_Options.sky_color[0], g_Options.sky_color[1], g_Options.sky_color[2]);
-				material->AlphaModulate(g_Options.sky_color[3]);//set alpha to texture:   SKYBX
+			if (strstr(material->GetTextureGroupName(),          "SkyBox")) {
+				//material->AlphaModulate(g_Options.sky_color[3]);//set alpha to texture:   SKYBX
 				
 
 

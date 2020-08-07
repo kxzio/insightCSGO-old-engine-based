@@ -269,6 +269,7 @@ void RenderRageBotTab()
 			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
 			const char* autostop_if[] = { "If low hitchance","Always" };
 			ImGui::Combo("Autostop type", &g_Options.ragebot_autostop_type[curGroup], autostop, ARRAYSIZE(autostop));
+			ImGui::Checkbox("Ignore hitchance autostop", &g_Options.ragebot_autostop_if[curGroup]);
 			ImGui::Checkbox("Auto-crouch", &g_Options.ragebot_autocrouch[curGroup]);
 			ImGui::SliderFloat("Baim if hp lower than :", &g_Options.ragebot_baim_if_hp[curGroup], 0, 100);
 			static std::string prevValue = "Select";
@@ -317,6 +318,10 @@ void RenderRageBotTab()
 				}
 				ImGui::EndCombo();
 			}
+
+			const char* body[] = { "Default","Medium","Priority","Maximum" };
+			ImGui::Checkbox("Bodyaim priority", &g_Options.ragebot_adaptive_baim[curGroup]);
+
 			ImGui::SliderFloat("Point-scale", &g_Options.ragebot_pointscale[curGroup], 0, 100);
 			ImGui::SliderFloat("Body-scale", &g_Options.ragebot_bodyscale[curGroup], 0, 100);
 			ImGui::Text("Accuracy setting's :");
@@ -1536,9 +1541,6 @@ void RenderConfigTab()
 			ImGui::ColorEdit4("weapon color", g_Options.color_chams_weapons);
 			ImGui::Text("world :");
 			ImGui::ColorEdit4("offscreen esp", g_Options.color_esp_offscreen);
-			ImGui::ColorEdit4("World [nightmode] ", g_Options.world_color);
-			ImGui::ColorEdit4("Props [nightmode] ", g_Options.prop_color);
-			ImGui::ColorEdit4("Sky [nightmode]", g_Options.sky_color);
 			ImGui::ColorEdit4("hitmarker", g_Options.color_hitmarker);
 			ImGui::ColorEdit4("bullet-tracer", g_Options.color_bullet_tracer);
 			ImGui::ColorEdit4("molotov-timer", g_Options.color_molotov);

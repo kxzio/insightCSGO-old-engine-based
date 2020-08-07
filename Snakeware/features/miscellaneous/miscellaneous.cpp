@@ -4,6 +4,7 @@
 #include <chrono>
 #include "../../helpers/input.hpp"
 #include "../../menu.hpp"
+#include "../../Protected/enginer.h"
 
 bool Miscellaneous::RemoveSleeves(const char* modelName) noexcept
 {
@@ -20,7 +21,7 @@ void Miscellaneous::RemoveSmoke() noexcept {
 	if (!g_EngineClient->IsConnected() && !g_EngineClient->IsInGame())
 		return;
 
-	static auto smoke_count = *reinterpret_cast<uint32_t **>(Utils::PatternScan(GetModuleHandleA("client.dll"), "A3 ? ? ? ? 57 8B CB") + 1); // shit pattern
+	static auto smoke_count = *reinterpret_cast<uint32_t **>(Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "A3 ? ? ? ? 57 8B CB") + 1); // shit pattern
 
 	static std::vector<const char*> smoke_materials = {
 		"particle/vistasmokev1/vistasmokev1_fire",

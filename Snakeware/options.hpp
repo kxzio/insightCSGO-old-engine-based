@@ -396,7 +396,7 @@ public:
 		bool  ragebot_delayshot[9] = { false, false, false, false, false, false, false, false };
 		bool  ragebot_autoscope[9] = { false, false, false, false, false, false, false, false };
 		bool  ragebot_autostop[9] = { false, false, false, false, false, false, false, false };
-		int  ragebot_autostop_type[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		int  ragebot_autostop_type[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		bool  ragebot_autostop_if[9] = { false, false, false, false, false, false, false, false };
 		bool  ragebot_autocrouch[9] = { false, false, false, false, false, false, false, false };
 		bool  ragebot_baim_in_air[9] = { false, false, false, false, false, false, false, false };
@@ -409,6 +409,7 @@ public:
 		float ragebot_pointscale[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_bodyscale[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 		float ragebot_baim_if_hp[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
+		int ragebot_bodyaim_type[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 		OPTION(int, ragebot_mindamage_override_key, 22);
 		OPTION(int, ragebot_baim_key, 23);
 		OPTION(int, ragebot_max_miss, 5);
