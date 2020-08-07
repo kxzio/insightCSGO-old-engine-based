@@ -33,23 +33,22 @@ float AngleDiff2(float destAngle, float srcAngle) {
 	return delta;
 }
 
+bool IsCheater(C_BasePlayer * player) {
+     // credits : @LNK1181 aka platina300
+	 const auto choked_ticks = std::max(0, TIME_TO_TICKS(player->m_flSimulationTime() - player->m_flOldSimulationTime()) - 1);
+	 if (choked_ticks > 1)
+		 return true;
+	 return false;
+}
 
-void Resolver::Resolve(Animation * anim) {
+
+void Resolver::Resolve(C_BasePlayer * player) {
 
 
-	//auto animState = anim->player->GetPlayerAnimState();;
-	//if (!animState) return;
-	//float relative = Math::CalcAngle(g_LocalPlayer->GetEyePos(), anim->player->m_vecOrigin()).yaw + 180.f;
-	//float Left2 = animState->m_flEyeYaw + std::abs(relative - anim->player->m_angEyeAngles().yaw); // 
-	//float Right2 = animState->m_flEyeYaw - std::abs(relative - anim->player->m_angEyeAngles().yaw); //
-	// static checks
-	//if (relative < anim->player->m_angEyeAngles().yaw)
-	//{
-	//	animState->m_flGoalFeetYaw = Math::NormalizeYaw(Left2);
-	//}
-	//else if (relative > anim->player->m_angEyeAngles().yaw)
-	//{
-	//	animState->m_flGoalFeetYaw = Math::NormalizeYaw(Right2);
-	//
-	//}
+}
+
+void Resolver::ResolvePitch(C_BasePlayer * player) {
+	if (IsCheater(player));
+   player->m_angEyeAngles().pitch = std::clamp( Math::NormalizeAngleYaw(player->m_angEyeAngles().pitch), -89.f, 89.f);
+
 }
