@@ -5,7 +5,8 @@
 #include "autowall/ragebot-autowall.h"
 
 int curGroup;
-void UpdateConfig() {
+void UpdateConfig() 
+{
 	C_BaseCombatWeapon* weapon = g_LocalPlayer->m_hActiveWeapon();
 
 	if (!weapon) return;
@@ -346,9 +347,9 @@ std::optional<RageBot::AimInfo> RageBot::scan_record_gun(C_BasePlayer* local, An
 			if (local->CanSeePoint(point.position))
 			{
 
-				const auto wall = AutoWall::Get().Think(point.position, animation->player);
+				const auto wall = g_TraceSystem->wall_penetration(local->GetShootPos(), point.position, animation);
 
-				if (!wall.)
+				if (!wall.has_value())
 					continue;
 
 				point.damage = wall.value().damage;
@@ -471,6 +472,7 @@ bool RageBot::is_breaking_lagcomp(Animation* animation) {
 
 void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 {
+
 	last_pitch = std::nullopt;
 	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive())                   return;
@@ -566,14 +568,42 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 	}
 	if (g_Options.ragebot_autostop[curGroup])
 	{
-		if (g_Options.ragebot_autostop_type[curGroup] == 1)
-		{
-			//тут т=должен быть автостоп полный
-		}
-		else if (g_Options.ragebot_autostop_type[curGroup] == 3)
-		{
-			//тут т=должен быть автостоп слоувочный
-		}
+
+			auto CurrentVelocityLength = g_LocalPlayer->m_vecVelocity().Length();
+
+			float speed;
+			int AccuracyMode = g_Options.ragebot_autostop_type[curGroup];
+			int scalespeed;
+			auto weapon = g_LocalPlayer->m_hActiveWeapon();
+
+			switch (AccuracyMode)
+			{
+			case 0:  speed = 25 / (CurrentVelocityLength / 17.4); break;//default accuracy
+			case 1:  speed = 25 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
+			case 2:  speed = 25 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
+			case 3:  speed = 0.3;                                 break;//full stop 
+			}
+
+			bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
+
+
+			float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
+			if (min_speed <= 3.f) return;
+
+
+
+			if (cmd->buttons & IN_DUCK)
+				speed *= 2.94117647f;
+
+			if (min_speed <= speed) return;
+
+			float finalSpeed = (speed / min_speed);
+
+			cmd->forwardmove *= finalSpeed;
+			cmd->sidemove *= finalSpeed;
+			cmd->upmove *= finalSpeed;
+
+
 	}
 	if (!can_hit(best_match.animation, best_match.center, g_Options.ragebot_hitchance[curGroup] / 100.f, best_match.hitbox))
 	{

@@ -398,7 +398,7 @@ public:
 	bool  ragebot_delayshot[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_autoscope[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_autostop[9] = { false, false, false, false, false, false, false, false };
-	int   ragebot_silent;
+	bool   ragebot_silent;
 	int   ragebot_autostop_type[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	bool  ragebot_autostop_if[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_autocrouch[9] = { false, false, false, false, false, false, false, false };

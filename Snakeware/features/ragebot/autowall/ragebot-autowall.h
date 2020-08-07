@@ -1,105 +1,115 @@
 #pragma once
 
 #include "../../../valve_sdk/csgostructs.hpp"
-
-#define DAMAGE_NO		0
-#define DAMAGE_EVENTS_ONLY	1
-#define DAMAGE_YES		2
-#define DAMAGE_AIM		3
-#define CHAR_TEX_ANTLION		'A'
-#define CHAR_TEX_BLOODYFLESH	'B'
-#define	CHAR_TEX_CONCRETE		'C'
-#define CHAR_TEX_DIRT			'D'
-#define CHAR_TEX_EGGSHELL		'E' ///< the egg sacs in the tunnels in ep2.
-#define CHAR_TEX_FLESH			'F'
-#define CHAR_TEX_GRATE			'G'
-#define CHAR_TEX_ALIENFLESH		'H'
-#define CHAR_TEX_CLIP			'I'
-#define CHAR_TEX_PLASTIC		'L'
-#define CHAR_TEX_METAL			'M'
-#define CHAR_TEX_SAND			'N'
-#define CHAR_TEX_FOLIAGE		'O'
-#define CHAR_TEX_COMPUTER		'P'
-#define CHAR_TEX_SLOSH			'S'
-#define CHAR_TEX_TILE			'T'
-#define CHAR_TEX_CARDBOARD		'U'
-#define CHAR_TEX_VENT			'V'
-#define CHAR_TEX_WOOD			'W'
-#define CHAR_TEX_GLASS			'Y'
-#define CHAR_TEX_WARPSHIELD		'Z' ///< wierd-looking jello effect for advisor shield.
+#include "../../../helpers/math.hpp"
+#include "../animation-system/animation-system.h"
+#include <optional>
+#pragma once
 
 
-//------------------------------
-//Pasted autowall + aimware.dmp.
-//------------------------------
+struct returninfo {
+	int damage = -1;
+	int hitgroup = -1;
+	int walls = 4;
+	bool did_penetrate_wall = false;
+	float thickness = 1.f;
 
-struct FireBulletData_t {
-	Vector m_start;
-	Vector m_end;
-	Vector m_current_position;
-	Vector m_direction;
-
-	CTraceFilter* m_filter;
-	trace_t m_enter_trace;
-
-	float m_thickness;
-	float m_current_damage;
-	int m_penetration_count;
+	IClientEntity* ent = nullptr;
+	Vector end = Vector();
 };
 
-struct ReturnInfo_t {
-	int m_damage;
-	int m_hitgroup;
-	int m_penetration_count;
-	bool m_did_penetrate_wall;
-	float m_thickness;
-	Vector m_end;
-	C_BasePlayer* m_hit_entity;
+struct fbdata {
+	Vector start = Vector();
+	Vector end = Vector();
+	Vector pos = Vector();
+	Vector dir = Vector();
 
-	ReturnInfo_t(int damage, int hitgroup, int penetration_count, bool did_penetrate_wall, float thickness, C_BasePlayer* hit_entity) {
-		m_damage = damage;
-		m_hitgroup = hitgroup;
-		m_penetration_count = penetration_count;
-		m_did_penetrate_wall = did_penetrate_wall;
-		m_thickness = thickness;
-		m_hit_entity = hit_entity;
-	}
+	ITraceFilter* filter = nullptr;
+	trace_t trace;
+
+	float thickness = 1.f;
+	float damage = 1.f;
+	int walls = 4;
 };
 
-class AutoWall : public Singleton <AutoWall> {
-private:
-
-
-	void ScaleDamage(C_BasePlayer* e, CCSWeaponInfo* weapon_info, int hitgroup, float& current_damage);
-	bool HandleBulletPenetration(CCSWeaponInfo* info, FireBulletData_t& data, bool extracheck = false, Vector point = Vector(0, 0, 0));
-	bool TraceToExit(trace_t* enter_trace, Vector start, Vector dir, trace_t* exit_trace);
-	void TraceLine(Vector& start, Vector& end, unsigned int mask, IClientEntity* ignore, trace_t* trace);
-
-	void ClipTrace(Vector& start, Vector& end, C_BasePlayer* e, unsigned int mask, ITraceFilter* filter, trace_t* old_trace);
-	bool IsBreakableEntity(IClientEntity* entity);
-
-	float HitgroupDamage(int iHitGroup);
-
+class CAutoWall
+{
 public:
+	float get_estimated_point_damage(Vector point);
+	returninfo autowall(Vector start, Vector end, C_BasePlayer* from_ent = nullptr, C_BasePlayer* to_ent = nullptr, int hitgroup = -1);
 
-
-	
-
-	std::vector<float> scanned_damage;
-	std::vector<Vector> scanned_points;
-	void reset() {
-		scanned_damage.clear();
-		scanned_points.clear();
+private:
+	inline void Math_AngleVectors(const Vector& angles, Vector& forward)
+	{
+		float sp, sy, cp, cy;
+		Math::SinCos(DEG2RAD(angles[1]), &sy, &cy);
+		Math::SinCos(DEG2RAD(angles[0]), &sp, &cp);
+		forward.x = cp * cy;
+		forward.y = cp * sy;
+		forward.z = -sp;
 	}
-	bool CanHitFloatingPoint(const Vector& point, const Vector& source);
-	std::optional<ReturnInfo_t>Think(Vector pos, C_BasePlayer* target, int specific_hitgroup = -1);
+	inline Vector Math_CalcAngle(Vector src, Vector dst)
+	{
+		auto ret = Vector();
+		auto delta = src - dst;
+		double hyp = delta.Length2D();
+		ret.y = (atan(delta.y / delta.x) * 57.295779513082f);
+		ret.x = (atan(delta.z / hyp) * 57.295779513082f);
+		ret[2] = 0.00;
 
+		if (delta.x >= 0.0)
+			ret.y += 180.0f;
 
+		return ret;
+	}
+	void clip_trace_to_player(Vector& start, Vector& end, C_BasePlayer* ent, unsigned int mask, ITraceFilter* filter, trace_t* trace);
+	void scale_damage(C_BasePlayer* ent, CCSWeaponInfo* inf, int& hitgroup, float& damage);
+	bool handle_bullet_penetration(CCSWeaponInfo* inf, fbdata& bullet);
+	bool trace_to_exit(trace_t* enter_trace, Vector& start, Vector& dir, trace_t* exit_trace);
+	bool is_breakable(C_BasePlayer* e);
+};
+inline CAutoWall* g_AutoWall;
 
+#define char_tex_concrete 'C'
+#define char_tex_metal 'M'
+#define char_tex_dirt 'D'
+#define char_tex_vent 'V'
+#define char_tex_grate 'G'
+#define char_tex_tile 'T'
+#define char_tex_slosh 'S'
+#define char_tex_wood 'W'
+#define char_tex_computer 'P'
+#define char_tex_glass 'Y'
+#define char_tex_flesh 'F'
+#define char_tex_snow 'N'
+#define char_tex_plastic 'L'
+#define char_tex_cardboard 'U'
 
+class CTraceSystem
+{
+public:
+	struct wall_pen
+	{
+		float damage;
+		int hitbox;
+		int32_t hitgroup;
+	};
 
+	std::optional<wall_pen> wall_penetration(Vector src, Vector end,
+		Animation* target, C_BasePlayer* override_player = nullptr) const;
+
+	static void run_emulated(Animation* target, std::function<void()> fn);
+
+private:
+	static std::optional<wall_pen> fire_bullet(CCSWeaponInfo* data, Vector src,
+		Vector pos, CTraceFilter* filter, C_BasePlayer* target = nullptr, bool point = false);
+
+	static bool handle_bullet_penetration(CCSWeaponInfo* weapon_data, trace_t& enter_trace,
+		Vector& eye_position, Vector direction, int& penetrate_count,
+		float& current_damage, float penetration_power);
+	static bool trace_to_exit(trace_t& enter_trace, trace_t& exit_trace, Vector start_position, Vector direction, bool is_local = false);
+
+	static float scale_damage(C_BasePlayer* target, float damage, float weapon_armor_ratio, int hitgroup, bool is_zeus);
 };
 
-
-
-// 25.07.2020 Updated.
+inline CTraceSystem* g_TraceSystem;

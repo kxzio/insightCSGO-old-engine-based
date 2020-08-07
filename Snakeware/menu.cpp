@@ -200,6 +200,7 @@ void RenderRageBotTab()
 			ImGui::Checkbox("Hitchance const", &g_Options.ragebot_hitchance_consider);
 			ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj);
 			ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot);
+			ImGui::Checkbox("Silent", &g_Options.ragebot_silent);
 			ImGui::SliderInt("Max misses :", &g_Options.ragebot_max_miss, 0, 10);
 			ImGui::Text("Key's");
 			ImGui::Text("Force-baim key :");
@@ -264,7 +265,7 @@ void RenderRageBotTab()
 			ImGui::SetCursorPosY(+15);
 
 			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire);
-			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 180);
+			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 360);
 			ImGui::Checkbox("Delay shot", &g_Options.ragebot_delayshot[curGroup]);
 			ImGui::Checkbox("Auto-scope", &g_Options.ragebot_autoscope[curGroup]);
 			ImGui::Checkbox("Auto-stop", &g_Options.ragebot_autostop[curGroup]);
