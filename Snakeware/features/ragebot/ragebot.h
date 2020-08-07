@@ -5,83 +5,51 @@
 #include "animation-system/animation-system.h"
 #include <time.h>
 
-struct  CLastHitted  {
-	int        hitbox, point_id;
-	Animation* anims;
+#define CHECK_VALID( _v ) 0
+#define square( x ) ( x * x )
+class RageBot : public Singleton <RageBot> {
+public:
+	struct AimInfo {
+		AimInfo(const Vector position, const float damage, Animation* animation, const bool alt_attack,
+			const Vector center, const float radius, const float rs, const int hitbox)
+			: position(position), damage(damage), animation(animation), alt_attack(alt_attack),
+			center(center), radius(radius), rs(rs), hitbox(hitbox) { }
+
+		Vector     position{};
+		float      damage{};
+		Animation* animation{};
+		bool       alt_attack{};
+		Vector     center{};
+		float      radius{}, rs{};
+		int        hitbox{};
+	};
+	C_BaseCombatWeapon* local_weapon;
+	QAngle              engine_angles;
+	static void VectorSubtractForFOV(const Vector& a, const Vector& b, Vector& c) {
+		CHECK_VALID(a);
+		CHECK_VALID(b);
+		c.x = a.x - b.x;
+		c.y = a.y - b.y;
+		c.z = a.z - b.z;
+	}
+	static void Normalize(Vector& vIn, Vector& vOut) {
+		float flLen = vIn.Length();
+		if (flLen == 0) {
+			vOut.Init(0, 0, 1);
+			return;
+		}
+		flLen = 1 / flLen;
+		vOut.Init(vIn.x * flLen, vIn.y * flLen, vIn.z * flLen);
+	}
+
+	static float FovToPlayer(Vector AimPos);
+	static bool  IsViable(C_BasePlayer* entity);
+	static void  QuickStop(CUserCmd* pCmd);
+	static void  CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet);
+	static std::vector<AimInfo> select_multipoint(Animation* animation, int box);
+	static std::optional<AimInfo> scan_record_gun(C_BasePlayer* local, Animation* animation);
+	inline static std::optional<float> last_pitch = std::nullopt;
+private:
+	static std::optional<AimInfo> scan_record(C_BasePlayer* local, Animation* animation);
+	static bool                   is_breaking_lagcomp(Animation* animation);
 };
-
-struct  AutostopInfo  {
-	float call_time;
-	bool  did_stop;
-};
-
-class   ShotSnapshot  { 
-    public:
-	C_BasePlayer* entity;
-	Animation*    record;
-	QAngle        eyeangles;
-	Vector        impact, start;
-
-	std::string  hitbox_where_shot, resolver;
-	float        time , first_processed_time;
-	bool         weapon_fire, bullet_impact;
-	int          hitgroup_hit, damage, hitbox, backtrack;
-	
-	
-	matrix3x4_t* pMat;
-	std::string  get_info();
-};
-
-
-class RageBot : public Singleton<RageBot> { 
-    public:
-    void    CreateMove (CUserCmd* cmd); // Ragebot setup func.
-
-	// Ragebot-helper's :
-	void    BackupPlayer (Animation*);
-	void    SetAnims     (Animation*);
-	void    RestorePlayer(Animation*);
-	bool    Hitchance    (Vector, bool, Animation*, int&);
-	bool    IsAbleToShoot();
-	void    DropTarget   ();
-	int     target_index = -1;
-	float   best_distance;
-	bool    did_dt,aimbotted_in_current_tick,fired_in_that_tick;
-	float   current_aim_simulationtime;
-	int     current_minusticks;
-	bool    lby_backtrack; //Why?
-	bool    shot, Shooting;
-	bool    hitchanced, fired;
-	void    QuickStop ();
-	void    QuickCrouch();
-	bool    last_tick_shooted,target_lethal;
-	bool    Shooted[65],Hitted[65];
-	int     GetCurrentPriorityHitbox (C_BasePlayer* pEntity);
-	bool    HeadAiming;
-
-	// Some information.
-	Animation           backup_anims [65];
-	matrix3x4_t         BoneMatrix   [128];
-	ShotSnapshot        last_hitted  [65];
-
-	// Some vector,qangle and other class operator's
-	Vector              current_aim_position, current_aim_player_origin;
-	Vector              Angles;
-	Vector              Target;
-	Vector              HeadScan          (Animation* backshoot, int & hitbox, float & best_damage, float min_dmg);
-	Vector              PrimaryScan       (Animation* anims, int & hitbox, float & simtime, float & best_damage, float min_dmg);
-	std::vector<int>    GetHitboxesToScan (C_BasePlayer*);
-	std::vector<Vector> GetMultipoints    (C_BasePlayer*, int, matrix3x4_t[128]);
-	Vector              FullScan          (Animation* anims, int &hitbox, float &simtime, float &best_damage, float min_dmg);
-	Vector              GetPoint          (C_BasePlayer * pBaseEntity, int iHitbox, matrix3x4_t BoneMatrix[128]);
-	Vector              GetAimVector      (C_BasePlayer*, float &, Vector&, Animation*&, int&); //Repose aim to vector angles.
-	Animation*          target_anims;
-	QAngle              last_shot_angle;
-	clock_t             last_shot_tick;
-
-    private :
-	CUserCmd*           CurrentCmd = nullptr;
-};
-
-extern       std::vector<ShotSnapshot> ShotSnapshots;
-extern bool  CanHitHitbox(const Vector start, const Vector end, Animation* _animation, studiohdr_t* hdr, int box);
