@@ -248,7 +248,8 @@ void RenderRageBotTab()
 				curGroup = WEAPON_GROUPS::UNKNOWN; break;
 			}
 
-			ImGui::SliderFloat("Min-damage", &g_Options.ragebot_mindamage[curGroup], 0, 120);
+			ImGui::SliderFloat("DMG autowall", &g_Options.ragebot_mindamage[curGroup], 0, 120);
+			ImGui::SliderFloat("DMG visible", &g_Options.ragebot_vis_mindamage[curGroup], 0, 120);
 			ImGui::SliderFloat("Hit-chance", &g_Options.ragebot_hitchance[curGroup], 0, 99);
 
 		}
@@ -262,7 +263,8 @@ void RenderRageBotTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire[curGroup]);
+			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire);
+			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 180);
 			ImGui::Checkbox("Delay shot", &g_Options.ragebot_delayshot[curGroup]);
 			ImGui::Checkbox("Auto-scope", &g_Options.ragebot_autoscope[curGroup]);
 			ImGui::Checkbox("Auto-stop", &g_Options.ragebot_autostop[curGroup]);

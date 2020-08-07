@@ -22,5 +22,7 @@ public :
 
 	void Resolve(Animation * anim);
 
+	void ResolvePitch(C_BasePlayer* player);
+
 };
 

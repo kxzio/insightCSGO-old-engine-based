@@ -325,7 +325,7 @@ void Animations::UpdatePlayerAnimations() {
 		}
 		auto resolverrecord = _animation.frames.emplace_front(new Animation(player, info.second.last_reliable_angle));
 		// erase frames out-of-range
-		Resolver::Get().Resolve(resolverrecord);
+		//Resolver::Get().Resolve(resolverrecord);
 
 
 

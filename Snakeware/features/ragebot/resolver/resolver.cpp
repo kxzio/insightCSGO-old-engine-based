@@ -43,34 +43,9 @@ bool IsCheater(C_BasePlayer * player) {
 }
 
 
-void Resolver::Resolve(C_BasePlayer * player) {
-
-	auto state = player->GetPlayerAnimState();
-	auto yaw = Math::NormalizeYaw(player->m_angEyeAngles().yaw);
-	auto Left = Math::NormalizeYaw(player->m_angEyeAngles().yaw - 70.f);
-	auto Right = Math::NormalizeYaw(player->m_angEyeAngles().yaw + 70.f);
-	auto &record = resolveInfo[player->EntIndex()];
-
-	if (!IsCheater(player)) return;
-
-	auto missed = record.m_nShotsMissed;
-	if (missed > 1 && player->m_vecVelocity().Length2D() < 170) {
-		switch (missed) {
-		case 0: 
-			yaw = Left; break;
-		case 1:
-			yaw = Right; break;
-		case 2:
-			yaw = yaw; break;
-		}
-		Math::NormalizeAngleYaw(state->m_flGoalFeetYaw);
-		state->m_flGoalFeetYaw = yaw;
-	}
-}
-
 void Resolver::ResolvePitch(C_BasePlayer * player) {
 	if (IsCheater(player));
-   player->m_angEyeAngles().pitch = std::clamp( Math::NormalizeAngleYaw(player->m_angEyeAngles().pitch), -89.f, 89.f);
+    //player->m_angEyeAngles().pitch = std::clamp(Math::NormalizeAngleYaw(player->m_angEyeAngles().pitch), -89.f, 89.f);
 
 }
 

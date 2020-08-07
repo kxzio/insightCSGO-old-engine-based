@@ -481,7 +481,6 @@ namespace Hooks {
 	bool __stdcall hkCreateMove(float smt, CUserCmd * cmd)
 	{
 		static auto original_fn = clientmode_hook.get_original< CreateMove_t >(index::CreateMove);
-		RageBot::Get().DropTarget();
 		if (!cmd || !cmd->command_number)
 			return  original_fn(g_ClientMode, smt, cmd);
 		
@@ -490,7 +489,6 @@ namespace Hooks {
 		Miscellaneous::Get().FakeFps();
 	
 		if (g_LocalPlayer->IsAlive()) {
-			RageBot::Get().DropTarget();
 			Snakeware::UnpredTick = g_GlobalVars->tickcount;
 		}
 		
@@ -545,7 +543,7 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-			RageBot::Get().CreateMove(cmd); //РейджБот пока не виновен
+			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); //РейджБот пока не виновен
 			Tickbase::Get().DoubleTap(cmd);
 			Miscellaneous::Get().SlowWalk(cmd);
 			 
