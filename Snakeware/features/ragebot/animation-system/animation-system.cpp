@@ -25,7 +25,8 @@ bool Animation::is_valid(float range = .2f, float max_unlag = .2f)
 	const auto correct = std::clamp(g_EngineClient->GetNetChannelInfo()->GetLatency(FLOW_INCOMING)
 		+ g_EngineClient->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING)
 		+ CalculateLerp(), 0.f, max_unlag);
-	return fabsf(correct - (g_GlobalVars->curtime - sim_time)) < range && correct < 1.f;
+	//Fixed..
+	return fabsf(correct - (g_GlobalVars->curtime - sim_time)) <= range;
 }
 
 Animation::Animation(C_BasePlayer* player) {
@@ -149,34 +150,23 @@ void Animation::Apply(C_BasePlayer* player) const {
 
 void Animation::BulidServerBones(C_BasePlayer* player) {
 
-	const auto backup_occlusion_flags = player->GetOcclusionFlags();
-	const auto backup_occlusion_framecount = player->GetOcclusionFramecount();
 
-	if (player != g_LocalPlayer) {
-		player->GetOcclusionFlags() = 0;
-		player->GetOcclusionFramecount() = 0;
-	}
+	player->GetMostRecentModelBoneCounter() = 0;
+	player->GetLastBoneSetupTime() = -FLT_MAX;
 
-	player->GetReadableBones() = player->GetWritableBones() = 0;
+	auto jiggle_bones = g_CVar->FindVar("r_jiggle_bones");
+	auto old_jiggle_bones_value = jiggle_bones->GetInt();
+	jiggle_bones->SetValue(0);
+
+	player->GetEffect() |= 8;
+
+	*(int*)(player + 0x274) |= 1;
 
 	player->InvalidateBoneCache();
-
-	player->GetEffect() |= 0x8;
-
-	const auto backup_bone_array = player->GetBoneArrayForWrite();
-	player->GetBoneArrayForWrite() = bones;
-
-
 	player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
-	
 
-	player->GetBoneArrayForWrite() = backup_bone_array;
-	if (player != g_LocalPlayer) {
-		player->GetOcclusionFlags()      = backup_occlusion_flags;
-		player->GetOcclusionFramecount() = backup_occlusion_framecount;
-	}
-
-	player->GetEffect() &= ~0x8;
+	jiggle_bones->SetValue(old_jiggle_bones_value);
+	player->GetEffect() &= ~8;
 
 }
 
@@ -188,7 +178,9 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 	auto Interpolate2 = [](const float from, const float to, const float percent) {
 		return to * percent + from * (1.f - percent);
 	};
+
 	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
+
 	if (!from) {
 		// set velocity and layers.
 		record->velocity = player->m_vecVelocity();
@@ -277,6 +269,7 @@ void Animations::UpdatePlayerAnimations() {
 	}
 	// why?
 
+
    // erase outdated entries
 	for (auto it = animation_infos.begin(); it != animation_infos.end();) {
 		auto player = reinterpret_cast<C_BasePlayer*>(g_EntityList->GetClientEntityFromHandle(it->first));
@@ -291,7 +284,12 @@ void Animations::UpdatePlayerAnimations() {
 			it = next(it);
 	}
 
-
+	if (!g_LocalPlayer) {
+		g_EntityList->ForEachPlayer([](C_BasePlayer* player) -> void {
+			player->m_bClientSideAnimation() = true;
+		});
+		return;
+	}
 
 	for (auto i = 1; i <= g_EngineClient->GetMaxClients(); ++i) {
 		const auto entity = C_BasePlayer::GetPlayerByIndex(i);
@@ -316,26 +314,21 @@ void Animations::UpdatePlayerAnimations() {
 		const auto player = _animation.player;
 
 		// erase frames out-of-range
-
+		
 		for (auto i = _animation.frames.rbegin(); i != _animation.frames.rend();) {
-			if (g_GlobalVars->curtime - ((*i)->sim_time > 1.2f))
+			if (g_GlobalVars->curtime - ((*i)->sim_time > 1.2f)) 
 				i = decltype(i) { _animation.frames.erase(next(i).base()) };
 			else
-				i = next(i);
+				i = next(i); 
+		
 		}
-		auto resolverrecord = _animation.frames.emplace_front(new Animation(player, info.second.last_reliable_angle));
-		// erase frames out-of-range
-		//Resolver::Get().Resolve(resolverrecord);
-
-
+	
 
 		// have we already seen this update?
-		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())
-			continue;
+		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())  continue;
 
 		// reset animstate
-		if (_animation.last_spawn_time != player->m_flSpawnTime())
-		{
+		if (_animation.last_spawn_time != player->m_flSpawnTime()) {
 			const auto state = player->GetPlayerAnimState();
 			if (state)
 				player->ResetAnimationState(state);
@@ -353,12 +346,11 @@ void Animations::UpdatePlayerAnimations() {
 		// grab previous
 		Animation* previous = nullptr;
 
-		if (!_animation.frames.empty() && !_animation.frames.front()->dormant
-			&& player->m_flSimulationTime() - _animation.frames.front()->sim_time <= .2f)
+		if (!_animation.frames.empty() && ! _animation.frames.front()->dormant && TIME_TO_TICKS(player->m_flSimulationTime() - _animation.frames.front()->sim_time) <= 17)
 			previous = _animation.frames.front();
+		    
 
-		const auto shot = weapon && previous && weapon->m_fLastShotTime() > previous->sim_time
-			&& weapon->m_fLastShotTime() <= player->m_flSimulationTime();
+		const auto shot = weapon && previous && weapon->m_fLastShotTime() > previous->sim_time && weapon->m_fLastShotTime() <= player->m_flSimulationTime();
 
 		if (!shot)
 			info.second.last_reliable_angle = player->m_angEyeAngles();
@@ -369,22 +361,24 @@ void Animations::UpdatePlayerAnimations() {
 		// run full update
 		_animation.UpdateAnimations(record, previous);
 
+		// use uninterpolated data to generate our bone matrix
+		record->BulidServerBones(player);
+
 		// restore correctly synced values
 		backup->Restore(player);
 
-		// use uninterpolated data to generate our bone matrix
-		record->BulidServerBones(player);
 	}
 
 }
 void Animations::UpdatePlayer(C_BasePlayer* player) {
-	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>(
-		reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) + 2);
+	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>( reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) + 2);
 
 
 	//// make a backup of globals
+	const auto interpolation = g_GlobalVars->interpolation_amount;
 	const auto backup_frametime = g_GlobalVars->frametime;
 	const auto backup_curtime = g_GlobalVars->curtime;
+	const auto backup_realtime = g_GlobalVars->realtime;
 	const auto old_flags = player->m_fFlags();
 
 	// get player anim state
@@ -394,18 +388,16 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 		state->m_iLastClientSideAnimationUpdateFramecount -= 1.f;
 
 	// fixes for networked players
+	g_GlobalVars->interpolation_amount = 0.f;
 	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
 	g_GlobalVars->curtime = player->m_flSimulationTime();
+	g_GlobalVars->realtime = player->m_flSimulationTime();
 	player->m_iEFlags() &= ~0x1000;
 
 	player->m_vecAbsVelocity() = player->m_vecVelocity();
 
-	if (player->GetAnimOverlay(5)->m_flWeight > 0.0f)
-		player->m_fFlags() |= FL_ONGROUND;
+	
 
-	//player->InvalidatePhysicsRecursive(ANIMATION_CHANGED);
-
-	// make sure we keep track of the original invalidation state
 	const auto old_invalidation = enable_bone_cache_invalidation;
 
 	// notify the other hooks to instruct animations and pvs fix
@@ -415,14 +407,16 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	player->m_bClientSideAnimation() = false;
 
 
-
-	player->InvalidatePhysics(0x2A);
+	if (!player->IsLocalPlayer())
+		player->InvalidatePhysics(C_BaseEntity::angles_changed| C_BaseEntity::animation_changed | C_BaseEntity::sequence_changed);
 
 	// we don't want to enable cache invalidation by accident
 	enable_bone_cache_invalidation = old_invalidation;
 
 	// restore globals
+	g_GlobalVars->interpolation_amount = interpolation;
 	g_GlobalVars->curtime = backup_curtime;
+	g_GlobalVars->realtime = backup_realtime;
 	g_GlobalVars->frametime = backup_frametime;
 
 	player->m_fFlags() = old_flags;

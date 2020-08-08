@@ -782,12 +782,6 @@ namespace Hooks {
 		if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_END)
 		{
 			g_NetData.Apply();
-
-			static auto r_jiggle_bones = g_CVar->FindVar("r_jiggle_bones");
-			r_jiggle_bones->m_fnChangeCallbacks.m_Size = 0;
-			if (r_jiggle_bones->GetInt() > 0)
-				r_jiggle_bones->SetValue(0);
-
 			
 			//Animations::Get().FakeAnimation();
 			Miscellaneous::Get().CallLegitResolver();
