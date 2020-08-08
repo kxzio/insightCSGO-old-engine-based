@@ -160,10 +160,10 @@ void Animation::BulidServerBones(C_BasePlayer* player) {
 
 	player->GetEffect() |= 8;
 
-	*(int*)(this + 0x274) |= 1;
+	*(int*)(player + 0x274) |= 1;
 
 	player->InvalidateBoneCache();
-	player->SetupBones(nullptr, -1, BONE_USED_BY_ANYTHING, g_GlobalVars->curtime);
+	player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
 
 	jiggle_bones->SetValue(old_jiggle_bones_value);
 	player->GetEffect() &= ~8;
