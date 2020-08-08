@@ -10,7 +10,7 @@ bool NighmoveActive = true;
 int BRUH = 1;
 
 void Nightmode::Run() noexcept {
-
+	if (g_EngineClient->IsInGame()&& g_Options.esp_nightmode)
 	Nightmode::Apply();
 
 }

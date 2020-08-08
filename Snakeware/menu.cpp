@@ -198,10 +198,13 @@ void RenderRageBotTab()
 
 			ImGui::Checkbox("Enabled##rage", &g_Options.ragebot_enabled);
 			//ImGui::Checkbox("Hitchance const", &g_Options.ragebot_hitchance_consider); нету в раге
-			//ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj); ломает раге
+			ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj); //ломает раге
 			//ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot); нету 
 			ImGui::Checkbox("Silent", &g_Options.ragebot_silent);
 			ImGui::Checkbox("Remove recoil", &g_Options.ragebot_remove_recoil);
+
+			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire);
+			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 360);
 			//ImGui::SliderInt("Max misses :", &g_Options.ragebot_max_miss, 0, 10);  няма в раге
 			//ImGui::Text("Key's");
 			//ImGui::Text("Force-baim key :");
@@ -268,8 +271,6 @@ void RenderRageBotTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire);
-			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 360);
 
 			ImGui::SliderFloat("DMG autowall", &g_Options.ragebot_mindamage[curGroup], 0, 120);
 			ImGui::SliderFloat("DMG visible", &g_Options.ragebot_vis_mindamage[curGroup], 0, 120);
@@ -821,7 +822,7 @@ void RenderEspTab()
 				ImGui::SliderFloat("blue", &g_Options.mat_ambient_light_b, 0, 1);
 
 				ImGui::Text("postprocessing:");
-				ImGui::Checkbox("nightmode", &g_Options.esp_nightmode);
+				ImGui::Checkbox("Nightmode", &g_Options.esp_nightmode);
 				if (g_Options.esp_nightmode)
 					ImGui::SliderFloat("Nightmode bright", &g_Options.esp_nightmode_bright, 0, 100);
 

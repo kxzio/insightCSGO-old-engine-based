@@ -326,7 +326,7 @@ void Animations::UpdatePlayerAnimations() {
 		// erase frames out-of-range
 		
 		for (auto i = _animation.frames.rbegin(); i != _animation.frames.rend();) {
-			if (g_GlobalVars->curtime - ((*i)->sim_time > 1.2f)) 
+			if (g_GlobalVars->curtime - i->sim_time > 1.2f) 
 				i = decltype(i) { _animation.frames.erase(next(i).base()) };
 			else
 				i = next(i); 
@@ -350,32 +350,32 @@ void Animations::UpdatePlayerAnimations() {
 		const auto weapon = player->m_hActiveWeapon();
 
 		// make a full backup of the player
-		auto backup = new Animation(player);
-		backup->Apply(player);
-
+		auto backup = Animation(player);
+		backup.Apply(player);
+	
 		// grab previous
 		Animation* previous = nullptr;
 
-		if (!_animation.frames.empty() && ! _animation.frames.front()->dormant && TIME_TO_TICKS(player->m_flSimulationTime() - _animation.frames.front()->sim_time) <= 17)
-			previous = _animation.frames.front();
+		if (!_animation.frames.empty() && ! _animation.frames.front().dormant && TIME_TO_TICKS(player->m_flSimulationTime() - _animation.frames.front().sim_time) <= 17)
+			previous = &_animation.frames.front();
 		    
-
+		
 		const auto shot = weapon && previous && weapon->m_fLastShotTime() > previous->sim_time && weapon->m_fLastShotTime() <= player->m_flSimulationTime();
 
 		if (!shot)
 			info.second.last_reliable_angle = player->m_angEyeAngles();
 
 		// store server record
-		auto record = _animation.frames.emplace_front(new Animation(player, info.second.last_reliable_angle));
+		auto& record = _animation.frames.emplace_front(player, info.second.last_reliable_angle);
 
 		// run full update
-		_animation.UpdateAnimations(record, previous);
+		_animation.UpdateAnimations(&record, previous);
 
 		// use uninterpolated data to generate our bone matrix
-		record->BulidServerBones(player);
+		record.BulidServerBones(player);
 
 		// restore correctly synced values
-		backup->Restore(player);
+		backup.Restore(player);
 
 	}
 
@@ -455,10 +455,10 @@ std::optional<Animation*> Animations::get_latest_animation(C_BasePlayer* player)
 	for (auto it = pInfo->second.frames.begin(); it != pInfo->second.frames.end(); it = next(it)) {
 
 		if (!first_invalid)
-			first_invalid = &**it;
+			first_invalid = &*it;
 
-		if ((*it)->is_valid((*it)->sim_time, (*it)->valid)) {
-			return &**it;
+		if (it->is_valid(it->sim_time, it->valid)) {
+			return &*it;
 		}
 	}
 
@@ -477,8 +477,8 @@ std::optional<Animation*> Animations::get_oldest_animation(C_BasePlayer* player)
 		return std::nullopt;
 
 	for (auto it = info->second.frames.rbegin(); it != info->second.frames.rend(); it = next(it)) {
-		if ((*it)->is_valid((*it)->sim_time, (*it)->valid)) {
-			return &**it;
+		if (it->is_valid(it->sim_time, it->valid)) {
+			return &*it;
 		}
 	}
 
@@ -498,8 +498,8 @@ std::optional<Animation*> Animations::get_latest_firing_animation(C_BasePlayer* 
 		return std::nullopt;
 
 	for (auto it = info->second.frames.begin(); it != info->second.frames.end(); it = next(it))
-		if ((*it)->is_valid() && (*it)->didshot)
-			return &**it;
+		if (it->is_valid() && it->didshot)
+			return &*it;
 
 	return std::nullopt;
 }

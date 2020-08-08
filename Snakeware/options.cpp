@@ -17,6 +17,7 @@ namespace Snakeware
 	int UnpredTick;
 	float g_flVelocityModifer;
 	bool bSendPacket ;
+	bool OnShot;
 	bool g_bOverrideVelMod;
 	bool LBY_Update = false;
 	bool bAimbotting = false;
