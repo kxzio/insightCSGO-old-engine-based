@@ -354,13 +354,11 @@ void Animations::UpdatePlayerAnimations() {
 		// grab previous
 		Animation* previous = nullptr;
 
-
 		if (!_animation.frames.empty() && ! _animation.frames.front()->dormant && TIME_TO_TICKS(player->m_flSimulationTime() - _animation.frames.front()->sim_time) <= 17)
 			previous = _animation.frames.front();
+		    
 
-
-		const auto shot = weapon && previous && weapon->m_fLastShotTime() > previous->sim_time
-			&& weapon->m_fLastShotTime() <= player->m_flSimulationTime();
+		const auto shot = weapon && previous && weapon->m_fLastShotTime() > previous->sim_time && weapon->m_fLastShotTime() <= player->m_flSimulationTime();
 
 		if (!shot)
 			info.second.last_reliable_angle = player->m_angEyeAngles();
@@ -419,9 +417,6 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 
 	if (!player->IsLocalPlayer())
 		player->InvalidatePhysics(C_BaseEntity::angles_changed| C_BaseEntity::animation_changed | C_BaseEntity::sequence_changed);
-
-
-	
 
 	// we don't want to enable cache invalidation by accident
 	enable_bone_cache_invalidation = old_invalidation;
