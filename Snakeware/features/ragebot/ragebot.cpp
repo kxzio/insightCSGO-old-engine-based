@@ -470,6 +470,44 @@ bool RageBot::is_breaking_lagcomp(Animation* animation) {
 	return false;
 }
 
+void Autostop(CUserCmd* cmd)
+{
+	auto CurrentVelocityLength = g_LocalPlayer->m_vecVelocity().Length();
+
+	float speed;
+	int AccuracyMode = g_Options.ragebot_autostop_type;
+	int scalespeed;
+	auto weapon = g_LocalPlayer->m_hActiveWeapon();
+
+	switch (AccuracyMode)
+	{
+	case 0:  speed = 25 / (CurrentVelocityLength / 17.4); break;//default accuracy
+	case 1:  speed = 25 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
+	case 2:  speed = 25 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
+	case 3:  speed = 0.3;                                 break;//full stop 
+	}
+
+	bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
+
+
+	float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
+	if (min_speed <= 3.f) return;
+
+
+
+	if (cmd->buttons & IN_DUCK)
+		speed *= 2.94117647f;
+
+	if (min_speed <= speed) return;
+
+	float finalSpeed = (speed / min_speed);
+
+	cmd->forwardmove *= finalSpeed;
+	cmd->sidemove *= finalSpeed;
+	cmd->upmove *= finalSpeed;
+}
+
+
 void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 {
 
@@ -562,72 +600,27 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 	// store pitch for eye correction.
 	last_pitch = angle.pitch;
 
-	if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && !local->m_bIsScoped())
-	{
-		cmd->buttons |= IN_ZOOM;
-	}
-	if (g_Options.ragebot_autostop[curGroup])
-	{
 
-			auto CurrentVelocityLength = g_LocalPlayer->m_vecVelocity().Length();
-
-			float speed;
-			int AccuracyMode = g_Options.ragebot_autostop_type[curGroup];
-			int scalespeed;
-			auto weapon = g_LocalPlayer->m_hActiveWeapon();
-
-			switch (AccuracyMode)
-			{
-			case 0:  speed = 25 / (CurrentVelocityLength / 17.4); break;//default accuracy
-			case 1:  speed = 25 / (CurrentVelocityLength / 19.8); break;//most of slowwalk accuracy
-			case 2:  speed = 25 / (CurrentVelocityLength / 13.6); break;//lowlest accuracy accuracy
-			case 3:  speed = 0.3;                                 break;//full stop 
-			}
-
-			bool r8 = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER;
-
-
-			float min_speed = (float)(Math::FASTSQRT((cmd->forwardmove) * (cmd->forwardmove) + (cmd->sidemove) * (cmd->sidemove) + (cmd->upmove) * (cmd->upmove)));
-			if (min_speed <= 3.f) return;
-
-
-
-			if (cmd->buttons & IN_DUCK)
-				speed *= 2.94117647f;
-
-			if (min_speed <= speed) return;
-
-			float finalSpeed = (speed / min_speed);
-
-			cmd->forwardmove *= finalSpeed;
-			cmd->sidemove *= finalSpeed;
-			cmd->upmove *= finalSpeed;
-
-
-	}
 	if (!can_hit(best_match.animation, best_match.center, g_Options.ragebot_hitchance[curGroup] / 100.f, best_match.hitbox))
 	{
-		if (g_Options.ragebot_autoscope[curGroup] && weapon->IsSniper() && !local->m_bIsScoped())
+		if (g_Options.ragebot_autoscope && weapon->IsSniper() && !local->m_bIsScoped())
 		{
 			cmd->buttons |= IN_ZOOM;
 		}
-		if (g_Options.ragebot_autostop[curGroup])
+		if (g_Options.ragebot_autostop)
 		{
-			if (g_Options.ragebot_autostop_type[curGroup] == 0)
-			{
-				//тут т=должен быть автостоп полный
-			}
-			else if (g_Options.ragebot_autostop_type[curGroup] == 2)
-			{
-				//тут т=должен быть автостоп слоувочный
-			}
+			Autostop(cmd);
 		}
 		return;
 	}
+	else
+	{
+		if (g_Options.ragebot_autostop_bs)
+		{
+			Autostop(cmd);
+		}
+	}
 
-	// store shot info for resolver.
-
-	// set correct information to user_cmd.
 
 	cmd->viewangles = angle;
 

@@ -46,6 +46,7 @@ void Render::GetFonts() {
 		119984,
 		16.f);
 
+
 	g_pBig = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
 		Fonts::GoogleSansMedium,
 		118508,
@@ -60,9 +61,9 @@ void Render::GetFonts() {
 		16);
 	
 	g_pESP = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-		Fonts::pixel,
-		65572,
-		16);
+		Fonts::verdana,
+		243304,
+		13);
 
 
 	// font for watermark; just example
@@ -131,10 +132,10 @@ float Render::RenderText(const std::string& text, ImVec2 pos, float size, Color 
 		pos.x -= textSize.x / 2.0f;
 
 	if (outline) {
-		draw_list->AddText(pFont, size, ImVec2(pos.x + 1, pos.y + 1), GetU32(Color(0, 0, 0, color.a())), text.c_str());
-		draw_list->AddText(pFont, size, ImVec2(pos.x - 1, pos.y - 1), GetU32(Color(0, 0, 0, color.a())), text.c_str());
-		draw_list->AddText(pFont, size, ImVec2(pos.x + 1, pos.y - 1), GetU32(Color(0, 0, 0, color.a())), text.c_str());
-		draw_list->AddText(pFont, size, ImVec2(pos.x - 1, pos.y + 1), GetU32(Color(0, 0, 0, color.a())), text.c_str());
+		draw_list->AddText(pFont, size, ImVec2(pos.x + 1, pos.y + 1), GetU32(Color(0, 0, 0, 100)), text.c_str());
+		draw_list->AddText(pFont, size, ImVec2(pos.x - 1, pos.y - 1), GetU32(Color(0, 0, 0, 100)), text.c_str());
+		draw_list->AddText(pFont, size, ImVec2(pos.x + 1, pos.y - 1), GetU32(Color(0, 0, 0, 100)), text.c_str());
+		draw_list->AddText(pFont, size, ImVec2(pos.x - 1, pos.y + 1), GetU32(Color(0, 0, 0, 100)), text.c_str());
 	}
 
 	draw_list->AddText(pFont, size, pos, GetU32(color), text.c_str());

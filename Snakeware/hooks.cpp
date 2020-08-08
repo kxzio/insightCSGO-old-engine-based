@@ -773,6 +773,10 @@ namespace Hooks {
 			Miscellaneous::Get().RemoveSmoke();
 			Miscellaneous::Get().Ragdoll();
 			Animations::Get().SetLocalPlayerAnimations();
+
+				g_Nightmode.Run();
+				Visuals::Get().PlayerChanger(FRAME_RENDER_START);
+			
 		}
 
 		if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_END)

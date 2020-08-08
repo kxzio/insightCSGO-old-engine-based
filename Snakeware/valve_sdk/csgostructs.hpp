@@ -67,8 +67,6 @@ enum CSWeaponType
 	WEAPONTYPE_UNKNOWN
 };
 
-
-
 // Created with ReClass.NET by KN4CK3R
 class CHudTexture
 {
@@ -144,6 +142,10 @@ public:
 	NETVAR(bool, m_bSpotted, "DT_BaseEntity", "m_bSpotted");
 	NETVAR(float_t, m_flC4Blow, "DT_PlantedC4", "m_flC4Blow");
 
+	void SetModelIndex(const int index)
+	{
+		return CallVFunction<void(__thiscall*)(C_BaseEntity*, int)>(this, 75)(this, index);
+	}
 
 	const matrix3x4_t& m_rgflCoordinateFrame()
 	{
@@ -167,6 +169,25 @@ struct C_Inferno : public C_BaseEntity {
 		return 7.f;
 	}
 };
+
+class C_EnvTonemapController : public C_BaseEntity
+{
+public:
+	NETVAR(bool, use_custom_auto_exposure_min, "DT_EnvTonemapController", "m_bUseCustomAutoExposureMin");
+	NETVAR(bool, use_custom_auto_exposure_max, "DT_EnvTonemapController", "m_bUseCustomAutoExposureMax");
+	NETVAR(bool, use_custom_bloom_scale, "DT_EnvTonemapController", "m_bUseCustomBloomScale");
+	NETVAR(float_t, custom_auto_exposure_min, "DT_EnvTonemapController", "m_flCustomAutoExposureMin");
+	NETVAR(float_t, custom_auto_exposure_max, "DT_EnvTonemapController", "m_flCustomAutoExposureMax");
+	NETVAR(float_t, custom_bloom_scale, "DT_EnvTonemapController", "m_flCustomBloomScale");
+	NETVAR(float_t, custom_bloom_scale_minimum, "DT_EnvTonemapController", "m_flCustomBloomScaleMinimum");
+	NETVAR(float_t, bloom_exponent, "DT_EnvTonemapController", "m_flBloomExponent");
+	NETVAR(float_t, bloom_saturation, "DT_EnvTonemapController", "m_flBloomSaturation");
+	NETVAR(float_t, tonemap_percent_target, "DT_EnvTonemapController", "m_flTonemapPercentTarget");
+	NETVAR(float_t, tonemap_percent_bright_pixels, "DT_EnvTonemapController", "m_flTonemapPercentBrightPixels");
+	NETVAR(float_t, tonemap_min_avg_lum, "DT_EnvTonemapController", "m_flTonemapMinAvgLum");
+	NETVAR(float_t, tonemap_rate, "DT_EnvTonemapController","m_flTonemapRate");
+};
+
 class C_PlantedC4
 {
 public:
