@@ -150,24 +150,34 @@ void Animation::Apply(C_BasePlayer* player) const {
 
 void Animation::BulidServerBones(C_BasePlayer* player) {
 
-
-	player->GetMostRecentModelBoneCounter() = 0;
-	player->GetLastBoneSetupTime() = -FLT_MAX;
-
+	const auto backup_occlusion_flags      = player->GetOcclusionFlags();
+	const auto backup_occlusion_framecount = player->GetOcclusionFramecount();
 	auto jiggle_bones = g_CVar->FindVar("r_jiggle_bones");
 	auto old_jiggle_bones_value = jiggle_bones->GetInt();
+	player->GetOcclusionFlags()      = 0;
+	player->GetOcclusionFramecount() = 0;
+	player->GetReadableBones() = player->GetWritableBones() = 0;
+	player->GetLastBoneSetupTime() = -FLT_MAX;
+	
+	
 	jiggle_bones->SetValue(0);
-
-	player->GetEffect() |= 8;
-
-	*(int*)(player + 0x274) |= 1;
-
+		
 	player->InvalidateBoneCache();
-	player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
 
+	player->GetEffect () |= 0x8;
+
+	const auto backup_bone_array   = player->GetBoneArrayForWrite();
+
+	player->GetBoneArrayForWrite() = bones;
+
+	player->SetupBones (nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
+
+	player->GetBoneArrayForWrite()   = backup_bone_array;
+	player->GetOcclusionFlags()      = backup_occlusion_flags;
+	player->GetOcclusionFramecount() = backup_occlusion_framecount;
 	jiggle_bones->SetValue(old_jiggle_bones_value);
-	player->GetEffect() &= ~8;
 
+	player->GetEffect () &= ~0x8;
 }
 
 void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* from)
