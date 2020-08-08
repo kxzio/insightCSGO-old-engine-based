@@ -26,7 +26,7 @@ void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
 	old_vars.tickcount = g_GlobalVars->tickcount;
 
 	g_GlobalVars->curtime = TICKS_TO_TIME(local->m_nTickBase());
-	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
+	g_GlobalVars->frametime =  g_EngineClient->IsPaused() ? 0.f : g_GlobalVars->interval_per_tick;
 	g_GlobalVars->tickcount = TIME_TO_TICKS(g_GlobalVars->curtime);
 
 	g_GameMovement->StartTrackPredictionErrors(local);
