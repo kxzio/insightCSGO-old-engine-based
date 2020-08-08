@@ -197,7 +197,7 @@ public:
 	OPTION(bool, esp_nade_prediction, false);
 	OPTION(bool, esp_nightmode, false);
 	OPTION(bool, esp_fullbright, false);
-	OPTION(int, esp_nightmode_bright, 1);
+	OPTION(float, esp_nightmode_bright, 1);
 	OPTION(bool, esp_draw_fov, false);
 	OPTION(bool, esp_angle_lines, false);
 	OPTION(bool, esp_bloom_effect, false);
@@ -384,7 +384,8 @@ public:
 	OPTION(int, antihit_fake_switch_key, 5);
 	OPTION(float, antihit_fake_ammount, 58);
 
-
+	OPTION(int, playerModelT, 0);
+	OPTION(int, playerModelCT, 0);
 
 
 	OPTION(bool, ragebot_enabled, false);
@@ -396,10 +397,11 @@ public:
 	OPTION(bool, ragebot_backshoot, false);
 	bool  ragebot_alternative_hitchance[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_delayshot[9] = { false, false, false, false, false, false, false, false };
-	bool  ragebot_autoscope[9] = { false, false, false, false, false, false, false, false };
-	bool  ragebot_autostop[9] = { false, false, false, false, false, false, false, false };
+	bool  ragebot_autoscope;
+	bool  ragebot_autostop;
+	bool  ragebot_autostop_bs;
 	bool   ragebot_silent;
-	int   ragebot_autostop_type[9] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	int   ragebot_autostop_type;
 	bool  ragebot_autostop_if[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_autocrouch[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_baim_in_air[9] = { false, false, false, false, false, false, false, false };

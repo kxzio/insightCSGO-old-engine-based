@@ -102,4 +102,5 @@ public:
 	void AddToDrawList();
 	void Render();
 	void RenderOffscreen();
+	void PlayerChanger(ClientFrameStage_t stage);
 };

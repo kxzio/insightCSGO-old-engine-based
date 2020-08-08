@@ -197,19 +197,25 @@ void RenderRageBotTab()
 			ImGui::SetCursorPosY(+15);
 
 			ImGui::Checkbox("Enabled##rage", &g_Options.ragebot_enabled);
-			ImGui::Checkbox("Hitchance const", &g_Options.ragebot_hitchance_consider);
-			ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj);
-			ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot);
+			//ImGui::Checkbox("Hitchance const", &g_Options.ragebot_hitchance_consider); нету в раге
+			//ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj); ломает раге
+			//ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot); нету 
 			ImGui::Checkbox("Silent", &g_Options.ragebot_silent);
-			ImGui::SliderInt("Max misses :", &g_Options.ragebot_max_miss, 0, 10);
-			ImGui::Text("Key's");
-			ImGui::Text("Force-baim key :");
-			ImGui::Hotkey("##13Keybind", &g_Options.ragebot_baim_key, ImVec2(150, 20));
-			ImGui::Text("Damage override key :");
-			ImGui::Hotkey("##t4Keybind", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
+			ImGui::Checkbox("Remove recoil", &g_Options.ragebot_remove_recoil);
+			//ImGui::SliderInt("Max misses :", &g_Options.ragebot_max_miss, 0, 10);  няма в раге
+			//ImGui::Text("Key's");
+			//ImGui::Text("Force-baim key :");
+			//ImGui::Hotkey("##13Keybind", &g_Options.ragebot_baim_key, ImVec2(150, 20)); нету в раге
+			//ImGui::Text("Damage override key :");
+			//ImGui::Hotkey("##t4Keybind", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));  нету в раге
 
+			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
+			const char* autostop_if[] = { "If low hitchance","Always" };
 
-
+			ImGui::Checkbox("Auto-scope", &g_Options.ragebot_autoscope);
+			ImGui::Checkbox("Auto-stop", &g_Options.ragebot_autostop);
+			ImGui::Checkbox("Between shots", &g_Options.ragebot_autostop_bs);
+			ImGui::Combo("Autostop type", &g_Options.ragebot_autostop_type, autostop, ARRAYSIZE(autostop));
 		}
 		ImGui::EndChild();
 
@@ -217,7 +223,7 @@ void RenderRageBotTab()
 
 
 		static int curGroup = 0;
-		const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP" };
+		const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP", "Other" };
 
 
 		ImGui::BeginChild("Weapon", ImVec2(310, 118), true);
@@ -249,8 +255,6 @@ void RenderRageBotTab()
 				curGroup = WEAPON_GROUPS::UNKNOWN; break;
 			}
 
-			ImGui::SliderFloat("DMG autowall", &g_Options.ragebot_mindamage[curGroup], 0, 120);
-			ImGui::SliderFloat("DMG visible", &g_Options.ragebot_vis_mindamage[curGroup], 0, 120);
 			ImGui::SliderFloat("Hit-chance", &g_Options.ragebot_hitchance[curGroup], 0, 99);
 
 		}
@@ -266,15 +270,14 @@ void RenderRageBotTab()
 
 			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire);
 			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 360);
-			ImGui::Checkbox("Delay shot", &g_Options.ragebot_delayshot[curGroup]);
-			ImGui::Checkbox("Auto-scope", &g_Options.ragebot_autoscope[curGroup]);
-			ImGui::Checkbox("Auto-stop", &g_Options.ragebot_autostop[curGroup]);
-			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
-			const char* autostop_if[] = { "If low hitchance","Always" };
-			ImGui::Combo("Autostop type", &g_Options.ragebot_autostop_type[curGroup], autostop, ARRAYSIZE(autostop));
-			ImGui::Checkbox("Ignore hitchance autostop", &g_Options.ragebot_autostop_if[curGroup]);
-			ImGui::Checkbox("Auto-crouch", &g_Options.ragebot_autocrouch[curGroup]);
-			ImGui::SliderFloat("Baim if hp lower than :", &g_Options.ragebot_baim_if_hp[curGroup], 0, 100);
+
+			ImGui::SliderFloat("DMG autowall", &g_Options.ragebot_mindamage[curGroup], 0, 120);
+			ImGui::SliderFloat("DMG visible", &g_Options.ragebot_vis_mindamage[curGroup], 0, 120);
+
+			//ImGui::Checkbox("Delay shot", &g_Options.ragebot_delayshot[curGroup]);  нету в раге
+			//ImGui::Checkbox("Ignore hitchance autostop", &g_Options.ragebot_autostop_if[curGroup]);  Нету  в раге
+			//ImGui::Checkbox("Auto-crouch", &g_Options.ragebot_autocrouch[curGroup]); нету в раге
+			//ImGui::SliderFloat("Baim if hp lower than :", &g_Options.ragebot_baim_if_hp[curGroup], 0, 100); нету в раге
 			static std::string prevValue = "Select";
 			if (ImGui::BeginCombo("Hitscan", "Select", 0)) {
 				//prevValue = "Hitscan";
@@ -298,38 +301,14 @@ void RenderRageBotTab()
 				}
 				ImGui::EndCombo();
 			}
-			if (ImGui::BeginCombo("Baim-scan", "Select##baim", 0))
-			{
-				//prevValue = "Hitscan";
-				const char* baim[] = { "chest", "stomach", "pelvis" };
-				std::vector<std::string> vec;
-				for (size_t i = 0; i < IM_ARRAYSIZE(baim); i++)
-				{
-					ImGui::Selectable(baim[i], &g_Options.ragebot_baimhitbox[i][curGroup], ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
-					if (g_Options.ragebot_baimhitbox[i][curGroup])
-						vec.push_back(baim[i]);
-				}
-
-				for (size_t i = 0; i < vec.size(); i++)
-				{
-					if (vec.size() == 1)
-						prevValue += vec.at(i);
-					else if (i != vec.size())
-						prevValue += vec.at(i) + ", ";
-					else
-						prevValue += vec.at(i);
-				}
-				ImGui::EndCombo();
-			}
-
 			const char* body[] = { "Default","Medium","Priority","Maximum" };
-			ImGui::Checkbox("Bodyaim priority", &g_Options.ragebot_adaptive_baim[curGroup]);
+			///ImGui::Checkbox("Bodyaim priority", &g_Options.ragebot_adaptive_baim[curGroup]); нету в раге
 
 			ImGui::SliderFloat("Point-scale", &g_Options.ragebot_pointscale[curGroup], 0, 100);
 			ImGui::SliderFloat("Body-scale", &g_Options.ragebot_bodyscale[curGroup], 0, 100);
-			ImGui::Text("Accuracy setting's :");
-			ImGui::SliderFloat("Damage ovveride", &g_Options.ragebot_mindamage_override[curGroup], 0, 140);
-			ImGui::Checkbox("Alternative-hitchance method", &g_Options.ragebot_alternative_hitchance[curGroup]);
+			//ImGui::Text("Accuracy setting's :");
+			//ImGui::SliderFloat("Damage ovveride", &g_Options.ragebot_mindamage_override[curGroup], 0, 140); нету в раге
+			//ImGui::Checkbox("Alternative-hitchance method", &g_Options.ragebot_alternative_hitchance[curGroup]); нету в раге
 
 		}
 		ImGui::EndChild();
@@ -844,7 +823,7 @@ void RenderEspTab()
 				ImGui::Text("postprocessing:");
 				ImGui::Checkbox("nightmode", &g_Options.esp_nightmode);
 				if (g_Options.esp_nightmode)
-					ImGui::SliderInt("Nightmode bright", &g_Options.esp_nightmode_bright, 0, 100);
+					ImGui::SliderFloat("Nightmode bright", &g_Options.esp_nightmode_bright, 0, 100);
 
 				ImGui::Checkbox("fullbright", &g_Options.esp_fullbright);
 
@@ -1114,8 +1093,12 @@ void RenderMiscTab()
 			ImGui::Checkbox("clan-tag", &g_Options.misc_clantag);
 			ImGui::Checkbox("chat-spam", &g_Options.misc_chat_spam);
 
+			static const char* models[] = { "Default","Special Agent Ava "," FBI","Operator "," FBI SWAT","Markus Delrow "," FBI HRT","Michael Syfers "," FBI Sniper","B Squadron Officer "," SAS","Seal Team 6 Soldier "," NSWC SEAL","Buckshot "," NSWC SEAL","Lt. Commander Ricksaw "," NSWC SEAL","Third Commando Company "," KSK","'Two Times' McCoy "," USAF TACP","Dragomir "," Sabre","Rezan The Ready "," Sabre","'The Doctor' Romanov "," Sabre","Maximus "," Sabre","Blackwolf "," Sabre","The Elite Mr. Muhlik "," Elite Crew","Ground Rebel "," Elite Crew","Osiris "," Elite Crew","Prof. Shahmat "," Elite Crew","Enforcer "," Phoenix","Slingshot "," Phoenix","Soldier "," Phoenix" };
 
-	
+			ImGui::Combo("player t", &g_Options.playerModelT, models, IM_ARRAYSIZE(models) );
+
+			ImGui::Combo("player ct", &g_Options.playerModelCT, models, IM_ARRAYSIZE(models) );
+
 
 			ImGui::Checkbox("bullet-impact's", &g_Options.misc_bullet_impacts);
 			ImGui::Checkbox("bullet-tracer", &g_Options.misc_bullet_tracer);

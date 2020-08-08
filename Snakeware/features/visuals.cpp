@@ -165,7 +165,59 @@ void Visuals::RenderOffscreen ()
 	}
 }
 
+void Visuals::PlayerChanger(ClientFrameStage_t stage)
+{
 
+	static int originalIdx = 0;
+
+	auto pLocal = static_cast<C_BasePlayer*>(g_EntityList->GetClientEntity(g_EngineClient->GetLocalPlayer()));
+	if (!pLocal) {
+		originalIdx = 0;
+		return;
+	}
+
+	constexpr auto getModel = [](int team) constexpr -> const char* {
+		constexpr std::array models{
+		"models/player/custom_player/legacy/ctm_fbi_variantb.mdl",
+		"models/player/custom_player/legacy/ctm_fbi_variantf.mdl",
+		"models/player/custom_player/legacy/ctm_fbi_variantg.mdl",
+		"models/player/custom_player/legacy/ctm_fbi_varianth.mdl",
+		"models/player/custom_player/legacy/ctm_sas_variantf.mdl",
+		"models/player/custom_player/legacy/ctm_st6_variante.mdl",
+		"models/player/custom_player/legacy/ctm_st6_variantg.mdl",
+		"models/player/custom_player/legacy/ctm_st6_varianti.mdl",
+		"models/player/custom_player/legacy/ctm_st6_variantk.mdl",
+		"models/player/custom_player/legacy/ctm_st6_variantm.mdl",
+		"models/player/custom_player/legacy/tm_balkan_variantf.mdl",
+		"models/player/custom_player/legacy/tm_balkan_variantg.mdl",
+		"models/player/custom_player/legacy/tm_balkan_varianth.mdl",
+		"models/player/custom_player/legacy/tm_balkan_varianti.mdl",
+		"models/player/custom_player/legacy/tm_balkan_variantj.mdl",
+		"models/player/custom_player/legacy/tm_leet_variantf.mdl",
+		"models/player/custom_player/legacy/tm_leet_variantg.mdl",
+		"models/player/custom_player/legacy/tm_leet_varianth.mdl",
+		"models/player/custom_player/legacy/tm_leet_varianti.mdl",
+		"models/player/custom_player/legacy/tm_phoenix_variantf.mdl",
+		"models/player/custom_player/legacy/tm_phoenix_variantg.mdl",
+		"models/player/custom_player/legacy/tm_phoenix_varianth.mdl"
+		};
+
+		switch (team) {
+		case 2: return static_cast<std::size_t>(g_Options.playerModelT) < models.size() ? models[g_Options.playerModelT] : nullptr;
+		case 3: return static_cast<std::size_t>(g_Options.playerModelCT) < models.size() ? models[g_Options.playerModelCT] : nullptr;
+		default: return nullptr;
+		}
+	};
+
+	if (const auto model = getModel(pLocal->m_iTeamNum())) {
+		if (stage == ClientFrameStage_t::FRAME_RENDER_START)
+			originalIdx = pLocal->m_nModelIndex();
+
+		const auto idx = stage == ClientFrameStage_t::FRAME_RENDER_END && originalIdx ? originalIdx : g_MdlInfo->GetModelIndex(model);
+		//Variables.Visuals.viewmodeloffsetx
+		pLocal->SetModelIndex(idx);
+	}
+}
 
 
 
@@ -246,9 +298,9 @@ void Visuals::Player::RenderName()
 {
 	player_info_t info = ctx.pl->GetPlayerInfo();
 
-	auto sz = g_pESP->CalcTextSizeA(11.f, 400, 0.0f, info.szName);
+	auto sz = g_pESP->CalcTextSizeA(14.f, 400, 0.0f, info.szName);
 
-	Render::Get().RenderTextPixel(info.szName, ctx.feet_pos.x - sz.x / 2, ctx.head_pos.y - sz.y, 10.f, ctx.clr);
+	Render::Get().RenderTextPixel(info.szName, ctx.feet_pos.x - sz.x / 2, ctx.head_pos.y - sz.y, 13.f, ctx.clr);
 }
 //--------------------------------------------------------------------------------
 void Visuals::Player::RenderHealth()
@@ -302,8 +354,8 @@ void Visuals::Player::RenderWeaponName()
 	if (!weapon->GetCSWeaponData()) return;
 
 	auto text = weapon->GetCSWeaponData()->szWeaponName + 7;
-	auto sz = g_pESP->CalcTextSizeA(11.f, FLT_MAX, 0.0f, text);
-	Render::Get().RenderTextPixel(text, ctx.feet_pos.x, ctx.feet_pos.y, 10.f, ctx.clr, true, g_pESP);
+	auto sz = g_pESP->CalcTextSizeA(14.f, FLT_MAX, 0.0f, text);
+	Render::Get().RenderTextPixel(text, ctx.feet_pos.x, ctx.feet_pos.y, 13.f, ctx.clr, true, g_pESP);
 }
 //--------------------------------------------------------------------------------
 void Visuals::Player::RenderAmmo()
