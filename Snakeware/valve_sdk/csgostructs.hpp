@@ -314,7 +314,7 @@ public:
 	NETVAR(float, m_flSimulationTime, "DT_BaseEntity", "m_flSimulationTime");
 	NETVAR(QAngle, m_angRotation, "DT_BaseEntity", "m_angRotation"); // wrong
 	NETVARADDOFFS(float, m_flOldSimulationTime, "DT_BaseEntity", "m_flSimulationTime", 0x4); // ya daun
-	POFFSET(GetBoneCache, CBoneCache, 0x2900)
+	POFFSET(GetBoneCache,    CBoneCache, 0x2900)
 	POFFSET(GetBoneAccessor, CBoneAccessor, 0x2698)
 	NETVAR(bool, m_bClientSideAnimation, "DT_BaseAnimating", "m_bClientSideAnimation"); // no baseplayer...
 	NETVAR(float, m_flCycle, "DT_BaseAnimating", "m_flCycle");

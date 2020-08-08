@@ -25,7 +25,8 @@ bool Animation::is_valid(float range = .2f, float max_unlag = .2f)
 	const auto correct = std::clamp(g_EngineClient->GetNetChannelInfo()->GetLatency(FLOW_INCOMING)
 		+ g_EngineClient->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING)
 		+ CalculateLerp(), 0.f, max_unlag);
-	return fabsf(correct - (g_GlobalVars->curtime - sim_time)) < range && correct < 1.f;
+	//Fixed..
+	return fabsf(correct - (g_GlobalVars->curtime - sim_time)) <= range;
 }
 
 Animation::Animation(C_BasePlayer* player) {
@@ -149,34 +150,23 @@ void Animation::Apply(C_BasePlayer* player) const {
 
 void Animation::BulidServerBones(C_BasePlayer* player) {
 
-	const auto backup_occlusion_flags = player->GetOcclusionFlags();
-	const auto backup_occlusion_framecount = player->GetOcclusionFramecount();
 
-	if (player != g_LocalPlayer) {
-		player->GetOcclusionFlags() = 0;
-		player->GetOcclusionFramecount() = 0;
-	}
+	player->GetMostRecentModelBoneCounter() = 0;
+	player->GetLastBoneSetupTime() = -FLT_MAX;
 
-	player->GetReadableBones() = player->GetWritableBones() = 0;
+	auto jiggle_bones = g_CVar->FindVar("r_jiggle_bones");
+	auto old_jiggle_bones_value = jiggle_bones->GetInt();
+	jiggle_bones->SetValue(0);
+
+	player->GetEffect() |= 8;
+
+	*(int*)(this + 0x274) |= 1;
 
 	player->InvalidateBoneCache();
+	player->SetupBones(nullptr, -1, BONE_USED_BY_ANYTHING, g_GlobalVars->curtime);
 
-	player->GetEffect() |= 0x8;
-
-	const auto backup_bone_array = player->GetBoneArrayForWrite();
-	player->GetBoneArrayForWrite() = bones;
-
-
-	player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
-	
-
-	player->GetBoneArrayForWrite() = backup_bone_array;
-	if (player != g_LocalPlayer) {
-		player->GetOcclusionFlags()      = backup_occlusion_flags;
-		player->GetOcclusionFramecount() = backup_occlusion_framecount;
-	}
-
-	player->GetEffect() &= ~0x8;
+	jiggle_bones->SetValue(old_jiggle_bones_value);
+	player->GetEffect() &= ~8;
 
 }
 
@@ -188,7 +178,9 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 	auto Interpolate2 = [](const float from, const float to, const float percent) {
 		return to * percent + from * (1.f - percent);
 	};
+
 	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
+
 	if (!from) {
 		// set velocity and layers.
 		record->velocity = player->m_vecVelocity();
@@ -322,18 +314,18 @@ void Animations::UpdatePlayerAnimations() {
 		const auto player = _animation.player;
 
 		// erase frames out-of-range
-
+		
 		for (auto i = _animation.frames.rbegin(); i != _animation.frames.rend();) {
-			if (g_GlobalVars->curtime - ((*i)->sim_time > 1.2f))
+			if (g_GlobalVars->curtime - ((*i)->sim_time > 1.2f)) 
 				i = decltype(i) { _animation.frames.erase(next(i).base()) };
 			else
-				i = next(i);
+				i = next(i); 
+		
 		}
 	
 
 		// have we already seen this update?
-		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())
-			continue;
+		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())  continue;
 
 		// reset animstate
 		if (_animation.last_spawn_time != player->m_flSpawnTime()) {
