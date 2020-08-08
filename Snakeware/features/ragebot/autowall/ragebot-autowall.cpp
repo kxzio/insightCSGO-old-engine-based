@@ -47,7 +47,7 @@ returninfo CAutoWall::autowall(Vector start, Vector end, C_BasePlayer* from_ent,
 	bullet.end = end;
 	bullet.pos = start;
 	bullet.thickness = 0.f;
-	bullet.walls = 4;
+	bullet.walls = 3; // Кол-во стен автоволла
 
 	Math_AngleVectors(Math_CalcAngle(start, end), bullet.dir);
 
