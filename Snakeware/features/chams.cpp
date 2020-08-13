@@ -53,8 +53,8 @@ void Chams::OverrideMaterial(bool ignorez, int type, const Color& rgba)
 		}
 		
 	
-	
-	material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, ignorez);
+	material->IncrementReferenceCount();
+	material->SetMaterialVarFlag(MATERIAL_VAR_IGNOREZ, ignorez); // crash
 	material->ColorModulate(
 		rgba.r() / 255.0f,
 		rgba.g() / 255.0f,
@@ -71,8 +71,8 @@ void Chams::OnDrawModelExecute(
 	IMatRenderContext* ctx,
 	const DrawModelState_t& state,
 	const ModelRenderInfo_t& info,
-	matrix3x4_t* matrix)
-{
+	matrix3x4_t* matrix) {
+	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 	static auto fnDME = Hooks::mdlrender_hook.get_original<decltype(&Hooks::hkDrawModelExecute)>(index::DrawModelExecute);
 
 	const auto mdl = info.pModel;

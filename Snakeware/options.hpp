@@ -41,6 +41,7 @@ namespace Snakeware
 	extern Vector Angle;
 	extern QAngle Aimangle;
 	extern bool bSendPacket;
+	extern bool OnShot;
 	extern uint32_t ShotCmd;
 	extern int UnpredTick;
 	extern float g_flVelocityModifer;

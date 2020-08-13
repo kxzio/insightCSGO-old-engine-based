@@ -430,46 +430,7 @@ std::optional<RageBot::AimInfo> RageBot::scan_record_gun(C_BasePlayer* local, An
 	return std::nullopt;
 }
 
-bool RageBot::is_breaking_lagcomp(Animation* animation) {
-	static constexpr auto teleport_dist = 64 * 64;
 
-	const auto info = Animations::Get().GetAnimInfo(animation->player);
-
-	if (!info || info->frames.size() < 2)  return false;
-
-	if (info->frames[0]->dormant)          return false;
-
-	auto prev_org = info->frames[0]->origin;
-	auto skip_first = true;
-
-	// walk context looking for any invalidating event
-	for (auto& record : info->frames)
-	{
-		if (skip_first)
-		{
-			skip_first = false;
-			continue;
-		}
-
-		if (record->dormant)
-			break;
-
-		auto delta = record->origin - prev_org;
-		if (delta.Length2D() > teleport_dist)
-		{
-			// lost track, too much difference
-			return true;
-		}
-
-		// did we find a context smaller than target time?
-		if (record->sim_time <= animation->sim_time)
-			break; // hurra, stop
-
-		prev_org = record->origin;
-	}
-
-	return false;
-}
 
 void Autostop(CUserCmd* cmd)
 {
@@ -535,27 +496,22 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 
 	std::vector<AimInfo> hitpoints = {};
 
+	Snakeware::OnShot = false;
 	for (int i = 1; i < g_GlobalVars->maxClients; i++) {
 		C_BasePlayer* player = C_BasePlayer::GetPlayerByIndex(i);
 
-		if (!IsViable(player))
-			continue;
+		if (!IsViable(player)) continue;
 
 		const auto latest = Animations::Get().get_latest_animation(player);
 
 		if (!latest.has_value()) continue;
+		if (player->m_flOldSimulationTime() > player->m_flSimulationTime()) continue; // by porches
 
 		const auto rtt = 2.f * g_EngineClient->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
-		const auto breaking_lagcomp = latest.value()->lag && latest.value()->lag <= 16 && is_breaking_lagcomp(latest.value());
-		const auto can_delay_shot = (latest.value()->lag > TIME_TO_TICKS(rtt) + g_GlobalVars->interval_per_tick);
-		const auto delay_shot = (TIME_TO_TICKS(rtt) + TIME_TO_TICKS(g_GlobalVars->curtime - latest.value()->sim_time)
-			+ g_GlobalVars->interval_per_tick >= latest.value()->lag);
+	
 
 		const auto oldest = Animations::Get().get_oldest_animation(player);
 
-		if (breaking_lagcomp && delay_shot && can_delay_shot) return;
-
-		if (breaking_lagcomp && !can_delay_shot)              return;
 
 		if (FovToPlayer(player->GetHitboxPos(HITBOX_HEAD)) > g_Options.ragebot_fov) return;
 
@@ -637,17 +593,17 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 
 
 	cmd->viewangles = angle;
-
+	cmd->tick_count = TIME_TO_TICKS(best_match.animation->sim_time) + TIME_TO_TICKS(LagCompensation::Get().GetLerpTime()) + 1;
 	if (!g_Options.ragebot_silent)
 		g_EngineClient->SetViewAngles(&cmd->viewangles);
 
 
-	if (g_Options.ragebot_autofire || cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2)
-	{
+	if (g_Options.ragebot_autofire || cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2) {
 		Snakeware::bSendPacket = true;
-		cmd->tick_count = TIME_TO_TICKS(best_match.animation->sim_time) + TIME_TO_TICKS(LagCompensation::Get().GetLerpTime());
-		if (!(cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2))
-		{
+		Snakeware::OnShot = false;
+
+		if (!(cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2)) {
+			Snakeware::OnShot = true;
 			cmd->buttons |= best_match.alt_attack ? IN_ATTACK2 : IN_ATTACK;
 		}
 		if (g_Options.ragebot_remove_recoil)

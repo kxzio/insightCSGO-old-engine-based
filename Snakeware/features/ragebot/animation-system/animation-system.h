@@ -14,7 +14,7 @@ struct Animation
 	void BulidServerBones(C_BasePlayer* player);
 
 	bool is_valid(float range, float max_unlag);
-	bool is_valid_extended();
+	
 
 	C_BasePlayer* player{};
 	int32_t index{};
@@ -52,17 +52,16 @@ struct Animation
 };
 
 
-class Animations : public Singleton<Animations>
-{
+class Animations : public Singleton<Animations> {
 public:
 	struct AnimationInfo {
-		AnimationInfo(C_BasePlayer* player, std::deque<Animation*> animations)
+		AnimationInfo(C_BasePlayer* player, std::deque<Animation> animations)
 			: player(player), frames(std::move(animations)), last_spawn_time(0) { }
 
 		void UpdateAnimations(Animation* to, Animation* from);
 
 		C_BasePlayer* player{};
-		std::deque<Animation*> frames;
+		std::deque<Animation> frames;
 
 		// last time this player spawned
 		float last_spawn_time;
