@@ -17,7 +17,10 @@
 ImFont* g_pDefaultFont;
 ImFont* g_pESP;
 ImFont* g_pBig;
+ImFont* g_pPixel;
 ImFont* g_pSecondFont;
+ImFont* g_pCSGO_icons;
+ImFont* g_Molotov_icon;
 
 ImDrawListSharedData _data;
 
@@ -65,12 +68,28 @@ void Render::GetFonts() {
 		243304,
 		13);
 
+	g_pPixel = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		Fonts::verdana,
+		243304,
+		12);
+
+	g_pPixel = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		Fonts::verdana,
+		243304,
+		12);
+
 
 	// font for watermark; just example
-	g_pSecondFont = ImGui::GetIO().Fonts->AddFontFromMemoryCompressedTTF(
-		Fonts::Cousine_compressed_data,
-		Fonts::Cousine_compressed_size,
-		18.f); 
+	g_pCSGO_icons = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		Fonts::csgoicons,
+		107544,
+		14.f); 
+
+	g_Molotov_icon = ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+		Fonts::molotov_icon,
+		52988,
+		30.f);
+
 }
 
 void Render::ClearDrawList() {
@@ -92,7 +111,6 @@ void Render::BeginScene() {
 		{
 			Visuals::Get().AddToDrawList();
 			GrenadePredict.draw();
-			Visuals::Get().DrawMolotov();
 			if (g_Options.esp_draw_fov)
 				Visuals::Get().DrawFOV();
 		}
@@ -138,7 +156,7 @@ float Render::RenderText(const std::string& text, ImVec2 pos, float size, Color 
 		draw_list->AddText(pFont, size, ImVec2(pos.x - 1, pos.y + 1), GetU32(Color(0, 0, 0, 100)), text.c_str());
 	}
 
-	draw_list->AddText(pFont, size, pos, GetU32(color), text.c_str());
+	draw_list->AddText(pFont, size, pos, GetU32(Color(color.r(), color.g(), color.b(), color.a())), text.c_str());
 
 	draw_list->PopTextureID();
 

@@ -5,6 +5,7 @@
 #include "autowall/ragebot-autowall.h"
 
 int curGroup;
+
 void UpdateConfig() 
 {
 	C_BaseCombatWeapon* weapon = g_LocalPlayer->m_hActiveWeapon();
@@ -507,6 +508,15 @@ void Autostop(CUserCmd* cmd)
 	cmd->upmove *= finalSpeed;
 }
 
+void autocrouch(CUserCmd* cmd)
+{
+	cmd->buttons |= IN_DUCK;
+}
+
+void autoscope(CUserCmd* cmd)
+{
+	cmd->buttons |= IN_ZOOM;
+}
 
 void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 {
@@ -605,7 +615,11 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 	{
 		if (g_Options.ragebot_autoscope && weapon->IsSniper() && !local->m_bIsScoped())
 		{
-			cmd->buttons |= IN_ZOOM;
+			autoscope(cmd);
+		}
+		if (g_Options.ragebot_autocrouch[curGroup])
+		{
+			autocrouch(cmd);
 		}
 		if (g_Options.ragebot_autostop)
 		{

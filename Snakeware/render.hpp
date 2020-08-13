@@ -17,7 +17,10 @@
 
 extern ImFont* g_pDefaultFont;
 extern ImFont* g_pBig;
+extern ImFont* g_pPixel;
 extern ImFont* g_pSecondFont;
+extern ImFont* g_pCSGO_icons;
+extern ImFont* g_Molotov_icon;
 extern ImFont* g_pESP;
 
 
@@ -116,6 +119,18 @@ public:
 		return RenderText(text, ImVec2(x, y), size, clr, center, true, g_pESP);
 	}
 	template <class T>
+	inline float RenderTextGiant(const std::string& text, T x, T y, float size, Color clr, bool center = false, ImFont* pFont = g_pDefaultFont) {
+		return RenderText(text, ImVec2(x, y), size, clr, center, true, g_pBig);
+	}
+	template <class T>
+	inline float RenderTextGiantNoOutnline(const std::string& text, T x, T y, float size, Color clr, bool center = false, ImFont* pFont = g_pDefaultFont) {
+		return RenderText(text, ImVec2(x, y), size, clr, center, false, g_pBig);
+	}
+	template <class T>
+	inline float RenderTextGiantMOLOTOV(const std::string& text, T x, T y, float size, Color clr, bool center = false, ImFont* pFont = g_pDefaultFont) {
+		return RenderText(text, ImVec2(x, y), size, clr, center, true, g_Molotov_icon);
+	}
+	template <class T>
 	inline void RenderCircle(T x, T y, float radius, int points, Color color, float thickness = 1.f) {
 		draw_list->AddCircle(ImVec2(x, y), radius, GetU32(color), points, thickness);
 	}
@@ -127,6 +142,7 @@ public:
 	inline void RenderTriangleFilled(const ImVec2 a, const ImVec2 b, const ImVec2 c, ImColor color) {
 		draw_list->AddTriangleFilled(a, b, c, color);
 	}
+
 	
 	
 };

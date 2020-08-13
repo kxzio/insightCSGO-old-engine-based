@@ -126,6 +126,7 @@ void ImGui::SubTabButton(const char* label, int* selected, int num, int total) {
 	if (*selected == num)
 		textColor = ImColor(205 / 255.f, 205 / 255.f, 205 / 255.f, g.Style.Alpha);
 
+
 	window->DrawList->AddTextMiddle(ImVec2(pos.x + size.x / 2 - label_size.x / 2, pos.y + size.y / 2 - label_size.y / 2 - 1), textColor, label);
 
 }
@@ -344,6 +345,7 @@ const char* const KeyNames[] = {
 
 bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 {
+	SameLine();
 	ImGuiWindow* window = GetCurrentWindow();
 	if (window->SkipItems)
 		return false;
@@ -354,8 +356,8 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 
 	const ImGuiID id = window->GetID(label);
 	const ImVec2 label_size = CalcTextSize(label, NULL, true);
-	ImVec2 size = CalcItemSize(size_arg, CalcItemWidth(), label_size.y + style.FramePadding.y*2.0f);
-	const ImRect frame_bb(window->DC.CursorPos + ImVec2(label_size.x + style.ItemInnerSpacing.x, 0.0f), window->DC.CursorPos + size );
+	ImVec2 size = CalcItemSize(ImVec2(150, 20), CalcItemWidth(), label_size.y + style.FramePadding.y*2.0f);
+	const ImRect frame_bb(window->DC.CursorPos + ImVec2(label_size.x + style.ItemInnerSpacing.x + 80, 0.0f), window->DC.CursorPos + size );
 	const ImRect total_bb(window->DC.CursorPos, frame_bb.Max);
 
 	ItemSize(total_bb, style.FramePadding.y);
@@ -442,22 +444,19 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 
 	char buf_display[64] = "None";
 
-	RenderFrame(frame_bb.Min, frame_bb.Max + ImVec2(120, 0), GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+	RenderFrame(frame_bb.Min, frame_bb.Max , GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
 
 	if (*k != 0 && g.ActiveId != id) {
 		strcpy(buf_display, KeyNames[*k]);
 	}
 	else if (g.ActiveId == id) {
-		strcpy(buf_display, "   <Press a key>");
+		strcpy(buf_display, "None");
 	}
 
 	const ImRect clip_rect(frame_bb.Min.x, frame_bb.Min.y, frame_bb.Min.x + size.x, frame_bb.Min.y + size.y); // Not using frame_bb.Max because we have adjusted size
 	ImVec2 render_pos = frame_bb.Min + style.FramePadding;
 	RenderTextClipped(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding, buf_display, NULL, NULL);
 	//draw_window->DrawList->AddText(g.Font, g.FontSize, render_pos, GetColorU32(ImGuiCol_Text), buf_display, NULL, 0.0f, &clip_rect);
-
-	if (label_size.x > 0)
-		RenderText(ImVec2(total_bb.Min.x, frame_bb.Min.y + style.FramePadding.y), label);
 
 	return value_changed;
 }

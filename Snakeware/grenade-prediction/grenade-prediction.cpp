@@ -131,6 +131,7 @@ bool GrenadePrediction::detonated(C_BaseCombatWeapon * weapon, float time, trace
 
 		//    fire grenades detonate on ground hit, or 3.5s after thrown
 	case WEAPON_MOLOTOV:
+	case WEAPON_INC:
 		if (trace.fraction != 1.0f && trace.plane.normal.z > 0.7f || time > 3.5f) {
 			return true;
 		}

@@ -5,6 +5,8 @@ class solution : public Singleton<solution>
 {
 public:
 	LPCSTR Module = "client.dll";
+	const char* username = "username";
+	const char* sub_days = "30";
 	std::string viewmodel_fov = "viewmodel_fov";
 	std::string mat_ambient_light_r = "mat_ambient_light_r";
 	std::string mat_ambient_light_g = "mat_ambient_light_g";

@@ -288,6 +288,37 @@ namespace Math
 
 		return vAngle;
 	}
+	Vector CalcAngle2(const Vector& src, const Vector& dst)
+	{
+		Vector vAngle;
+		Vector delta((src.x - dst.x), (src.y - dst.y), (src.z - dst.z));
+		double hyp = sqrt(delta.x * delta.x + delta.y * delta.y);
+
+		vAngle.x = float(atanf(float(delta.z / hyp)) * 57.295779513082f);
+		vAngle.y = float(atanf(float(delta.y / delta.x)) * 57.295779513082f);
+
+		if (delta.x >= 0.0)
+			vAngle.y += 180.0f;
+
+		return vAngle;
+	}
+	void AngleVectors_2(const Vector& angles, Vector* forward)
+	{
+		Assert(s_bMathlibInitialized);
+		Assert(forward);
+
+		float	sp, sy, cp, cy;
+
+		sy = std::sin(DEG2RAD(angles[1]));
+		cy = std::cos(DEG2RAD(angles[1]));
+
+		sp = std::sin(DEG2RAD(angles[0]));
+		cp = std::cos(DEG2RAD(angles[0]));
+
+		forward->x = cp * cy;
+		forward->y = cp * sy;
+		forward->z = -sp;
+	}
 	//--------------------------------------------------------------------------------
 	float GetFOV(const QAngle& viewAngle, const QAngle& aimAngle)
 	{
@@ -526,6 +557,25 @@ namespace Math
         up.y = (cr * sp * sy + -sr*cy);
         up.z = (cr * cp);
     }
+	void AngleVectorsQangle(const QAngle& angles, QAngle& forward, Vector& right, Vector& up)
+	{
+		float sr, sp, sy, cr, cp, cy;
+
+		DirectX::XMScalarSinCos(&sp, &cp, DEG2RAD(angles[0]));
+		DirectX::XMScalarSinCos(&sy, &cy, DEG2RAD(angles[1]));
+		DirectX::XMScalarSinCos(&sr, &cr, DEG2RAD(angles[2]));
+
+		forward.pitch = (cp * cy);
+		forward.yaw = (cp * sy);
+		forward.roll = (-sp);
+		right.x = (-1 * sr * sp * cy + -1 * cr * -sy);
+		right.y = (-1 * sr * sp * sy + -1 * cr * cy);
+		right.z = (-1 * sr * cp);
+		up.x = (cr * sp * cy + -sr * -sy);
+		up.y = (cr * sp * sy + -sr * cy);
+		up.z = (cr * cp);
+	}
+	
     //--------------------------------------------------------------------------------
 	Vector CrossProduct(const Vector &a, const Vector &b)
 	{

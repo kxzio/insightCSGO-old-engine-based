@@ -43,6 +43,7 @@ Index of this file:
 #else
 #include <stdint.h>     // intptr_t
 #endif
+#include "../options.hpp"
 
 // Visual Studio warnings
 #ifdef _MSC_VER
@@ -238,6 +239,55 @@ void ImGui::Text(const char* fmt, ...)
     TextV(fmt, args);
     va_end(args);
 }
+void ImGui::TextHeader(const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    TextV(fmt, args);
+    va_end(args);
+
+    const ImVec2 label_size = CalcTextSize(fmt, NULL, true);
+
+    ImGuiWindow* window = GetCurrentWindow();
+
+    if (window->SkipItems)
+        return;
+    ImGuiContext& g = *GImGui;
+
+    // Those flags should eventually be overridable by the user
+    ImGuiSeparatorFlags flags = (window->DC.LayoutType == ImGuiLayoutType_Horizontal) ? ImGuiSeparatorFlags_Vertical : ImGuiSeparatorFlags_Horizontal;
+    IM_ASSERT(ImIsPowerOfTwo((int)(flags & (ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_Vertical))));   // Check that only 1 option is selected
+    if (flags & ImGuiSeparatorFlags_Vertical)
+    {
+        VerticalSeparator();
+        return;
+    }
+
+    // Horizontal Separator
+    if (window->DC.ColumnsSet)
+        PopClipRect();
+
+    float x1 = window->Pos.x;
+    float x2 = window->Pos.x + window->Size.x;
+    if (!window->DC.GroupStack.empty())
+        x1 += window->DC.Indent.x;
+
+    const ImRect bb(ImVec2(x1, window->DC.CursorPos.y), ImVec2(x2, window->DC.CursorPos.y + 1.0f));
+    ItemSize(ImVec2(0.0f, 0.0f)); // NB: we don't provide our width so that it doesn't get feed back into AutoFit, we don't provide height to not alter layout.
+
+
+    window->DrawList->AddLine(bb.Min - ImVec2(0,17) + ImVec2(label_size.x + 10, 0), ImVec2(bb.Max.x, bb.Min.y) - ImVec2(0, 17) + ImVec2(label_size.x + 10, 0), GetColorU32(ImGuiCol_Separator));
+
+
+    if (g.LogEnabled)
+        LogRenderedText(&bb.Min, "--------------------------------");
+
+    if (window->DC.ColumnsSet)
+    {
+        PushColumnClipRect();
+        window->DC.ColumnsSet->LineMinY = window->DC.CursorPos.y;
+    }
+}
 
 void ImGui::TextV(const char* fmt, va_list args)
 {
@@ -248,6 +298,8 @@ void ImGui::TextV(const char* fmt, va_list args)
     ImGuiContext& g = *GImGui;
     const char* text_end = g.TempBuffer + ImFormatStringV(g.TempBuffer, IM_ARRAYSIZE(g.TempBuffer), fmt, args);
     TextUnformatted(g.TempBuffer, text_end);
+
+
 }
 
 void ImGui::TextColored(const ImVec4& col, const char* fmt, ...)
@@ -760,7 +812,7 @@ void ImGui::Scrollbar(ImGuiAxis axis)
         window_rounding_corners = ImDrawCornerFlags_BotLeft | (other_scrollbar ? 0 : ImDrawCornerFlags_BotRight);
     else
         window_rounding_corners = (((window->Flags & ImGuiWindowFlags_NoTitleBar) && !(window->Flags & ImGuiWindowFlags_MenuBar)) ? ImDrawCornerFlags_TopRight : 0) | (other_scrollbar ? 0 : ImDrawCornerFlags_BotRight);
-    window->DrawList->AddRectFilled(bb.Min, bb.Max, GetColorU32(ImGuiCol_ScrollbarBg), window->WindowRounding, window_rounding_corners);
+
     bb.Expand(ImVec2(-ImClamp((float)(int)((bb.Max.x - bb.Min.x - 2.0f) * 0.5f), 0.0f, 3.0f), -ImClamp((float)(int)((bb.Max.y - bb.Min.y - 2.0f) * 0.5f), 0.0f, 3.0f)));
 
     // V denote the main, longer axis of the scrollbar (= height for a vertical scrollbar)
@@ -835,7 +887,7 @@ void ImGui::Scrollbar(ImGuiAxis axis)
         grab_rect = ImRect(ImLerp(bb.Min.x, bb.Max.x, grab_v_norm), bb.Min.y, ImMin(ImLerp(bb.Min.x, bb.Max.x, grab_v_norm) + grab_h_pixels, window_rect.Max.x), bb.Max.y);
     else
         grab_rect = ImRect(bb.Min.x, ImLerp(bb.Min.y, bb.Max.y, grab_v_norm), bb.Max.x, ImMin(ImLerp(bb.Min.y, bb.Max.y, grab_v_norm) + grab_h_pixels, window_rect.Max.y));
-    window->DrawList->AddRectFilled(grab_rect.Min, grab_rect.Max, grab_col, style.ScrollbarRounding);
+    window->DrawList->AddRectFilled(grab_rect.Min, grab_rect.Max, grab_col, 8);
 }
 
 void ImGui::Image(ImTextureID user_texture_id, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
@@ -932,13 +984,18 @@ bool ImGui::Checkbox(const char* label, bool* v)
 	if (pressed)
 		*v = !(*v);
 
-	RenderFrame(check_bb.Min + ImVec2(2,2), check_bb.Max - ImVec2(2, 2), GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), true, style.FrameRounding);
+  
+    window->DrawList->AddRect(check_bb.Min + ImVec2(3, 3), check_bb.Max - ImVec2(3, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.FrameRounding - 1);
+
+	RenderFrame(check_bb.Min + ImVec2(4,4), check_bb.Max - ImVec2(4, 4), GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), true, style.FrameRounding);
+
 	if (*v)
 	{
 		const float check_sz = ImMin(check_bb.GetWidth(), check_bb.GetHeight());
 		const float pad = ImMax(1.0f, (float)(int)(check_sz / 6.0f));
-		window->DrawList->AddRectFilled(check_bb.Min + ImVec2(2, 2), check_bb.Max - ImVec2(2, 2), GetColorU32(ImGuiCol_CheckMark), style.FrameRounding);
+		window->DrawList->AddRectFilled(check_bb.Min + ImVec2(4, 4), check_bb.Max - ImVec2(4, 4), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.FrameRounding - 2);
 	}
+
 
 	if (g.LogEnabled)
 		LogRenderedText(&text_bb.GetTL(), *v ? "[x]" : "[ ]");
@@ -948,6 +1005,66 @@ bool ImGui::Checkbox(const char* label, bool* v)
 	return pressed;
 }
 
+bool ImGui::CheckboxEX(const char* label, bool* v, const char* label2)
+{
+    int timer = 0;
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
+    const ImVec2     label_size = CalcTextSize(label, NULL, true);
+    const ImVec2 label2_size = CalcTextSize(label2, NULL, true);
+    const ImRect check_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(label_size.y + style.FramePadding.y * 2, label_size.y + style.FramePadding.y * 2));
+    ItemSize(check_bb, style.FramePadding.y);
+
+    ImRect total_bb = check_bb;
+    if (label_size.x > 0)
+        SameLine(0, style.ItemInnerSpacing.x);
+    const ImRect text_bb(window->DC.CursorPos + ImVec2(0, style.FramePadding.y), window->DC.CursorPos + ImVec2(0, style.FramePadding.y) + label_size);
+    if (label_size.x > 0)
+    {
+        ItemSize(ImVec2(text_bb.GetWidth(), check_bb.GetHeight()), style.FramePadding.y);
+        total_bb = ImRect(ImMin(check_bb.Min, text_bb.Min), ImMax(check_bb.Max, text_bb.Max));
+    }
+
+    if (!ItemAdd(total_bb, id))
+        return false;
+
+    bool hovered, held;
+    bool pressed = ButtonBehavior(total_bb, id, &hovered, &held);
+    if (pressed)
+        *v = !(*v);
+
+
+    window->DrawList->AddRect(check_bb.Min + ImVec2(3, 3), check_bb.Max - ImVec2(3, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.FrameRounding - 1);
+
+    RenderFrame(check_bb.Min + ImVec2(4, 4), check_bb.Max - ImVec2(4, 4), GetColorU32((held && hovered) ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg), true, style.FrameRounding);
+
+    if (*v)
+    {
+        const float check_sz = ImMin(check_bb.GetWidth(), check_bb.GetHeight());
+        const float pad = ImMax(1.0f, (float)(int)(check_sz / 6.0f));
+        window->DrawList->AddRectFilled(check_bb.Min + ImVec2(4, 4), check_bb.Max - ImVec2(4, 4), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.FrameRounding - 2);
+    }
+
+    if (hovered)
+    {
+        window->DrawList->AddRect(check_bb.Min + ImVec2(29 + label_size.x, 10), check_bb.Min + ImVec2(29 + label2_size.x + 10 + label_size.x, 10 + 25), GetColorU32(ImVec4(0.18f, 0.17f, 0.18f, 1.f)), style.FrameRounding - 3);
+        RenderText(check_bb.Min + ImVec2(29 + label_size.x + 5, 13), label2);
+    }
+
+
+
+    if (g.LogEnabled)
+        LogRenderedText(&text_bb.GetTL(), *v ? "[x]" : "[ ]");
+    if (label_size.x > 0.0f)
+        RenderText(text_bb.GetTL() + ImVec2(3, 0), label);
+
+    return pressed;
+}
 bool ImGui::CheckboxFlags(const char* label, unsigned int* flags, unsigned int flags_value)
 {
     bool v = ((*flags & flags_value) == flags_value);
@@ -1319,7 +1436,6 @@ bool ImGui::BeginCombo(const char* label, const char* preview_value, ImGuiComboF
         window->DrawList->AddRectFilled(ImVec2(frame_bb.Max.x - arrow_size, frame_bb.Min.y), frame_bb.Max, GetColorU32((popup_open || hovered) ? ImGuiCol_ButtonHovered : ImGuiCol_Button), style.FrameRounding, (w <= arrow_size) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Right);
         RenderArrow(ImVec2(frame_bb.Max.x - arrow_size + style.FramePadding.y, frame_bb.Min.y + style.FramePadding.y), ImGuiDir_Down);
     }
-    RenderFrameBorder(frame_bb.Min, frame_bb.Max, style.FrameRounding);
     if (preview_value != NULL && !(flags & ImGuiComboFlags_NoPreview))
         RenderTextClipped(frame_bb.Min + style.FramePadding, value_bb.Max, preview_value, NULL, NULL, ImVec2(0.0f, 0.0f));
     if (label_size.x > 0)
@@ -2103,8 +2219,9 @@ float ImGui::SliderCalcRatioFromValueT(ImGuiDataType data_type, TYPE v, TYPE v_m
     return (float)((FLOATTYPE)(v_clamped - v_min) / (FLOATTYPE)(v_max - v_min));
 }
 
-// FIXME: Move some of the code into SliderBehavior(). Current responsability is larger than what the equivalent DragBehaviorT<> does, we also do some rendering, etc.
 template<typename TYPE, typename SIGNEDTYPE, typename FLOATTYPE>
+// FIXME: Move some of the code into SliderBehavior(). Current responsability is larger than what the equivalent DragBehaviorT<> does, we also do some rendering, etc.
+
 bool ImGui::SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_type, TYPE* v, const TYPE v_min, const TYPE v_max, const char* format, float power, ImGuiSliderFlags flags, ImRect* out_grab_bb)
 {
     ImGuiContext& g = *GImGui;
@@ -2259,6 +2376,8 @@ bool ImGui::SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_typ
     if (axis == ImGuiAxis_Y)
         grab_t = 1.0f - grab_t;
     const float grab_pos = ImLerp(slider_usable_pos_min, slider_usable_pos_max, grab_t);
+
+
     if (axis == ImGuiAxis_X)
         *out_grab_bb = ImRect(grab_pos - grab_sz*0.5f, bb.Min.y + grab_padding, grab_pos + grab_sz*0.5f, bb.Max.y - grab_padding);
     else
@@ -2267,6 +2386,56 @@ bool ImGui::SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_typ
     return value_changed;
 }
 
+template<typename TYPE, typename SIGNEDTYPE, typename FLOATTYPE>
+bool ImGui::SliderBehaviorTHover(const ImRect& bb, ImGuiID id, ImGuiDataType data_type, TYPE* v, const TYPE v_min, const TYPE v_max, const char* format, float power, ImGuiSliderFlags flags, ImRect* out_grab_bb)
+{
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+
+    const ImGuiAxis axis = (flags & ImGuiSliderFlags_Vertical) ? ImGuiAxis_Y : ImGuiAxis_X;
+    const bool is_decimal = (data_type == ImGuiDataType_Float) || (data_type == ImGuiDataType_Double);
+    const bool is_power = (power != 1.0f) && is_decimal;
+
+    const float grab_padding = 2.0f;
+    const float slider_sz = (bb.Max[axis] - bb.Min[axis]) - grab_padding * 2.0f;
+    float grab_sz = style.GrabMinSize;
+    SIGNEDTYPE v_range = (v_min < v_max ? v_max - v_min : v_min - v_max);
+    if (!is_decimal && v_range >= 0)                                             // v_range < 0 may happen on integer overflows
+        grab_sz = ImMax((float)(slider_sz / (v_range + 1)), style.GrabMinSize);  // For integer sliders: if possible have the grab size represent 1 unit
+    grab_sz = ImMin(grab_sz, slider_sz);
+    const float slider_usable_sz = slider_sz - grab_sz;
+    const float slider_usable_pos_min = bb.Min[axis] + grab_padding + grab_sz * 0.5f;
+    const float slider_usable_pos_max = bb.Max[axis] - grab_padding - grab_sz * 0.5f;
+
+    // For power curve sliders that cross over sign boundary we want the curve to be symmetric around 0.0f
+    float linear_zero_pos;   // 0.0->1.0f
+    if (is_power && v_min * v_max < 0.0f)
+    {
+        // Different sign
+        const FLOATTYPE linear_dist_min_to_0 = ImPow(v_min >= 0 ? (FLOATTYPE)v_min : -(FLOATTYPE)v_min, (FLOATTYPE)1.0f / power);
+        const FLOATTYPE linear_dist_max_to_0 = ImPow(v_max >= 0 ? (FLOATTYPE)v_max : -(FLOATTYPE)v_max, (FLOATTYPE)1.0f / power);
+        linear_zero_pos = (float)(linear_dist_min_to_0 / (linear_dist_min_to_0 + linear_dist_max_to_0));
+    }
+    else
+    {
+        // Same sign
+        linear_zero_pos = v_min < 0.0f ? 1.0f : 0.0f;
+    }
+
+
+
+    // Output grab position so it can be displayed by the caller
+    float grab_t = SliderCalcRatioFromValueT<TYPE, FLOATTYPE>(data_type, *v, v_min, v_max, power, linear_zero_pos);
+    if (axis == ImGuiAxis_Y)
+        grab_t = 1.0f - grab_t;
+    const float grab_pos = ImLerp(slider_usable_pos_min, slider_usable_pos_max, grab_t);
+
+
+    if (axis == ImGuiAxis_X)
+        *out_grab_bb = ImRect(grab_pos - grab_sz * 0.5f, bb.Min.y + grab_padding, grab_pos + grab_sz * 0.5f, bb.Max.y - grab_padding);
+
+    return true;
+}
 // For 32-bits and larger types, slider bounds are limited to half the natural type range.
 // So e.g. an integer Slider between INT_MAX-10 and INT_MAX will fail, but an integer Slider between INT_MAX/2-10 and INT_MAX/2 will be ok.
 // It would be possible to lift that limitation with some work but it doesn't seem to be worth it for sliders.
@@ -2292,6 +2461,33 @@ bool ImGui::SliderBehavior(const ImRect& bb, ImGuiID id, ImGuiDataType data_type
     case ImGuiDataType_Double:
         IM_ASSERT(*(const double*)v_min >= -DBL_MAX/2.0f && *(const double*)v_max <= DBL_MAX/2.0f);
         return SliderBehaviorT<double,double,double>(bb, id, data_type, (double*)v, *(const double*)v_min, *(const double*)v_max, format, power, flags, out_grab_bb);
+    case ImGuiDataType_COUNT: break;
+    }
+    IM_ASSERT(0);
+    return false;
+}
+bool ImGui::SliderBehaviorHover(const ImRect& bb, ImGuiID id, ImGuiDataType data_type, void* v, const void* v_min, const void* v_max, const char* format, float power, ImGuiSliderFlags flags, ImRect* out_grab_bb)
+{
+    switch (data_type)
+    {
+    case ImGuiDataType_S32:
+        IM_ASSERT(*(const ImS32*)v_min >= IM_S32_MIN / 2 && *(const ImS32*)v_max <= IM_S32_MAX / 2);
+        return SliderBehaviorTHover<ImS32, ImS32, float >(bb, id, data_type, (ImS32*)v, *(const ImS32*)v_min, *(const ImS32*)v_max, format, power, flags, out_grab_bb);
+    case ImGuiDataType_U32:
+        IM_ASSERT(*(const ImU32*)v_min <= IM_U32_MAX / 2);
+        return SliderBehaviorTHover<ImU32, ImS32, float >(bb, id, data_type, (ImU32*)v, *(const ImU32*)v_min, *(const ImU32*)v_max, format, power, flags, out_grab_bb);
+    case ImGuiDataType_S64:
+        IM_ASSERT(*(const ImS64*)v_min >= IM_S64_MIN / 2 && *(const ImS64*)v_max <= IM_S64_MAX / 2);
+        return SliderBehaviorTHover<ImS64, ImS64, double>(bb, id, data_type, (ImS64*)v, *(const ImS64*)v_min, *(const ImS64*)v_max, format, power, flags, out_grab_bb);
+    case ImGuiDataType_U64:
+        IM_ASSERT(*(const ImU64*)v_min <= IM_U64_MAX / 2);
+        return SliderBehaviorTHover<ImU64, ImS64, double>(bb, id, data_type, (ImU64*)v, *(const ImU64*)v_min, *(const ImU64*)v_max, format, power, flags, out_grab_bb);
+    case ImGuiDataType_Float:
+        IM_ASSERT(*(const float*)v_min >= -FLT_MAX / 2.0f && *(const float*)v_max <= FLT_MAX / 2.0f);
+        return SliderBehaviorTHover<float, float, float >(bb, id, data_type, (float*)v, *(const float*)v_min, *(const float*)v_max, format, power, flags, out_grab_bb);
+    case ImGuiDataType_Double:
+        IM_ASSERT(*(const double*)v_min >= -DBL_MAX / 2.0f && *(const double*)v_max <= DBL_MAX / 2.0f);
+        return SliderBehaviorTHover<double, double, double>(bb, id, data_type, (double*)v, *(const double*)v_min, *(const double*)v_max, format, power, flags, out_grab_bb);
     case ImGuiDataType_COUNT: break;
     }
     IM_ASSERT(0);
@@ -2330,7 +2526,7 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* v, co
 	const float w = 270;
 
 	const ImVec2 label_size = CalcTextSize(label, NULL, true);
-	const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y*.5f));
+	const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y*.5f) - ImVec2(0,4));
 	const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
 
 	// NB- we don't call ItemSize() yet because we may turn into a text edit box below
@@ -2366,21 +2562,28 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* v, co
 		return InputScalarAsWidgetReplacement(frame_bb, id, label, data_type, v, format);
 	const ImU32 frame_col = GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : g.HoveredId == id ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
 	RenderNavHighlight(frame_bb, id);
+
+    
 	RenderFrame(frame_bb.Min, ImVec2(frame_bb.Max.x, frame_bb.Max.y - 2), frame_col, true, g.Style.FrameRounding);
+    window->DrawList->AddRect(frame_bb.Min + ImVec2(1, 1), ImVec2(frame_bb.Max.x, frame_bb.Max.y - 2) - ImVec2(1, 1), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.FrameRounding - 1);
 
 	ItemSize(total_bb, style.FramePadding.y);
 	ImRect grab_bb;
+    ImRect grab_bb_hovered;
 	// Actual slider behavior + render grab
 	const bool value_changed = SliderBehavior(frame_bb, id, data_type, v, v_min, v_max, format, power, ImGuiSliderFlags_None, &grab_bb);
+    const bool value_notchanged = SliderBehaviorHover(frame_bb, id, data_type, v, v_min, v_max, format, power, ImGuiSliderFlags_None, &grab_bb_hovered);
 	//window->DrawList->AddRectFilled(grab_bb.Min, grab_bb.Max, GetColorU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
 
 	// need some fixes..
-	window->DrawList->AddRectFilled(frame_bb.Min + ImVec2(2, 2), grab_bb.Max - ImVec2(0, 2), GetColorU32(ImGuiCol_SliderGrabActive), style.GrabRounding);
+
+	window->DrawList->AddRectFilled(frame_bb.Min + ImVec2(2, 2), grab_bb.Max - ImVec2(0, 2), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.GrabRounding - 1);
 
 	// Display value using user-provided display format so user can add prefix/suffix/decorations to the value.
 	char value_buf[64];
 	const char* value_buf_end = value_buf + DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, v, format);
-	RenderTextClipped(frame_bb.Min - ImVec2(0, 5), frame_bb.Max - ImVec2(8, 1), value_buf, value_buf_end, NULL, ImVec2(1.f, 1.f));
+
+	RenderTextClipped(frame_bb.Min - ImVec2(0, 5) + ImVec2(0,13), frame_bb.Max - ImVec2(8, 1) + ImVec2(0, 13), value_buf, value_buf_end, NULL, ImVec2(1.f, 1.f));
 
 
 	if (label_size.x > 0.0f)
@@ -2389,6 +2592,84 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* v, co
 	return value_changed;
 }
 
+bool ImGui::SliderScalarNoText(const char* label, ImGuiDataType data_type, void* v, const void* v_min, const void* v_max, const char* format, float power)
+{
+    NewLine();
+
+    ImGuiWindow* window = GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
+    const float w = 173;
+
+    const ImVec2 label_size = CalcTextSize(label, NULL, true);
+    const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * .5f) - ImVec2(0, 4));
+    const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
+
+    // NB- we don't call ItemSize() yet because we may turn into a text edit box below
+    if (!ItemAdd(total_bb, id))
+    {
+        ItemSize(total_bb, style.FramePadding.y);
+        return false;
+    }
+
+    const bool hovered = ItemHoverable(frame_bb, id);
+    if (hovered)
+        SetHoveredID(id);
+
+    if (!format)
+        format = "%.3f";
+    int decimal_precision = ParseFormatPrecision(format, 3);
+
+    // Tabbing or CTRL-clicking on Slider turns it into an input box
+    bool start_text_input = false;
+    const bool tab_focus_requested = FocusableItemRegister(window, g.ActiveId == id);
+    if (tab_focus_requested || (hovered && g.IO.MouseClicked[0]))
+    {
+        SetActiveID(id, window);
+        FocusWindow(window);
+
+        if (tab_focus_requested || g.IO.KeyCtrl)
+        {
+            start_text_input = true;
+            g.ScalarAsInputTextId = 0;
+        }
+    }
+    if (start_text_input || (g.ActiveId == id && g.ScalarAsInputTextId == id))
+        return InputScalarAsWidgetReplacement(frame_bb, id, label, data_type, v, format);
+    const ImU32 frame_col = GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : g.HoveredId == id ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
+    RenderNavHighlight(frame_bb, id);
+
+
+    RenderFrame(frame_bb.Min, ImVec2(frame_bb.Max.x, frame_bb.Max.y - 2), frame_col, true, g.Style.FrameRounding);
+    window->DrawList->AddRect(frame_bb.Min + ImVec2(1, 1), ImVec2(frame_bb.Max.x, frame_bb.Max.y - 2) - ImVec2(1, 1), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.FrameRounding - 1);
+
+    ItemSize(total_bb, style.FramePadding.y);
+    ImRect grab_bb;
+    ImRect grab_bb_hovered;
+    // Actual slider behavior + render grab
+    const bool value_changed = SliderBehavior(frame_bb, id, data_type, v, v_min, v_max, format, power, ImGuiSliderFlags_None, &grab_bb);
+
+    //window->DrawList->AddRectFilled(grab_bb.Min, grab_bb.Max, GetColorU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
+
+    // need some fixes..
+
+
+    window->DrawList->AddRectFilled(frame_bb.Min + ImVec2(2, 2), grab_bb.Max - ImVec2(0, 2), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f), style.GrabRounding - 1);
+
+    // Display value using user-provided display format so user can add prefix/suffix/decorations to the value.
+    char value_buf[64];
+    const char* value_buf_end = value_buf + DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, v, format);
+
+    RenderTextClipped(frame_bb.Min - ImVec2(0, 5) + ImVec2(0, 13), frame_bb.Max - ImVec2(8, 1) + ImVec2(0, 13), value_buf, value_buf_end, NULL, ImVec2(1.f, 1.f));
+
+
+
+    return value_changed;
+}
 // Add multiple sliders on 1 line for compact edition of multiple components
 bool ImGui::SliderScalarN(const char* label, ImGuiDataType data_type, void* v, int components, const void* v_min, const void* v_max, const char* format, float power)
 {
@@ -2451,6 +2732,10 @@ bool ImGui::SliderAngle(const char* label, float* v_rad, float v_degrees_min, fl
 bool ImGui::SliderInt(const char* label, int* v, int v_min, int v_max, const char* format)
 {
     return SliderScalar(label, ImGuiDataType_S32, v, &v_min, &v_max, format);
+}
+bool ImGui::SliderIntNoText(const char* label, int* v, int v_min, int v_max, const char* format)
+{
+    return SliderScalarNoText(label, ImGuiDataType_S32, v, &v_min, &v_max, format);
 }
 
 bool ImGui::SliderInt2(const char* label, int v[2], int v_min, int v_max, const char* format)
@@ -2651,12 +2936,6 @@ bool ImGui::InputScalarAsWidgetReplacement(const ImRect& bb, ImGuiID id, const c
     ImStrTrimBlanks(data_buf);
     ImGuiInputTextFlags flags = ImGuiInputTextFlags_AutoSelectAll | ((data_type == ImGuiDataType_Float || data_type == ImGuiDataType_Double) ? ImGuiInputTextFlags_CharsScientific : ImGuiInputTextFlags_CharsDecimal);
     bool value_changed = InputTextEx(label, data_buf, IM_ARRAYSIZE(data_buf), bb.GetSize(), flags);
-    if (g.ScalarAsInputTextId == 0)
-    {
-        // First frame we started displaying the InputText widget, we expect it to take the active id.
-        IM_ASSERT(g.ActiveId == id);
-        g.ScalarAsInputTextId = g.ActiveId;
-    }
     if (value_changed)
         return DataTypeApplyOpFromText(data_buf, g.InputTextState.InitialTextA.Data, data_type, data_ptr, NULL);
     return false;
@@ -4931,7 +5210,7 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
         SetItemAllowOverlap();
 
     // Render
-    const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_HeaderHovered : ImGuiCol_Header);
+    const ImU32 col = GetColorU32((held && hovered) ? ImGuiCol_HeaderActive : hovered ? ImGuiCol_CheckMark : ImGuiCol_Header);
     const ImVec2 text_pos = frame_bb.Min + ImVec2(text_offset_x, text_base_offset_y);
     ImGuiNavHighlightFlags nav_highlight_flags = ImGuiNavHighlightFlags_TypeThin;
     if (display_frame)

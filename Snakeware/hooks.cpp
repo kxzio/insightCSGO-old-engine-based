@@ -29,6 +29,7 @@
 // material system
 #include "materials/Materials.h"
 #include "Protected/enginer.h"
+#include "Achievment_sys.h"
 #define Snake
 #pragma intrinsic(_ReturnAddress)  
 float real_angle = 0.0f;
@@ -88,11 +89,14 @@ namespace Hooks {
 		engine_hook.hook_index(index::IsHLTV, hkIsHLTV);
 		//engine_hook.hook_index(27, hkIsConnected);
 		engine_hook.hook_index(32, hkIsBoxVisible);
-	
+
+		const char* message = "Cheat injected";
 		
 		PlayerHurtEvent::Get().RegisterSelf();
 		EventLogs::Get().RegisterSelf();
 		BulletImpactEvent::Get().RegisterSelf();
+
+
 		
 	}
 	//--------------------------------------------------------------------------------
@@ -173,11 +177,13 @@ namespace Hooks {
 		static bool Textured3 = false;
 
 
+
 		Menu::Get().Render();
 		BulletImpactEvent::Get().Paint();
 		
 
 		Miscellaneous::Get().SpectatorList();
+		Miscellaneous::Get().RenderIndicators();
 		Miscellaneous::Get().RenderRadar();
 		ImGui::Render(esp_drawlist);
 

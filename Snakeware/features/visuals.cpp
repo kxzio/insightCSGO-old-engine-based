@@ -219,10 +219,6 @@ void Visuals::PlayerChanger(ClientFrameStage_t stage)
 	}
 }
 
-
-
-
-
 //-------------------------------------------------------------------------------
 void Visuals::Player::RenderBox() {
 	switch (g_Options.esp_player_boxes_type)
@@ -652,6 +648,9 @@ void Visuals::ThirdPerson() {
 	}
 }
 #include "legitbot/legitbot.h"
+#include "ragebot/autowall/ragebot-autowall.h"
+#include "ragebot/ragebot.h"
+#include "3D Rendering/render_helper.h"
 void Visuals::DrawFOV() {
 	auto pWeapon = g_LocalPlayer->m_hActiveWeapon();
 	if (!pWeapon)
@@ -715,48 +714,6 @@ void Visuals::RenderRecoilCrosshair()
 }
 
 
-void Visuals::DrawMolotov() {
-	if (!g_Options.esp_molotov_timer)                                  return;
-	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
-
-	for (auto i = 0; i < g_EntityList->GetHighestEntityIndex(); i++)
-	{
-		auto ent = C_BaseEntity::GetEntityByIndex(i);
-		if (!ent)
-			continue;
-
-		if (ent->GetClientClass()->m_ClassID != ClassId_CInferno)
-			continue;
-
-		auto inferno = reinterpret_cast<C_Inferno*>(ent);
-
-		auto origin = inferno->m_vecOrigin();
-		auto screen_origin = Vector();
-
-		if (!Math::WorldToScreen(origin, screen_origin))
-			return;
-
-		const auto spawn_time = inferno->GetSpawnTime();
-		const auto timer = (spawn_time + C_Inferno::GetExpireTime()) - g_GlobalVars->curtime;
-		const auto factor = timer / C_Inferno::GetExpireTime();
-		const auto l_spawn_time = *(float*)(uintptr_t(inferno) + 0x20);
-		const auto l_factor = ((l_spawn_time + 7.03125f) - g_GlobalVars->curtime) / 7.03125f;
-
-	
-	
-		Render::Get().RenderBoxFilled(screen_origin.x - 49, screen_origin.y + 10, (screen_origin.x - 49) + 98.f, (screen_origin.y + 10) + 4.f, Color::Black);
-		Render::Get().RenderBoxFilled(screen_origin.x - 49, screen_origin.y + 10, (screen_origin.x - 49) + (98.f * l_factor), (screen_origin.y + 10) + 4.f, Color::Red);
-
-		Render::Get().RenderText(std::to_string((int)(round(timer + 1))) + "s", screen_origin.x, screen_origin.y - 5.f, 18.f, Color(g_Options.color_molotov));
-		Render::Get().RenderCircle3D(origin, 50, 150.f, Color(g_Options.color_molotov));
-
-
-	}
-}
-
-
-
-
 void Visuals::DrawScopeLines()
 {
 
@@ -773,13 +730,37 @@ void Visuals::DrawScopeLines()
 	auto idx = wep->m_Item().m_iItemDefinitionIndex();
 	if (idx != WEAPON_AWP && idx != WEAPON_SSG08 && idx != WEAPON_SCAR20 && idx != WEAPON_G3SG1) return;
 
+	QAngle punchAngle = g_LocalPlayer->m_aimPunchAngle();
+	int value = punchAngle.yaw * 1000;
+
+
+
 	if (g_Options.remove_scope) {
+
+
+
+		Render::Get().RenderLine(screenX / 2 - value, 0 , screenX / 2 - value, screenY / 2 - value / 2, Color(0, 0, 0, 100));
+		Render::Get().RenderLine(screenX / 2 - value, screenY , screenX / 2 - value, screenY / 2 - value / 2, Color(0, 0, 0, 100));
+		Render::Get().RenderLine(0 , screenY / 2 - value, screenX / 2 - value / 2, screenY / 2 - value, Color(0, 0, 0, 100));
+		Render::Get().RenderLine(screenX, screenY / 2 - value, screenX / 2 - value / 2, screenY / 2 - value, Color(0, 0, 0, 100));
+
+
+		Render::Get().RenderLine(screenX / 2 + value, 0, screenX / 2 + value, screenY / 2 - value / 2, Color(0, 0, 0, 100));
+		Render::Get().RenderLine(screenX / 2 + value, screenY, screenX / 2 + value, screenY / 2 - value / 2, Color(0, 0, 0, 100));
+		Render::Get().RenderLine(0, screenY / 2 + value, screenX / 2 - value / 2, screenY / 2 + value, Color(0, 0, 0, 100));
+		Render::Get().RenderLine(screenX, screenY / 2 + value, screenX / 2 - value / 2, screenY / 2 + value, Color(0, 0, 0, 100));
+
 		Render::Get().RenderLine(screenX / 2, 0, screenX / 2, screenY, Color(g_Options.color_esp_crosshair));
 		Render::Get().RenderLine(0, screenY / 2, screenX, screenY / 2, Color(g_Options.color_esp_crosshair));
+
+		RENDER_3D_GUI::Get().AutowallCrosshair();
+
+		
 
 	}
 
 }
+
 void Visuals::AddToDrawList() {
 
 	
@@ -799,6 +780,7 @@ void Visuals::AddToDrawList() {
 		if (i <= g_GlobalVars->maxClients) {
 			auto player = Player();
 			if (player.Begin((C_BasePlayer*)entity)) {
+
 				if (g_Options.esp_player_snaplines) player.RenderSnapline();
 				if (g_Options.esp_player_boxes)     player.RenderBox();
 				if (g_Options.esp_player_ammo)     player.RenderAmmo();
@@ -820,7 +802,7 @@ void Visuals::AddToDrawList() {
 		else if (entity->IsLoot() && g_Options.esp_items)
 			RenderItemEsp(entity);
 
-		
+	
 			
 	}
 
@@ -860,5 +842,13 @@ void Visuals::AddToDrawList() {
 
 	if (g_Options.sound_esp)
 		RenderSoundEsp();
+
+
+	//  SELFCODE 3D RENDER BY Ba1m0v  //
+
+	RENDER_3D_GUI::Get().LocalCircle();
+	RENDER_3D_GUI::Get().DrawMolotov();
+	RENDER_3D_GUI::Get().SpreadCircle();
+
 	
 }

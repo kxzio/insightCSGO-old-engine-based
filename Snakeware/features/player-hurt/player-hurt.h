@@ -21,7 +21,7 @@ public:
 
 	void FireGameEvent(IGameEvent *event);
 	int  GetEventDebugID(void);
-
+	void KillText(IGameEvent* event);
 	void RegisterSelf();
 	void UnregisterSelf();
 

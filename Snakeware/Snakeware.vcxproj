@@ -14,14 +14,14 @@
     <ProjectGuid>{F3E42845-8D56-4BB3-821D-8163AB1337F0}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>CSGOSimple</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
     <ProjectName>Snakeware[CSGO]</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <SpectreMitigation>false</SpectreMitigation>
   </PropertyGroup>
@@ -99,8 +99,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Achievments_sys.cpp" />
     <ClCompile Include="conifg-system\config-system.cpp" />
     <ClCompile Include="engine-prediction\engine-prediction.cpp" />
+    <ClCompile Include="features\3D Rendering\3drender.cpp" />
     <ClCompile Include="features\bhop.cpp" />
     <ClCompile Include="features\bullet-manipulation\bullet-event.cpp" />
     <ClCompile Include="features\chams.cpp" />
@@ -137,10 +139,12 @@
     <ClCompile Include="materials\Materials.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="options.cpp" />
+    <ClCompile Include="rect_layers.cpp" />
     <ClCompile Include="render.cpp" />
     <ClCompile Include="skin-changer\item_definitions.cpp" />
     <ClCompile Include="skin-changer\kit_parser.cpp" />
     <ClCompile Include="skin-changer\skin-changer.cpp" />
+    <ClCompile Include="Surface render\Render.cpp" />
     <ClCompile Include="ui.cpp" />
     <ClCompile Include="valve_sdk\csgostructs.cpp" />
     <ClCompile Include="valve_sdk\interfaces\BoneSetup\BoneSetup.cpp" />
@@ -159,9 +163,11 @@
     <ClCompile Include="valve_sdk\netvars.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Achievment_sys.h" />
     <ClInclude Include="config.hpp" />
     <ClInclude Include="conifg-system\config-system.h" />
     <ClInclude Include="engine-prediction\engine-prediction.h" />
+    <ClInclude Include="features\3D Rendering\render_helper.h" />
     <ClInclude Include="features\bullet-manipulation\bullet-event.h" />
     <ClInclude Include="features\event-logger\event-logger.h" />
     <ClInclude Include="features\legitbot\legit-autowall\legit-autowall.h" />
@@ -183,6 +189,7 @@
     <ClInclude Include="fonts\fonts.hpp" />
     <ClInclude Include="fonts\image _smoke.h" />
     <ClInclude Include="fonts\Main_googlefont.h" />
+    <ClInclude Include="fonts\Sound_bite.h" />
     <ClInclude Include="grenade-prediction\grenade-prediction.h" />
     <ClInclude Include="helpers\intrincics.h" />
     <ClInclude Include="imgui\imconfig.h" />
@@ -201,6 +208,7 @@
     <ClInclude Include="skin-changer\item_definitions.h" />
     <ClInclude Include="skin-changer\kit_parser.h" />
     <ClInclude Include="skin-changer\skin-changer.h" />
+    <ClInclude Include="Surface render\Surface_helper.h" />
     <ClInclude Include="valve_sdk\interfaces\BeamInfoT.h" />
     <ClInclude Include="valve_sdk\interfaces\BoneSetup\BoneSetup.h" />
     <ClInclude Include="valve_sdk\interfaces\CBoneCache.h" />

@@ -28,6 +28,7 @@ public:
 	void UpdateBreaker(CUserCmd * cmd);
 	void LegitAntiAim(CUserCmd * cmd);
 	void SpectatorList();
+	void RenderIndicators();
 	void BloomEffect();
 	void ModelAmbient();
 	void RenderRadar(); // aye

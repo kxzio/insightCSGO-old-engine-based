@@ -32,9 +32,11 @@ struct fbdata {
 	int walls = 4;
 };
 
-class CAutoWall
+
+class CAutoWall : public Singleton<CAutoWall>
 {
 public:
+	bool CanHitFloatingPoint(const Vector& point, const Vector& source);
 	float get_estimated_point_damage(Vector point);
 	returninfo autowall(Vector start, Vector end, C_BasePlayer* from_ent = nullptr, C_BasePlayer* to_ent = nullptr, int hitgroup = -1);
 

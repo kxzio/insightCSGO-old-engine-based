@@ -1203,6 +1203,10 @@ void ImDrawList::AddText(const ImFont* font, float font_size, const ImVec2& pos,
     font->RenderText(this, font_size, pos, col, clip_rect, text_begin, text_end, wrap_width, cpu_fine_clip_rect != NULL);
 }
 
+void ImDrawList::AddTextCustomFont(const ImVec2& pos, ImU32 col, const ImFont* font, const char* text_begin, const char* text_end)
+{
+    AddText(font, 12.0f, pos, col, text_begin, text_end);
+}
 void ImDrawList::AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end)
 {
     AddText(NULL, 0.0f, pos, col, text_begin, text_end);

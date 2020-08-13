@@ -152,6 +152,7 @@ class ITraceFilter
 public:
     virtual bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask) = 0;
     virtual TraceType GetTraceType() const = 0;
+
 };
 
 
@@ -171,21 +172,23 @@ public:
     {
         return TraceType::TRACE_EVERYTHING;
     }
+
     void* pSkip;
 };
 
 class CTraceFilterSkipEntity : public ITraceFilter
 {
 public:
+
     CTraceFilterSkipEntity(IHandleEntity* pEntityHandle)
     {
         pSkip = pEntityHandle;
     }
-
     bool ShouldHitEntity(IHandleEntity* pEntityHandle, int /*contentsMask*/)
     {
         return !(pEntityHandle == pSkip);
     }
+
     virtual TraceType GetTraceType() const
     {
         return TraceType::TRACE_EVERYTHING;
@@ -203,6 +206,7 @@ public:
 	TraceType GetTraceType() const {
 		return TraceType::TRACE_EVERYTHING;
 	}
+
 
 	void* pEntity;
 };

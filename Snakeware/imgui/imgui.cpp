@@ -931,6 +931,8 @@ CODE
 
 
 #include "imgui_internal.h"
+#include "../features/miscellaneous/miscellaneous.h"
+#include "../options.hpp"
 #include <ctype.h>      // toupper, isprint
 #include <stdio.h>      // vsnprintf, sscanf, printf
 #if defined(_MSC_VER) && _MSC_VER <= 1500 // MSVC 2008 or earlier
@@ -1407,6 +1409,8 @@ void ImStrTrimBlanks(char* buf)
 #endif
 #include "../valve_sdk/sdk.hpp"
 #include "Other.h"
+#include "../render.hpp"
+#include "../menu.hpp"
 
 int ImFormatString(char* buf, size_t buf_size, const char* fmt, ...)
 {
@@ -4361,12 +4365,13 @@ static bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size
 
 	// Build up name. If you need to append to a same child from multiple location in the ID stack, use BeginChild(ImGuiID id) with a stable value.
 	char title[256];
+
 	ImFormatString(title, IM_ARRAYSIZE(title), "%s", name);
 
 	const float backup_border_size = g.Style.ChildBorderSize;
 	if (!border)
 		g.Style.ChildBorderSize = 0.0f;
-	bool ret = Begin(title, NULL, flags);
+	bool ret = Begin(name, NULL, flags);
 	g.Style.ChildBorderSize = backup_border_size;
 
 	ImGuiWindow* child_window = g.CurrentWindow;
@@ -5286,22 +5291,51 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
 
                     if (name == "coded by snake | ba1m0v")
                     {
-
-                        
+    
                          window->DrawList->AddRectFilled(ImVec2(0, 0), ImVec2(0, 0) + ImVec2(4200, 4200), ImColor(0.f, 0.f, 0.f, 0.4f));
                         
+                         window->DrawList->AddRectFilled(ImVec2(0, 0), ImVec2(0, 0) + ImVec2(4200, 25), ImColor(0.12f, 0.11f, 0.12f, 1.0f));
+
+                         window->DrawList->AddRectFilled(ImVec2(0, 0), ImVec2(0, 0) + ImVec2(4200, 4), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.0f));
+
+                         const char* text_up_main = "Snakeware[CSGO] - User, Welcome to software";
+                         ImGui::GetWindowDrawList()->AddText(ImVec2(5, 5), ImColor(0.80f, 0.80f, 0.80f, 1.0f), text_up_main);
+
+
                     }
-                    if (name == "Radar")
+                    if (name == "Radar_model")
                     {
                         window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
-                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, 0.7f));
+                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.0f, 0.0f, 0.0f, 0.0f));
                         window->DrawList->PopClipRect();
                     }
-                    else
+                    if (name == "Indicators_text")
                     {
                         window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
-                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha));
+                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.0f, 0.0f, 0.0f, 0.0f));
                         window->DrawList->PopClipRect();
+                    }
+                    if (name == "Spectators_lol")
+                    {
+                        window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
+                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+                        window->DrawList->PopClipRect();
+                    }
+
+                    if (name != "coded by snake | ba1m0v")
+                    {
+                        if (name != "Radar_model")
+                        {
+                            if (name != "Indicators_text")
+                            {
+                                if (name != "Spectators_lol")
+                                {
+                                    window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
+                                    window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha));
+                                    window->DrawList->PopClipRect();
+                                }
+                            }
+                        }
                     }
 
 
@@ -5327,14 +5361,110 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                     if (flags & ImGuiWindowFlags_ChildWindow && !(flags & ImGuiWindowFlags_ChildFrame) && !(flags & ImGuiWindowFlags_Tooltip)) {
                         ImVec2 textSize = CalcTextSize(name);
 
-                        ImU32 bg_col = ImColor(28 / 255.f, 26 / 255.f, 28 / 255.f, 0.6);
+                        ImU32 bg_col = ImColor(28 / 255.f, 26 / 255.f, 28 / 255.f, 0.9);
+                        ImU32 bg_col_a = ImColor(28 / 255.f, 26 / 255.f, 28 / 255.f, 0.5);
+                        ImU32 bg_col2 = ImColor(28 / 255.f, 26 / 255.f, 28 / 255.f, 0.18f);
+                        ImU32 bg_col3 = ImColor(28 / 255.f, 26 / 255.f, 28 / 255.f, 0.15f);
+                        ImU32 bg_col4 = ImColor(28 / 255.f, 26 / 255.f, 28 / 255.f, 0.1f);
                         float alpha = 1.0f;
                         if (g.NextWindowData.BgAlphaCond != 0)
                             alpha = g.NextWindowData.BgAlphaVal;
                         if (alpha != 1.0f)
                             bg_col = (bg_col & ~IM_COL32_A_MASK) | (IM_F32_TO_INT8_SAT(alpha) << IM_COL32_A_SHIFT);
-                        window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
-                        window->DrawList->AddTextMiddle(window->Pos + ImVec2(15, -13) , ImColor(112 / 255.f, 112 / 255.f, 112 / 255.f, 1.00f), name );
+
+
+                        if (name == "Spectators")
+                        {
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3) - ImVec2(8, 8), window->Pos + window->Size - ImVec2(0, 3) + ImVec2(8, 8), bg_col2, 0, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3), window->Pos + window->Size - ImVec2(0, 3), bg_col, 0, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+
+                            ImGui::GetWindowDrawList()->AddRectFilled(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 4) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
+                            ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 20) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
+                            window->DrawList->AddTextCustomFont(window->Pos + ImVec2(67, +8), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), g_pPixel, name);
+
+                        }
+                        //Radar
+                        if (name == "Indicators")
+                        {
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3) - ImVec2(8, 8), window->Pos + window->Size - ImVec2(0, 3) + ImVec2(8, 8), bg_col2, 0, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3), window->Pos + window->Size - ImVec2(0, 3), bg_col, 0, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+
+                            ImGui::GetWindowDrawList()->AddRectFilled(window->Pos - ImVec2(0,3), window->Pos + ImVec2(window->Size.x, 4) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
+                            ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 20) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
+                            window->DrawList->AddTextCustomFont(window->Pos + ImVec2(67, + 8), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), g_pPixel, name);
+
+                        }
+                        if (name == "Radar")
+                        {
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3) - ImVec2(8, 8), window->Pos + window->Size - ImVec2(0, 3) + ImVec2(8, 8), bg_col2, 0, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3), window->Pos + window->Size - ImVec2(0, 3), bg_col_a, 0, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+
+                            ImGui::GetWindowDrawList()->AddRectFilled(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 4) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
+                            ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 20) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
+                            window->DrawList->AddTextCustomFont(window->Pos + ImVec2(115, +8 +6), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), g_pPixel, name);
+
+                            ImDrawList* Draw = ImGui::GetWindowDrawList();
+
+                            ImVec2 DrawPos = ImGui::GetCursorScreenPos();
+                            ImVec2 DrawSize = ImGui::GetContentRegionAvail();
+
+                            Draw->AddLine(
+                                ImVec2(DrawPos.x + DrawSize.x / 2.f, DrawPos.y),
+                                ImVec2(DrawPos.x + DrawSize.x / 2.f, DrawPos.y + DrawSize.y),
+                                ImColor(1.f, 1.f, 1.f, 1.f));
+
+
+                            Draw->AddLine(
+                                ImVec2(DrawPos.x, DrawPos.y + DrawSize.y / 2.f),
+                                ImVec2(DrawPos.x + DrawSize.x, DrawPos.y + DrawSize.y / 2.f),
+                                ImColor(1.f, 1.f, 1.f, 1.f));
+
+                            float Alpha = 150;
+
+                            for (size_t i = 0; i < g_EntityList->GetHighestEntityIndex(); ++i)
+                            {
+                                if (!g_EngineClient->IsInGame())
+                                    continue;
+
+                                C_BasePlayer* player = static_cast<C_BasePlayer*>(g_EntityList->GetClientEntity(i));
+
+                                if (!player || !player->IsPlayer() || player == g_LocalPlayer || player->IsDormant() || !player->IsAlive() || !player->IsEnemy())
+                                    continue;
+
+                                int screenx = 0, screeny = 0;
+                                float Color_R = 255;
+                                float Color_G = 0;
+                                float Color_B = 0;
+
+                                Miscellaneous::Get().CalcRadarPoint(player->GetRenderOrigin(), screenx, screeny);
+
+
+                                ImDrawList* Draw = ImGui::GetWindowDrawList();
+
+                                Draw->AddRectFilled(ImVec2((float)screenx, (float)screeny),
+                                    ImVec2((float)screenx + 5, (float)screeny + 5),
+                                    ImColor(Color_R, Color_G, Color_B, Alpha));
+                            }
+
+                        }
+
+                        if (name != "Indicators")
+                        {
+                            if (name != "Spectators")
+                            {
+                                if (name != "Radar")
+                                {
+                                    window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+                                    ImGui::GetWindowDrawList()->AddRectFilled(window->Pos, window->Pos + ImVec2(window->Size.x, 4), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
+                                    ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos, window->Pos + ImVec2(window->Size.x, 20), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
+
+                                    window->DrawList->AddText(window->Pos + ImVec2(15, -17), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), name);
+                                }
+                            }
+
+                        }
+
+
 
 
                     }

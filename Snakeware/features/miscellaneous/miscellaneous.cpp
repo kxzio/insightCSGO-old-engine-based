@@ -472,6 +472,72 @@ void Miscellaneous::LegitAntiAim(CUserCmd *cmd)
 
 }
 #include "../../imgui/imgui.h"
+#include "../../render.hpp"
+
+int IsCheater() {
+
+	const auto choked_ticks = std::max(0, TIME_TO_TICKS(g_LocalPlayer->m_flSimulationTime() - g_LocalPlayer->m_flOldSimulationTime()) );
+
+	return choked_ticks;
+}
+
+void Miscellaneous::RenderIndicators()
+{
+	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive())
+		return;
+
+	ImGui::SetNextWindowSize(ImVec2{ 300, 200 }, ImGuiSetCond_Once);
+
+	static bool watermark = true;
+
+
+	int min_value;
+
+	if (g_LocalPlayer->m_vecVelocity().Length2D() > 112)
+	{
+		min_value = 60 / (g_LocalPlayer->m_vecVelocity().Length2D() / 122);
+	}
+	else
+	{
+		min_value = 60;
+	}
+	int velocity = g_LocalPlayer->m_vecVelocity().Length2D();
+	int desync = min_value;
+	int spread = IsCheater();
+
+
+
+	if (ImGui::Begin("Indicators_text", &watermark, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+		ImGui::SetCursorPos(ImVec2(25, 15 + 15));
+
+		ImGui::BeginChild("Indicators", ImVec2(200 - 10, 165), true, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoInputs);
+		{
+			ImGui::PushFont(g_pPixel);
+			{
+
+
+				ImGui::Text(" ");
+				ImGui::SetCursorPosY(+26);
+
+				ImGui::Text("Velocity");   // player speed
+				ImGui::SameLine();
+				ImGui::SliderIntNoText("Velocity", &velocity, 0, 250);
+				ImGui::Text("Desync");     // player desync upd: get it from vel 
+				ImGui::SameLine();
+				ImGui::SliderIntNoText("Desync", &desync, 0, 60);
+				ImGui::Text("Choked");     // Choked packets
+				ImGui::SameLine();
+				ImGui::SliderIntNoText("Spread", &spread, 0, 15);
+
+			}
+			ImGui::PopFont();
+		}
+		ImGui::EndChild();
+	}
+	ImGui::End();
+
+
+}
 void Miscellaneous::SpectatorList()
 {
 	if (!g_Options.misc_spectator_list)
@@ -482,7 +548,7 @@ void Miscellaneous::SpectatorList()
 	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive())
 		return;
 
-		for (int i = 1; i <= g_EngineClient->GetMaxClients(); i++)
+	for (int i = 1; i <= g_EngineClient->GetMaxClients(); i++)
 		{
 
 			auto ent = C_BasePlayer::GetPlayerByIndex(i);
@@ -503,16 +569,33 @@ void Miscellaneous::SpectatorList()
 			spectators += std::string(info.szName) + "\n";
 		}
 	
-
+	bool open = true;
 	const auto size = ImGui::GetFont()->CalcTextSizeA(ImGui::GetFontSize(), FLT_MAX, NULL, spectators.c_str());
+	ImGui::SetNextWindowSize(ImVec2{ 300, 200}, ImGuiSetCond_Once);
 
-	ImGui::SetNextWindowSize(ImVec2(300, size.y + ImGui::GetFontSize() * 3));
-	if (ImGui::Begin("Spectator-list", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-	{
-		ImGui::SetCursorPos(ImVec2(ImGui::GetStyle().FramePadding.x, ImGui::GetStyle().FramePadding.y * 3 + ImGui::GetFontSize()));
-		ImGui::Text(spectators.c_str());
+	if (ImGui::Begin("Spectators_lol", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+
+		ImGui::SetCursorPos(ImVec2(25, 15 + 15));
+		ImGui::BeginChild("Spectators", ImVec2(200 - 10, 110), true, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoInputs);
+		{
+			ImGui::PushFont(g_pPixel);
+			{
+
+				int fps = g_GlobalVars->absoluteframetime;
+				ImGui::Text(" ");
+				ImGui::SetCursorPosY(+26);
+
+				ImGui::SetCursorPos(ImVec2(ImGui::GetStyle().FramePadding.x, ImGui::GetStyle().FramePadding.y * 3 + ImGui::GetFontSize()));
+				ImGui::Text(spectators.c_str());
+
+			}
+			ImGui::PopFont();
+		}
+		ImGui::EndChild();
 	}
 	ImGui::End();
+
+
 }
 void Miscellaneous::ClanTag()
 {
@@ -689,29 +772,22 @@ void Miscellaneous::RenderRadar()
 
 	ImGui::GetStyle().Alpha = Alpha;
 
+	ImGui::SetNextWindowSize(ImVec2{ 300, 300 }, ImGuiSetCond_Once);
 
-	if (ImGui::Begin("Radar", &radar, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar))
-	{
-		ImDrawList* Draw = ImGui::GetWindowDrawList();
+	if (ImGui::Begin("Radar_model", &radar, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+		ImGui::SetCursorPos(ImVec2(25, 15 + 15));
 
-		ImVec2 DrawPos = ImGui::GetCursorScreenPos();
-		ImVec2 DrawSize = ImGui::GetContentRegionAvail();
+		ImGui::BeginChild("Radar", ImVec2(250, 250), true, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoInputs);
+		{
 
-		Draw->AddLine(
-			ImVec2(DrawPos.x + DrawSize.x / 2.f, DrawPos.y),
-			ImVec2(DrawPos.x + DrawSize.x / 2.f, DrawPos.y + DrawSize.y),
-			ImColor(1.f, 1.f, 1.f, Alpha));
 
-		Draw->AddLine(
-			ImVec2(DrawPos.x, DrawPos.y + DrawSize.y / 2.f),
-			ImVec2(DrawPos.x + DrawSize.x, DrawPos.y + DrawSize.y / 2.f),
-			ImColor(1.f, 1.f, 1.f, Alpha));
+			
 
-		OnRenderPlayer();
-
-	
-		ImGui::End();
+		}
+		ImGui::EndChild();
 	}
+	ImGui::End();
+
 
 	ImGui::GetStyle().Alpha = prevAlpha;
 }

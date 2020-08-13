@@ -37,9 +37,11 @@ namespace Math
 	float DistanceToRay(const Vector &pos, const Vector &rayStart, const Vector &rayEnd, float *along = nullptr, Vector *pointOnRay = nullptr);
 	float DotProduct(const Vector & a, const Vector & b);
 	QAngle CalcAngle(const Vector& src, const Vector& dst);
+	Vector CalcAngle2(const Vector& src, const Vector& dst);
 	Vector CalculateAngle(const Vector& src, const Vector& dst);
 	void NormalizeAnglesV(Vector& angles);
 	float GetFOV(const QAngle& viewAngle, const QAngle& aimAngle);
+	void AngleVectors_2(const Vector& angles, Vector* forward);
 	template<class T>
 	void Normalize3(T& vec)
 	{
@@ -93,10 +95,11 @@ namespace Math
 	void VectorAngles2(const Vector& forward, Vector& up, QAngle& angles);
 	float FastVecNormalize(Vector& vec);
 	bool IntersectionBoundingBox(const Vector& src, const Vector& dir, const Vector& min, const Vector& max, Vector* hit_point);
-    void AngleVectors(const QAngle &angles, Vector& forward, Vector& right, Vector& up);
+    void AngleVectorsQangle(const QAngle& angles, QAngle& forward, Vector& right, Vector& up);
 	void FixVectors(const QAngle & angles, Vector * forward, Vector *right = nullptr, Vector *up = nullptr) ;
     void VectorAngles (const Vector& forward, QAngle& angles);
 	void VectorAngles2(const Vector& forward, Vector& angles);
+	void AngleVectors(const QAngle& angles, Vector& forward, Vector& right, Vector& up);
 	void Vector_Angles(const Vector& forward, Vector& up, Vector& angles);
     bool WorldToScreen(const Vector& in, Vector& out);
 }

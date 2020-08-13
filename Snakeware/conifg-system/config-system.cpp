@@ -91,7 +91,7 @@ void ConfigSystem::SetupVisuals()
 }
 void ConfigSystem::SetupMisc()
 {
-
+	SetupColor(g_Options.menu_color, "menu_color");
 	SetupValue(g_Options.legitbot_trigger_key, 1, ("legitbot"), ("trigger_key"));
 	SetupValue(g_Options.esp_font_size, 25, ("misc-extra"), ("font_size"));
 	SetupValue(g_Options.misc_anti_untrusted, true, ("misc-extra"), ("anti_untrusted"));
@@ -116,6 +116,8 @@ void ConfigSystem::SetupMisc()
 	SetupValue(g_Options.misc_radar_range, 1, ("misc"), ("radar_range"));
 	SetupValue(g_Options.misc_left_knife, false, ("misc"), ("left_knife"));
 	SetupValue(g_Options.misc_exaggerated_ragdolls, false, ("misc"), ("ragdoll"));
+	//g_Options.misc_hitsound_type
+	SetupValue(g_Options.misc_hitsound_type, 0, ("misc"), ("type_sound"));
 	SetupValue(g_Options.misc_exaggerated_ragdolls_force, 10, ("misc"), ("ragdoll_force"));
 
 	SetupValue(g_Options.misc_engine_radar ,false, ("misc"), ("engine_radar"));

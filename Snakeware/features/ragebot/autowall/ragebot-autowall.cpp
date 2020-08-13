@@ -232,6 +232,31 @@ void CAutoWall::scale_damage(C_BasePlayer* e, CCSWeaponInfo* weapon_info, int& h
 	}
 }
 
+
+bool HandleBulletPenetration_SelfCodedByBa1m0v(CCSWeaponInfo* wpn_data, FireBulletData& data)
+{
+	data.trace_length        += data.enter_trace.fraction * data.trace_length_remaining;
+	data.penetrate_count      = 0;
+	if (data.penetrate_count <= 0)
+	return false;
+	Vector    TheExitVector;
+	trace_t   trace_exit;
+	return false;
+	float     Damage_final__scaler = 0.16f;
+	float     Damage_final__combined = 0.0f;
+	          Damage_final__combined = 3.0f;//pretty good xd xd
+	          Damage_final__scaler = 0.05f;
+
+	float     ValueFront = fmaxf(0.f, 1.0f / Damage_final__scaler);
+	return false;
+
+	if (data.current_damage < 1.0f)
+		return false;
+
+	data.penetrate_count--; //trashcode but idk, its working p
+	return true;
+}
+
 bool CAutoWall::handle_bullet_penetration(CCSWeaponInfo* inf, fbdata& bullet) {
 	trace_t trace;
 
@@ -385,7 +410,7 @@ bool CAutoWall::trace_to_exit(trace_t* enter_trace, Vector& start, Vector& dir, 
 
 bool CAutoWall::is_breakable(C_BasePlayer* e) {
 	using func = bool(__fastcall*)(C_BasePlayer*);
-	static auto fn = reinterpret_cast<func>(Utils::PatternScan("client.dll", "55 8B EC 51 56 8B F1 85 F6 74 68 83 BE"));
+	static auto fn = reinterpret_cast<func>(Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 51 56 8B F1 85 F6 74 68 83 BE"));
 
 	if (!e || !e->EntIndex())
 		return false;
@@ -405,49 +430,6 @@ bool CAutoWall::is_breakable(C_BasePlayer* e) {
 	*take_damage = take_damage_backup;
 
 	return breakable;
-}
-
-float CAutoWall::get_estimated_point_damage(Vector point) {
-	if (!g_LocalPlayer)
-		return -1.f;
-
-	fbdata bullet;
-	auto filter = CTraceFilter();
-	filter.pSkip = g_LocalPlayer;
-
-	bullet.filter = &filter;
-	bullet.start = g_LocalPlayer->GetEyePos();
-	bullet.end = point;
-	bullet.pos = g_LocalPlayer->GetEyePos();
-	Math_AngleVectors(Math_CalcAngle(bullet.start, point), bullet.dir);
-	bullet.trace.startpos = bullet.start;
-	bullet.trace.endpos = point;
-
-	auto wep = g_LocalPlayer->m_hActiveWeapon();
-	if (!wep)
-		return -2.f;
-
-	bullet.walls = 1;
-	bullet.thickness = 0.f;
-
-	auto inf = wep->GetCSWeaponData();
-	if (!inf)
-		return -3.f;
-
-	bullet.damage = inf->iDamage;
-
-	Ray_t ray;
-	ray.Init(bullet.start, bullet.end);
-
-	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &bullet.trace);
-
-	if (bullet.trace.fraction == 1.f)
-		return -4.f;
-
-	if (this->handle_bullet_penetration(inf, bullet))
-		return bullet.damage;
-
-	return -5.f;
 }
 
 std::optional<CTraceSystem::wall_pen> CTraceSystem::wall_penetration(const Vector src, const Vector end,
@@ -883,4 +865,48 @@ float CTraceSystem::scale_damage(C_BasePlayer* target, float damage, const float
 	}
 
 	return damage;
+}
+
+float CAutoWall::get_estimated_point_damage(Vector point) {
+
+	if (!g_LocalPlayer)
+		return -1.f;
+
+	fbdata bullet;
+	auto filter = CTraceFilter();
+	filter.pSkip = g_LocalPlayer;
+
+	bullet.filter = &filter;
+	bullet.start = g_LocalPlayer->GetEyePos();
+	bullet.end = point;
+	bullet.pos = g_LocalPlayer->GetEyePos();
+	Math::AngleVectors(Math::CalcAngle(bullet.start, point), bullet.dir);
+	bullet.trace.startpos = bullet.start;
+	bullet.trace.endpos = point;
+
+	auto wep = g_LocalPlayer->m_hActiveWeapon();
+	if (!wep)
+		return 0.f;
+
+	bullet.walls = 2;
+	bullet.thickness = 0.f;
+
+	auto inf = wep->GetCSWeaponData();
+	if (!inf)
+		return 0.f;
+
+	bullet.damage = inf->iDamage;
+
+	Ray_t ray;
+	ray.Init(bullet.start, bullet.end);
+
+	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &bullet.trace);
+
+	if (bullet.trace.fraction == 1.f)
+		return 0.f;
+
+	if (handle_bullet_penetration(inf, bullet))
+		return bullet.damage;
+
+	return 0.f;
 }

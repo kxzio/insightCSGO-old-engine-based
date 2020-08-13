@@ -127,6 +127,7 @@ struct legitbot_settings {
 
 enum WEAPON_GROUPS {
 	PISTOLS,
+	H_PISTOLS,
 	RIFLES,
 	SHOTGUNS,
 	SCOUT,
@@ -288,6 +289,7 @@ public:
 	OPTION(float, misc_hiteffect_duration, 2.f);
 	OPTION(float, misc_hitmarker_size, 13.f);
 	OPTION(bool, misc_hitsound, false);
+	OPTION(int, misc_hitsound_type, 0);
 	OPTION(bool, misc_fakelag_on_shot, false);
 	OPTION(bool, misc_radar, false);
 	OPTION(bool, misc_left_knife, false);
@@ -357,6 +359,7 @@ public:
 	float prop_color[4] = { 1.f, 0.f, 1.f, 0.9f };
 	int prop_material;
 
+	float menu_color[4] = { 1.f, 0.f, 1.f, 1.0f };
 
 	OPTION(Color, color_chams_arms_occluded, Color(0, 128, 255));
 	OPTION(Color, color_watermark, Color(0, 128, 255)); // no menu config cuz its useless

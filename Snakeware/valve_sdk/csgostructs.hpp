@@ -3,6 +3,9 @@
 #include "sdk.hpp"
 #include <array>
 #include "../helpers/utils.hpp"
+#include <chrono>
+#include <mutex>
+#include <algorithm>
 
 #define Assert( _exp ) ((void)0)
 #define OFFSET(func, type, offset) type& func { return *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(this) + offset); }
@@ -302,7 +305,6 @@ public:
 		return static_cast<C_BasePlayer*>(GetEntityByIndex(i));
 	}
 
-	
 	NETVAR(bool, m_bHasDefuser, "DT_CSPlayer", "m_bHasDefuser");
 	NETVAR(bool, m_bGunGameImmunity, "DT_CSPlayer", "m_bGunGameImmunity");
 	NETVAR(int32_t, m_iShotsFired, "DT_CSPlayer", "m_iShotsFired");
@@ -319,7 +321,7 @@ public:
 	NETVAR(int32_t, m_nTickBase, "DT_BasePlayer", "m_nTickBase");
 	NETVAR(Vector, m_vecViewOffset, "DT_BasePlayer", "m_vecViewOffset[0]");
 	NETVAR(QAngle, m_viewPunchAngle, "DT_BasePlayer", "m_viewPunchAngle");
-	NETVAR(QAngle, m_aimPunchAngle, "DT_BasePlayer", "m_aimPunchAngle"); 
+	NETVAR(QAngle, m_aimPunchAngle, "DT_BasePlayer", "m_aimPunchAngle");
 	NETVAR(QAngle, m_aimPunchAngleVel, "DT_BasePlayer", "m_aimPunchAngleVel");
 	NETVAR(CHandle<C_BaseViewModel>, m_hViewModel, "DT_BasePlayer", "m_hViewModel[0]");
 	NETVAR(Vector, m_vecVelocity, "DT_BasePlayer", "m_vecVelocity[0]");
@@ -335,21 +337,21 @@ public:
 	NETVAR(float, m_flSimulationTime, "DT_BaseEntity", "m_flSimulationTime");
 	NETVAR(QAngle, m_angRotation, "DT_BaseEntity", "m_angRotation"); // wrong
 	NETVARADDOFFS(float, m_flOldSimulationTime, "DT_BaseEntity", "m_flSimulationTime", 0x4); // ya daun
-	POFFSET(GetBoneCache,    CBoneCache, 0x2900)
-	POFFSET(GetBoneAccessor, CBoneAccessor, 0x2698)
-	NETVAR(bool, m_bClientSideAnimation, "DT_BaseAnimating", "m_bClientSideAnimation"); // no baseplayer...
+	POFFSET(GetBoneCache, CBoneCache, 0x2900)
+		POFFSET(GetBoneAccessor, CBoneAccessor, 0x2698)
+		NETVAR(bool, m_bClientSideAnimation, "DT_BaseAnimating", "m_bClientSideAnimation"); // no baseplayer...
 	NETVAR(float, m_flCycle, "DT_BaseAnimating", "m_flCycle");
 	NETVAR(int, m_nSequence, "DT_BaseViewModel", "m_nSequence");
 	NETVAR(float, m_flNextAttack, "DT_BaseCombatCharacter", "m_flNextAttack");
 	NETVAR(int32_t, m_nSurvivalTeam, "DT_CSPlayer", "m_nSurvivalTeam");
-	NETVAR(float , m_flHealthShotBoostExpirationTime, "DT_CSPlayer", "m_flHealthShotBoostExpirationTime");
+	NETVAR(float, m_flHealthShotBoostExpirationTime, "DT_CSPlayer", "m_flHealthShotBoostExpirationTime");
 	NETVAR(QAngle, m_angAbsAngles, "DT_BaseEntity", "m_angAbsAngles");
 	NETVAR(float, m_flDuckSpeed, "DT_BaseEntity", "m_flDuckSpeed");
 	NETVAR(float, m_flDuckAmount, "DT_BaseEntity", "m_flDuckAmount");
 
 	NETVAR(int32_t, m_iFOV, "DT_BasePlayer", "m_iFOV");
 	NETVAR(int32_t, m_iDefaultFOV, "DT_BasePlayer", "m_iDefaultFOV");
-	std::array<float, 24> &m_flPoseParameter() const {
+	std::array<float, 24>& m_flPoseParameter() const {
 		static int _m_flPoseParameter = NetvarSys::Get().GetOffset("DT_BaseAnimating", "m_flPoseParameter");
 		return *(std::array<float, 24>*)((uintptr_t)this + _m_flPoseParameter);
 	}
@@ -373,48 +375,47 @@ public:
 	}
 
 	matrix3x4_t**& get_bone_cache() {
-		return *reinterpret_cast<matrix3x4_t * **>(reinterpret_cast<uintptr_t>(this) + 0x2910);
+		return *reinterpret_cast<matrix3x4_t***>(reinterpret_cast<uintptr_t>(this) + 0x2910);
 	}
 
 	Vector& m_angAbsOrigin() {
-		typedef Vector& (__thiscall * OriginalFn)(void*);  
+		typedef Vector& (__thiscall* OriginalFn)(void*);
 		if (this) return ((OriginalFn)CallVFunction<OriginalFn>(this, 10))(this);
 		return Vector(0, 0, 0);
 	}
 
-	/*   Gladiator v2.1     */
+	/*Gladiator v2.1*/
 	void InvalidateBoneCache();
 	void SetSnakewareAngles(QAngle angles);
-	void SetAbsAngles(const QAngle & angles);
+	void SetAbsAngles(const QAngle& angles);
 	const Vector WorldSpaceCenter();
-	void SetAbsOrigin(const Vector &origin);
+	void SetAbsOrigin(const Vector& origin);
 
 	void InvalidatePhysics(int32_t flags);
-	QAngle & VisualAngles();
+	QAngle& VisualAngles();
 	int GetNumAnimOverlays();
 	bool IsTeam();
-	AnimationLayer * GetAnimOverlays();
-	AnimationLayer *GetAnimOverlay(int i);
+	AnimationLayer* GetAnimOverlays();
+	AnimationLayer* GetAnimOverlay(int i);
 	int GetSequenceActivity(int sequence);
-	CCSGOPlayerAnimState *GetPlayerAnimState();
+	CCSGOPlayerAnimState* GetPlayerAnimState();
 
 	bool IsLocalPlayer() const; // rifkk
 
-	static void UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angle);
-	static void ResetAnimationState(CCSGOPlayerAnimState *state);
-	void CreateAnimationState(CCSGOPlayerAnimState *state);
+	static void UpdateAnimationState(CCSGOPlayerAnimState* state, QAngle angle);
+	static void ResetAnimationState(CCSGOPlayerAnimState* state);
+	void CreateAnimationState(CCSGOPlayerAnimState* state);
 
 
 	matrix3x4_t*& GetBoneArrayForWrite() {
-		return *reinterpret_cast<matrix3x4_t * *>(reinterpret_cast<uintptr_t>(this) + 0x26A8);
+		return *reinterpret_cast<matrix3x4_t**>(reinterpret_cast<uintptr_t>(this) + 0x26A8);
 	}
-	uint32_t& GetReadableBones () {
+	uint32_t& GetReadableBones() {
 		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0x26AC);
 	}
-	uint32_t& GetWritableBones () {
+	uint32_t& GetWritableBones() {
 		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0x26B0);
 	}
-
 	uint32_t& GetOcclusionFlags() {
 		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0xA28);
 	}
@@ -426,43 +427,41 @@ public:
 	{
 		return *reinterpret_cast<uint32_t*>(uintptr_t(this) + 0x2690);
 	}
-	
 	uint32_t& GetOcclusionFramecount() {
 		return *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(this) + 0xA30);
 	}
-
-	int &GetEffect()
+	int& GetEffect()
 	{
 		static unsigned int _GetEffect = Utils::FindInDataMap(GetPredDescMap(), "m_fEffects");
 		return *(int*)((uintptr_t)this + _GetEffect);
 	}
-	Vector &m_vecAbsVelocity()
+	Vector& m_vecAbsVelocity()
 	{
 		static unsigned int _m_vecAbsVelocity = Utils::FindInDataMap(GetPredDescMap(), "m_vecAbsVelocity");
 		return *(Vector*)((uintptr_t)this + _m_vecAbsVelocity);
 	}
-	uint32_t &m_iEFlags()
+	uint32_t& m_iEFlags()
 	{
 		static unsigned int _m_iEFlags = Utils::FindInDataMap(GetPredDescMap(), "m_iEFlags");
 		return *(uint32_t*)((uintptr_t)this + _m_iEFlags);
 	}
-	float_t &m_surfaceFriction()
+	float_t& m_surfaceFriction()
 	{
 		static unsigned int _m_surfaceFriction = Utils::FindInDataMap(GetPredDescMap(), "m_surfaceFriction");
 		return *(float_t*)((uintptr_t)this + _m_surfaceFriction);
 	}
-	Vector &m_vecBaseVelocity()
+	Vector& m_vecBaseVelocity()
 	{
 		static unsigned int _m_vecBaseVelocity = Utils::FindInDataMap(GetPredDescMap(), "m_vecBaseVelocity");
 		return *(Vector*)((uintptr_t)this + _m_vecBaseVelocity);
 	}
 
-	float_t &m_flMaxspeed()
+	float_t& m_flMaxspeed()
 	{
 		static unsigned int _m_flMaxspeed = Utils::FindInDataMap(GetPredDescMap(), "m_flMaxspeed");
 		return *(float_t*)((uintptr_t)this + _m_flMaxspeed);
 	}
-	float_t &m_flAnimTime()
+	float_t& m_flAnimTime()
 	{
 		static unsigned int m_flAnimTime = Utils::FindInDataMap(GetPredDescMap(), "m_flAnimTime");
 		return *(float_t*)((uintptr_t)this + m_flAnimTime);
@@ -474,30 +473,30 @@ public:
 	Vector        GetEyePos();
 	void          SetAnimLayers(std::array<AnimationLayer, 15>& layers);
 	player_info_t GetPlayerInfo();
-	bool  IsVisible (bool smokecheck);
+	bool  IsVisible(bool smokecheck);
 	bool          IsAlive();
 	bool InDangerzone();
 	bool IsEnemy();
 	bool		  IsFlashed();
 	bool          HasC4();
 	Vector        GetHitboxPos(int hitbox_id);
-	mstudiobbox_t * GetHitbox(int hitbox_id);
+	mstudiobbox_t* GetHitbox(int hitbox_id);
 	Vector GetHitboxPosition(int hitbox_id, matrix3x4_t boneMatrix[MAXSTUDIOBONES]);
-	bool          GetHitboxPos(int hitbox, Vector &output);
+	bool          GetHitboxPos(int hitbox, Vector& output);
 	bool          PointVisible(Vector endpos);
 	Vector        HitboxPosition(int hitbox_id, matrix3x4_t matrix[128]);
 	Vector        GetBonePos(int bone);
 	bool          CanSeePlayer(C_BasePlayer* player, int hitbox);
 	bool          CanSeePlayer(C_BasePlayer* player, const Vector& pos);
 	bool CanSeePoint(Vector endpos);
-	void WeaponShootPos(Vector & pos);
+	void WeaponShootPos(Vector& pos);
 	Vector GetShootPos();
 	void UpdateClientSideAnimation();
 
 	bool IsNotTarget();
 
 	int m_nMoveType();
-	QAngle * GetVAngles();
+	QAngle* GetVAngles();
 	float_t m_flSpawnTime();
 
 };
@@ -527,7 +526,7 @@ public:
 	float_t m_flWeightDeltaRate; //0x0024
 	float_t m_flPlaybackRate; //0x0028
 	float_t m_flCycle; //0x002C
-	void *m_pOwner; //0x0030 // player's thisptr
+	void* m_pOwner; //0x0030 // player's thisptr
 	char  pad_0038[4]; //0x0034
 }; //Size: 0x0038
 class CBasePlayerAnimState

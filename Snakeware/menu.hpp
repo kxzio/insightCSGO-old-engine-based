@@ -27,9 +27,10 @@ public:
 
     bool IsVisible() const { return _visible; }
 
+    ImGuiStyle        _style;
 private:
     void CreateStyle();
 
-    ImGuiStyle        _style;
+    
     bool              _visible;
 };

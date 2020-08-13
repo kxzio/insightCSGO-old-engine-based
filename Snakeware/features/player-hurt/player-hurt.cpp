@@ -4,6 +4,10 @@
 #include "../../render.hpp"
 #include "../../helpers/math.hpp"
 #include "../../features/ragebot/ragebot.h"
+#include "../../fonts/Sound_bite.h"
+
+IGameEvent* event_ex;
+
 static void DrawHitbox(C_BasePlayer * pPlayer, Color col, float duration)
 {
 	if (!pPlayer)
@@ -54,10 +58,25 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 		if (g_EngineClient->GetPlayerForUserID(event->GetInt("attacker")) == g_EngineClient->GetLocalPlayer() && g_EngineClient->GetPlayerForUserID(event->GetInt("userid")) != g_EngineClient->GetLocalPlayer())
 		{
 			hitMarkerInfo.push_back({ g_GlobalVars->curtime + 0.8f, event->GetInt("dmg_health") });
-			 if (g_Options.misc_hitsound)
-			g_EngineClient->ExecuteClientCmd("play buttons\\arena_switch_press_02.wav"); // No other fitting sound. Probs should use a resource
+			if (g_Options.misc_hitsound)
+			{
+
+				switch (g_Options.misc_hitsound_type)
+				{
+				case 0: g_EngineClient->ExecuteClientCmd("play buttons\\arena_switch_press_02.wav");     break;
+				case 1: g_EngineClient->ExecuteClientCmd("play fatality.wav");     break;
+				case 2: g_EngineClient->ExecuteClientCmd("play cod.wav");     break;
+				case 3: g_EngineClient->ExecuteClientCmd("play hit2.wav");     break;
+				case 4: g_EngineClient->ExecuteClientCmd("play rifk.wav");     break;
+
+
+				}
+			}
+			
 		}
 	}
+
+
 	if (g_Options.misc_hiteffect)
 	{
 
@@ -73,6 +92,9 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 		if (attacker == g_EngineClient->GetLocalPlayer() && userid != g_EngineClient->GetLocalPlayer())
 			DrawHitbox(Player,Hitbox, g_Options.shot_hitboxes_duration);
 	}
+
+	event_ex = event;
+
 	
 	
 }
@@ -92,6 +114,51 @@ void PlayerHurtEvent::UnregisterSelf()
 	g_GameEvents->RemoveListener(this);
 }
 
+static bool active_text = false;
+
+std::string text;
+
+void KillText_()
+{
+	{
+		static int move_x = 0;
+		static int move_y = 0;
+		static int alpha = 255;
+
+
+		static int randomposx = 0;
+		static int randomposy = 0;
+
+
+
+		if (active_text)
+		{
+			if (randomposx == 0)
+			{
+				randomposx = rand() % 1000;
+				randomposy = rand() % 1000;
+			}
+
+			move_x = move_x + 2;
+			move_y = move_y + 1;
+			alpha--;
+			Render::Get().RenderTextGiantNoOutnline(text, randomposx + move_x, randomposy + move_y, 30.f, Color(255, 0, alpha / 2, alpha));
+		}
+
+		if (alpha < 1)
+		{
+
+			active_text = false;
+			alpha = 255;
+			move_x = 0;
+			move_y = 0;
+			randomposx = 0;
+			randomposy = 0;
+
+		}
+	}
+}
+
 void PlayerHurtEvent::Paint(void)
 {
 	static int width = 0, height = 0;
@@ -99,7 +166,8 @@ void PlayerHurtEvent::Paint(void)
 		g_EngineClient->GetScreenSize(width, height);
 
 	float alpha = 0.f;
-
+	 
+	
 	if (g_Options.misc_hitmarker)
 	{
 		for (size_t i = 0; i < hitMarkerInfo.size(); i++)
@@ -118,6 +186,9 @@ void PlayerHurtEvent::Paint(void)
 			alpha = 0.8f - diff / 0.8f;
 			Color Snakeware = Color(255, 0, 175, 255);
 			Render::Get().RenderText(std::to_string(hitMarkerInfo.at(i).m_iDmg).c_str(), width / 2 + 6 + ratio * dist / 2, height / 2 + 6 + ratio * dist, 16.f, Snakeware);
+			active_text = true;
+
+
 		}
 
 		if (hitMarkerInfo.size() > 0)
@@ -128,6 +199,28 @@ void PlayerHurtEvent::Paint(void)
 			Render::Get().RenderLine(width / 2 - lineSize / 2, height / 2 - lineSize / 2, width / 2 + lineSize / 2, height / 2 + lineSize / 2, White);
 			Render::Get().RenderLine(width / 2 + lineSize / 2, height / 2 - lineSize / 2, width / 2 - lineSize / 2, height / 2 + lineSize / 2, White);
 
+
 		}
+
+		int shots = std::clamp(g_LocalPlayer->m_iShotsFired(), 0, 10);
+
+		if (g_LocalPlayer->IsAlive())
+		{
+			switch (shots)
+			{
+			case 10: text = "DESTROYED"; break;
+			case 9: text = "SUPERKILL"; break;
+			case 8: text = "MACHINE  "; break;
+			case 7: text = "MEGAKILL "; break;
+			case 6: text = "ULTRAKILL"; break;
+			case 5: text = "SUPERKILL"; break;
+			case 4: text = "MEGASHOT "; break;
+			case 3: text = "HEADSHOT "; break;
+			case 2: text = "KILLER   "; break;
+			case 1: text = "SUPERKILL"; break;
+			}
+		}
+		KillText_();
 	}
 }
+
