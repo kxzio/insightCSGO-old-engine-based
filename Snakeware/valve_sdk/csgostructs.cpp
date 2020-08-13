@@ -237,8 +237,9 @@ CUserCmd*& C_BasePlayer::m_pCurrentCommand()
 	return *(CUserCmd**)((uintptr_t)this + currentCommand);
 }
 
-int C_BasePlayer::GetNumAnimOverlays()
-{
+int C_BasePlayer::GetNumAnimOverlays() {
+	if (this == nullptr)
+		return 13;
 	return *(int*)((DWORD)this + 0x298C);
 }
 bool C_BasePlayer::IsTeam()

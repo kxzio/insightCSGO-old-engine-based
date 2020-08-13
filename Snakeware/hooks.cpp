@@ -87,7 +87,7 @@ namespace Hooks {
 		sv_cheats.hook_index(index::SvCheatsGetBool, hkSvCheatsGetBool);
 		engine_hook.hook_index(index::AspectRatio, GetScreenAspectRatio);
 		engine_hook.hook_index(index::IsHLTV, hkIsHLTV);
-		//engine_hook.hook_index(27, hkIsConnected);
+		engine_hook.hook_index(27, hkIsConnected);
 		engine_hook.hook_index(32, hkIsBoxVisible);
 
 		const char* message = "Cheat injected";
@@ -244,15 +244,18 @@ namespace Hooks {
 			m_bInvalidCycle = g_LocalPlayer->m_flCycle() == 0.f && m_flLastCycle > 0.f;
 	}
 
-
+	
 	//--------------------------------------------------------------------------------
 	
-	void __stdcall HkSetupMove(C_BasePlayer * m_pPlayer, CUserCmd * m_pCmd, IMoveHelper * m_pMoveHelper, CMoveData * m_pMoveData)
+	void __stdcall  HkSetupMove(C_BasePlayer * m_pPlayer, CUserCmd * m_pCmd, IMoveHelper * m_pMoveHelper, CMoveData * m_pMoveData)
 	{
-		static auto setupMove = prediction_hook.get_original< SetupMoveFn >(index::SetupMove);
-		setupMove(m_pPlayer, m_pCmd, m_pMoveHelper, m_pMoveData);
-		
-	
+		static auto ofunc = prediction_hook.get_original<SetupMoveFn>(index::SetupMove);
+		if (!m_pPlayer || m_pPlayer != g_LocalPlayer) return;
+
+		if (m_pMoveData && &EnginePrediction::Get().data != m_pMoveData)
+			std::memcpy(&EnginePrediction::Get().data, m_pMoveData, sizeof(CMoveData));
+
+		return ofunc(m_pPlayer, m_pCmd, m_pMoveHelper, m_pMoveData);
 	}
 
 	void __fastcall HkRunCommand(void* ecx, void* edx, C_BasePlayer* player, CUserCmd* ucmd, IMoveHelper* moveHelper) {
@@ -276,8 +279,7 @@ namespace Hooks {
 			int m_flCurtime = g_GlobalVars->curtime;
 
 			if (ucmd->command_number == Snakeware::ShotCmd) {
-				//g_LocalPlayer->m_nTickBase() = CMAntiAim::Get().base_tick - Snakeware::m_nTickbaseShift + 1;
-				g_LocalPlayer->m_nTickBase() = m_nTickbase - Snakeware::m_nTickbaseShift + 1;
+				g_LocalPlayer->m_nTickBase() = Snakeware::BaseTick - Snakeware::m_nTickbaseShift + 1;
 				++g_LocalPlayer->m_nTickBase();
 				g_GlobalVars->curtime = TICKS_TO_TIME(g_LocalPlayer->m_nTickBase());
 
@@ -390,7 +392,7 @@ namespace Hooks {
 		int32_t new_commands = *pNumNewCommands;
 		// Manipulate CLC_Move
 		auto nextcmdnumber = g_ClientState->m_nLastOutgoingCmd + g_ClientState->m_nChokedCmds + 1;
-		auto totalnewcommands = std::min(Snakeware::m_nTickbaseShift, 60);
+		auto totalnewcommands = std::min(Snakeware::m_nTickbaseShift, 17);
 		Snakeware::m_nTickbaseShift -= totalnewcommands;
 
 		from = -1;
@@ -496,6 +498,8 @@ namespace Hooks {
 	
 		if (g_LocalPlayer->IsAlive()) {
 			Snakeware::UnpredTick = g_GlobalVars->tickcount;
+
+			Tickbase::Get().PreverseCharge(cmd);
 		}
 		
 		uintptr_t *frame_ptr;
@@ -549,13 +553,15 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); //РейджБот пока не виновен
-			Tickbase::Get().DoubleTap(cmd);
+			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); 
 			Miscellaneous::Get().SlowWalk(cmd);
-			 
-			
 			Miscellaneous::Get().LegitAntiAim(cmd);
+			Tickbase::Get().DoubleTap(cmd);
+
+			
+
 			Snakeware::g_bOverrideVelMod = false;
+
 		}
 		Prediction->Finish(g_LocalPlayer);
 

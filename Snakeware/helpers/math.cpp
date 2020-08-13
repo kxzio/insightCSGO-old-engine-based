@@ -2,6 +2,8 @@
 #include "intrincics.h"
 namespace Math
 {
+
+
 	float Segment2Segment(const Vector s1, const Vector s2, const Vector k1, const Vector k2)
 	{
 		static auto constexpr epsilon = 0.00000001;
@@ -509,6 +511,22 @@ namespace Math
 		vec.y *= invlen;
 		vec.z *= invlen;
 		return sqrlen * invlen;
+	}
+	float VectorNormalize(Vector& v)
+	{
+		Assert(v.IsValid());
+		float l = v.Length();
+		if (l != 0.0f)
+		{
+			v /= l;
+		}
+		else
+		{
+			// FIXME:
+			// Just copying the existing implemenation; shouldn't res.z == 0?
+			v.x = v.y = 0.0f; v.z = 1.0f;
+		}
+		return l;
 	}
 	//------------------------------------------------------------------------------
 	void FixVectors(const QAngle &angles, Vector *forward, Vector *right, Vector *up) {

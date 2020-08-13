@@ -33,6 +33,8 @@ class CUserCmd;
 namespace Snakeware
 {
 	extern int MissedShots[65];
+	extern int CmdTick;
+	extern int BaseTick;
 	extern bool bAimbotting;
 	extern bool			  LBY_Update;
 	extern QAngle LocalAngle;
@@ -42,16 +44,23 @@ namespace Snakeware
 	extern QAngle Aimangle;
 	extern bool bSendPacket;
 	extern bool OnShot;
+	extern bool DoubleTapCharged;
 	extern uint32_t ShotCmd;
 	extern int UnpredTick;
 	extern float g_flVelocityModifer;
 	extern bool g_bOverrideVelMod;
 	extern int m_nTickbaseShift;
 	extern int m_nBaseTick;
+	extern int SkipTicks;
 	extern matrix3x4_t FakeMatrix[128];
 	extern matrix3x4_t FakeLagMatrix[128];
 	extern bool bVisualAimbotting;
 	extern QAngle vecVisualAimbotAngs;
+
+	extern std::string EyeDelta;
+	extern std::string Delta;
+	extern std::string Delta2;
+	extern std::string Delta3;
 }
 class Cmd {
 public:

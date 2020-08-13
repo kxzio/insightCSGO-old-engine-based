@@ -5,6 +5,8 @@ int realHitboxSpot[] = { 0, 1, 2, 3 };
 namespace Snakeware
 {
 	int MissedShots[65];
+	int CmdTick = 0;
+	int BaseTick = 0;
 	QAngle LocalAngle = QAngle(0, 0, 0);
 	QAngle FakeAngle = QAngle(0, 0, 0);
 	QAngle RealAngle = QAngle(0, 0, 0);
@@ -18,12 +20,19 @@ namespace Snakeware
 	float g_flVelocityModifer;
 	bool bSendPacket ;
 	bool OnShot;
+	bool DoubleTapCharged;
 	bool g_bOverrideVelMod;
 	bool LBY_Update = false;
 	bool bAimbotting = false;
 	int m_nTickbaseShift;
 	int m_nBaseTick;
-	
+	int SkipTicks;
+
+	std::string Delta;
+	std::string Delta2;
+	std::string Delta3;
+	std::string EyeDelta;
+
 	bool bVisualAimbotting = false;
 	QAngle vecVisualAimbotAngs = QAngle(0.f, 0.f, 0.f);
 	

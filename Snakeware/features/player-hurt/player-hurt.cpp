@@ -8,6 +8,7 @@
 
 IGameEvent* event_ex;
 
+
 static void DrawHitbox(C_BasePlayer * pPlayer, Color col, float duration)
 {
 	if (!pPlayer)
@@ -95,6 +96,7 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 
 	event_ex = event;
 
+	
 	
 	
 }

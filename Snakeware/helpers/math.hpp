@@ -93,6 +93,7 @@ namespace Math
     void AngleVectors(const QAngle &angles, Vector& forward);
 
 	void VectorAngles2(const Vector& forward, Vector& up, QAngle& angles);
+	float VectorNormalize(Vector& v);
 	float FastVecNormalize(Vector& vec);
 	bool IntersectionBoundingBox(const Vector& src, const Vector& dir, const Vector& min, const Vector& max, Vector* hit_point);
     void AngleVectorsQangle(const QAngle& angles, QAngle& forward, Vector& right, Vector& up);

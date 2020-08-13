@@ -19,7 +19,7 @@ struct Animation
 	C_BasePlayer* player{};
 	int32_t index{};
 
-	bool valid{}, has_anim_state{};
+	bool valid{}, has_anim_state{}, is_backtrackable{};
 	alignas(16) matrix3x4_t bones[128];
 
 	bool dormant{};
@@ -74,6 +74,8 @@ public:
 
 
 
+
+	void FixNetvarCompression(C_BasePlayer * player);
 
 	void UpdatePlayerAnimations();
 
