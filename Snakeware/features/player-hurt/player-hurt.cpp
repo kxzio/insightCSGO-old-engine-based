@@ -4,6 +4,7 @@
 #include "../../render.hpp"
 #include "../../helpers/math.hpp"
 #include "../../features/ragebot/ragebot.h"
+
 static void DrawHitbox(C_BasePlayer * pPlayer, Color col, float duration)
 {
 	if (!pPlayer)
@@ -73,6 +74,7 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 		if (attacker == g_EngineClient->GetLocalPlayer() && userid != g_EngineClient->GetLocalPlayer())
 			DrawHitbox(Player,Hitbox, g_Options.shot_hitboxes_duration);
 	}
+	
 	
 	
 }

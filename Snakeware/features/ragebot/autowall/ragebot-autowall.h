@@ -36,6 +36,8 @@ class CAutoWall
 {
 public:
 	float get_estimated_point_damage(Vector point);
+	void  TraceLine(Vector & start, Vector & end, unsigned int mask, C_BasePlayer * ignore, trace_t * trace);
+	bool CanHitFloatingPoint(const Vector & point, const Vector & source);
 	returninfo autowall(Vector start, Vector end, C_BasePlayer* from_ent = nullptr, C_BasePlayer* to_ent = nullptr, int hitgroup = -1);
 
 private:

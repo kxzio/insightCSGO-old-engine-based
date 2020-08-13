@@ -450,6 +450,57 @@ float CAutoWall::get_estimated_point_damage(Vector point) {
 	return -5.f;
 }
 
+
+void CAutoWall::TraceLine(Vector& start, Vector& end, unsigned int mask, C_BasePlayer* ignore, trace_t* trace)
+{
+	Ray_t ray;
+	ray.Init(start, end);
+
+	CTraceFilter filter;
+	filter.pSkip = ignore;
+
+	g_EngineTrace->TraceRay(ray, mask, &filter, trace);
+}
+
+bool CAutoWall::CanHitFloatingPoint(const Vector& point, const Vector& source) {
+	static auto VectortoVectorVisible = [&](Vector src, Vector point) -> bool {
+		trace_t TraceInit;
+		TraceLine(src, point, MASK_SOLID, g_LocalPlayer, &TraceInit);
+		trace_t Trace;
+		TraceLine(src, point, MASK_SOLID, TraceInit.hit_entity, &Trace);
+
+		if (Trace.fraction == 1.0f || TraceInit.fraction == 1.0f)
+			return true;
+
+		return false;
+	};
+	fbdata data;
+	data.start = source;
+	CTraceFilter filter;
+	filter.pSkip = g_LocalPlayer;
+	Vector angles = Math::CalculateAngle(data.start, point);
+	Math::AngleVectors2(angles, data.dir);
+	Math::VectorNormalize(data.dir);
+
+	data.walls = 1;
+	//data.trace_length = 0.0f;
+
+	auto weaponData = g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData();
+
+	if (!weaponData)
+		return false;
+
+	data.damage = (float)weaponData->iDamage;
+	//data.trace_length_remaining = weaponData->range - data.trace_length;
+	Vector end = data.start + (data.dir * weaponData->flRange);
+	TraceLine(data.start, end, MASK_SHOT | CONTENTS_HITBOX, g_LocalPlayer, &data.trace);
+
+	if (VectortoVectorVisible(data.start, point) || handle_bullet_penetration(weaponData, data))
+		return true;
+
+	return false;
+}
+
 std::optional<CTraceSystem::wall_pen> CTraceSystem::wall_penetration(const Vector src, const Vector end,
 	Animation* target, C_BasePlayer* override_player) const
 {

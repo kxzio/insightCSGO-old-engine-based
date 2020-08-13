@@ -3,7 +3,7 @@
 #include "../../helpers/utils.hpp"
 #include "../../options.hpp"
 #include "autowall/ragebot-autowall.h"
-
+#include "resolver/resolver.h"
 int curGroup;
 void UpdateConfig() 
 {
@@ -236,14 +236,19 @@ std::vector<RageBot::AimInfo> RageBot::select_multipoint(Animation* animation, i
 	if (box == HITBOX_NECK) return points;
 
 	auto scale = 0.f;
-	if (box == HITBOX_HEAD) {
-		scale = g_Options.ragebot_pointscale[curGroup] / 100.f;
-	}
-	else if (box == HITBOX_STOMACH || box == HITBOX_PELVIS || box == HITBOX_UPPER_CHEST || box == HITBOX_CHEST || box == HITBOX_LOWER_CHEST) {
-		scale = g_Options.ragebot_bodyscale[curGroup] / 100.f;
-	}
-	else {
-		scale = g_Options.ragebot_otherscale[curGroup] / 100.f;
+	if (animation->player->m_vecVelocity().Length2D() > 295.f || !(animation->player->m_fFlags() & FL_ONGROUND))
+		scale = 0.f; //pFix
+	else
+	{
+		if (box == HITBOX_HEAD) {
+			scale = g_Options.ragebot_pointscale[curGroup] / 100.f;
+		}
+		else if (box == HITBOX_STOMACH || box == HITBOX_PELVIS || box == HITBOX_UPPER_CHEST || box == HITBOX_CHEST || box == HITBOX_LOWER_CHEST) {
+			scale = g_Options.ragebot_bodyscale[curGroup] / 100.f;
+		}
+		else {
+			scale = g_Options.ragebot_otherscale[curGroup] / 100.f;
+		}
 	}
 
 	const auto model = animation->player->GetModel();
@@ -469,6 +474,34 @@ void Autostop(CUserCmd* cmd)
 }
 
 
+bool RageBot::CanShoot () {
+	auto weapon = g_LocalPlayer->m_hActiveWeapon();
+	if (!weapon)  return false;
+
+
+	const auto is_zeus = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_ZEUS;
+	const auto is_knife = !is_zeus && weapon->GetCSWeaponData()->iWeaponType == WEAPONTYPE_KNIFE;
+	auto time = TICKS_TO_TIME(g_LocalPlayer->m_nTickBase() - Snakeware::m_nTickbaseShift);
+
+	const auto weapontype = weapon->GetCSWeaponData()->iWeaponType;
+	if (weapontype == WEAPONTYPE_C4 || weapon->IsGrenade())  return false;
+
+	if (weapon->m_iClip1() < 1 && !is_knife)                 return false;
+
+	if (weapon->IsReloading())                               return false;
+
+	if (GetAsyncKeyState(g_Options.exploit_doubletap_key))
+	{
+		if (weapon->m_flNextPrimaryAttack() > time)              return false;
+
+		if (g_LocalPlayer->m_flNextAttack() > time)              return false;
+	}
+
+                                                             return true; //Def return
+
+}
+
+
 void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 {
 
@@ -485,6 +518,9 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 	if (!weapon->CanFire()) return;
 
 	std::vector<AimInfo> hitpoints = {};
+	UpdateConfig();
+
+
 
 	Snakeware::OnShot = false;
 	for (int i = 1; i < g_GlobalVars->maxClients; i++) {
@@ -579,22 +615,41 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 
 
 	cmd->viewangles = angle;
-	cmd->tick_count = TIME_TO_TICKS(best_match.animation->sim_time) + TIME_TO_TICKS(LagCompensation::Get().GetLerpTime()) + 1;
+	cmd->tick_count = TIME_TO_TICKS(best_match.animation->sim_time + LagCompensation::Get().GetLerpTime());
 	if (!g_Options.ragebot_silent)
 		g_EngineClient->SetViewAngles(&cmd->viewangles);
 
-
+	
 	if (g_Options.ragebot_autofire || cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2) {
 		Snakeware::bSendPacket = true;
 		Snakeware::OnShot = false;
 
-		if (!(cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2)) {
-			Snakeware::OnShot = true;
+		if (!(cmd->buttons & IN_ATTACK || cmd->buttons & IN_ATTACK2) && CanShoot() ) {
 			cmd->buttons |= best_match.alt_attack ? IN_ATTACK2 : IN_ATTACK;
+
+			if (!best_match.alt_attack) {
+				memcpy(Resolver::Get().LastBones, best_match.animation->bones, 128 * sizeof(float) * 12);
+				Resolver::Get().LastEyePos = local->GetShootPos();
+				Resolver::Get().LastMissedShotIndex = best_match.animation->index;
+				Resolver::Get().LastHitbox = best_match.hitbox;
+				
+			}
+			Snakeware::OnShot = true;
 		}
-		if (g_Options.ragebot_remove_recoil)
+		if (g_Options.ragebot_remove_recoil) {
+			cmd->viewangles -= local->m_aimPunchAngle() * g_CVar->FindVar("weapon_recoil_scale")->GetFloat();
+		}
+	
+	}
+	else {
+		// store shot info for resolver.
+		if (!best_match.alt_attack)
 		{
-			angle -= local->m_aimPunchAngle() * g_CVar->FindVar("weapon_recoil_scale")->GetFloat();
+
+			Resolver::Get().LastEyePos = local->GetShootPos();
+			memcpy(Resolver::Get().LastBones, best_match.animation->bones, 128 * sizeof(float) * 12);
+			Resolver::Get().LastMissedShotIndex = best_match.animation->index;
+			Resolver::Get().LastHitbox = best_match.hitbox;
 		}
 	}
 

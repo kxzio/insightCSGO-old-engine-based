@@ -17,7 +17,45 @@ void ConfigSystem::SetupColor(float value[4], std::string name) {
 
 void ConfigSystem::SetupRage()
 {
-		SetupValue(g_Options.ragebot_enabled, false, "ragebot", "enabled");
+		SetupValue(g_Options.ragebot_enabled, false, ( "ragebot"), ("enabled"));
+		SetupValue(g_Options.ragebot_silent, false, ("ragebot"), ("ragebotsilent"));
+		SetupValue(g_Options.ragebot_autowall, false, ("ragebot"), ("autowall"));
+		SetupValue(g_Options.ragebot_remove_recoil, false, ("ragebot"), ("remove_recoil"));
+		SetupValue(g_Options.ragebot_autofire, false, ("ragebot"), ("autofire"));
+		SetupValue(g_Options.ragebot_fov, 228,       ("ragebot"),  ("ragebot_fov"));
+		SetupValue(g_Options.ragebot_autostop, false, ("ragebot"), ("autostop"));
+		SetupValue(g_Options.ragebot_autostop_bs, false, ("ragebot"), ("autostopbs"));
+		SetupValue(g_Options.ragebot_autostop_type, 0, ("ragebot"), ("auto_stoptype"));
+
+		for (int type = WEAPON_GROUPS::PISTOLS; type <= WEAPON_GROUPS::SMG; type++) {
+			SetupValue(g_Options.ragebot_mindamage[type], 0, ("ragebot"), ("ragebot_mindamage"));
+			SetupValue(g_Options.ragebot_vis_mindamage[type], 0, ("ragebot"), ("ragebot_vismindamage"));
+			SetupValue(g_Options.ragebot_hitchance[type], 0, ("ragebot"), ("ragebot_hitchance"));
+			SetupValue(g_Options.ragebot_pointscale[type], 0, ("ragebot"), ("ragebot_pointscale"));
+			SetupValue(g_Options.ragebot_bodyscale[type], 0, ("ragebot"), ("ragebot_bodyscale"));
+			SetupValue(g_Options.ragebot_otherscale[type], 0, ("ragebot"), ("ragebot_otherscale"));
+			for (int i = 0; i < 8; i++) {
+				SetupValue(g_Options.ragebot_hitbox[i][type], false, ("ragebot"), ("hitscan_") + std::to_string(i) + std::to_string(type));
+			}
+
+		}
+
+
+
+
+
+		// antiaim :
+		SetupValue(g_Options.antihit_enabled, false, ("antihit"), ("enabled"));
+		SetupValue(g_Options.antihit_stabilize_lby, false, ("antihit"), ("stabilizelby"));
+		SetupValue(g_Options.antihit_pitch, 0, ("antihit"), ("pitch"));
+		SetupValue(g_Options.antihit_yaw,   0, ("antihit"), ("yaw"));
+		SetupValue(g_Options.antihit_fake, 0, ("antihit"), ("fake"));
+		SetupValue(g_Options.antihit_lby, 0, ("antihit"), ("lby"));
+		SetupValue(g_Options.antihit_jitter_type, 0, ("antihit"), ("jitter"));
+		SetupValue(g_Options.antihit_jitter_radius, 0, ("antihit"), ("jitter_rad"));
+		SetupValue(g_Options.antihit_fake_switch_key, 0, ("antihit"), ("fake_switch"));
+		SetupValue(g_Options.antihit_fake_ammount, 58, ("antihit"), ("fake_ammount"));
+
 }
 void ConfigSystem::SetupVisuals()
 {
@@ -26,7 +64,7 @@ void ConfigSystem::SetupVisuals()
 	SetupValue(g_Options.sound_esp, 12, ("sound-esp"), ("sound_esp_radius"));
 
 	SetupValue(g_Options.esp_enabled, false, ("player-esp"), ("enabled"));
-	SetupValue(g_Options.esp_enemies_only, false, ("player-esp"), ("enemies_only"));
+	SetupValue(g_Options.esp_enemies_only, false, ("player-esp"), ("enemies_onlyesp"));
 	SetupValue(g_Options.esp_player_boxes, false, ("player-esp"), ("boxes"));
 	SetupValue(g_Options.esp_player_boxes_type, 1, ("player-esp"), ("boxes_type"));
 	SetupValue(g_Options.esp_player_names, false, ("player-esp"), ("names"));
@@ -292,7 +330,7 @@ void ConfigSystem::SetupColors()
 	SetupColor(g_Options.color_esp_offscreen, "esp_offscreen");
 }
 void ConfigSystem::Setup() {
-	
+	SetupRage();
 	ConfigSystem::SetupVisuals();
 	ConfigSystem::SetupMisc();
 	ConfigSystem::SetupLegit();

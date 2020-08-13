@@ -45,6 +45,7 @@ public:
 	static float FovToPlayer(Vector AimPos);
 	static bool  IsViable(C_BasePlayer* entity);
 	static void  QuickStop(CUserCmd* pCmd);
+	static bool CanShoot ();
 	static void  CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet);
 	static std::vector<AimInfo> select_multipoint(Animation* animation, int box);
 	static std::optional<AimInfo> scan_record_gun(C_BasePlayer* local, Animation* animation);
@@ -53,3 +54,4 @@ private:
 	static std::optional<AimInfo> scan_record(C_BasePlayer* local, Animation* animation);
 	static bool                   is_breaking_lagcomp(Animation* animation);
 };
+extern bool can_hit_hitbox(const Vector start, const Vector end, matrix3x4_t* bones, studiohdr_t* hdr, int box);

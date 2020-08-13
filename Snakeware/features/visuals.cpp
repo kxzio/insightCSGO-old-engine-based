@@ -260,6 +260,7 @@ bool Visuals::Player::IsChoke()
 
 	return false;
 }
+#include "ragebot/resolver/resolver.h"
 void Visuals::Player::RenderFlags()
 {
 	auto Add = 0;
@@ -270,6 +271,14 @@ void Visuals::Player::RenderFlags()
 		Add += 14;
 	};
 	// by snake <3 aka shitcoder
+
+
+	if (Resolver::Get().m_flSide[ctx.pl->EntIndex()] < 0)
+	AddFlag("Side : -1", Color(0, 255, 0, 255));
+	else if (Resolver::Get().m_flSide[ctx.pl->EntIndex()] == 0)
+		AddFlag("Side : 0", Color(0, 255, 0, 255));
+	else if (Resolver::Get().m_flSide[ctx.pl->EntIndex()] > 0)
+		AddFlag("Side : 1", Color(0, 255, 0, 255));
 	if (g_Options.esp_player_flags_player && ctx.pl->IsAlive())
 	AddFlag("player", Color(255, 255, 0, 255));
 

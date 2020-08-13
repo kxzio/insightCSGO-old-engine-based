@@ -198,19 +198,14 @@ void RenderRageBotTab()
 
 			ImGui::Checkbox("Enabled##rage", &g_Options.ragebot_enabled);
 			//ImGui::Checkbox("Hitchance const", &g_Options.ragebot_hitchance_consider); нету в раге
-			ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj); //ломает раге
+			//ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj); //ломает раге
 			//ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot); нету 
 			ImGui::Checkbox("Silent", &g_Options.ragebot_silent);
 			ImGui::Checkbox("Remove recoil", &g_Options.ragebot_remove_recoil);
 
 			ImGui::Checkbox("Auto-fire", &g_Options.ragebot_autofire);
 			ImGui::SliderInt("Fov", &g_Options.ragebot_fov, 0, 360);
-			//ImGui::SliderInt("Max misses :", &g_Options.ragebot_max_miss, 0, 10);  няма в раге
-			//ImGui::Text("Key's");
-			//ImGui::Text("Force-baim key :");
-			//ImGui::Hotkey("##13Keybind", &g_Options.ragebot_baim_key, ImVec2(150, 20)); нету в раге
-			//ImGui::Text("Damage override key :");
-			//ImGui::Hotkey("##t4Keybind", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));  нету в раге
+			
 
 			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
 			const char* autostop_if[] = { "If low hitchance","Always" };
@@ -226,7 +221,7 @@ void RenderRageBotTab()
 
 
 		static int curGroup = 0;
-		const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP", "Other" };
+		const char* weapon[] = { "Pistols", "Rifles", "SMG" , "Shotguns","Auto","Scout","AWP", };
 
 
 		ImGui::BeginChild("Weapon", ImVec2(310, 118), true);
@@ -254,8 +249,7 @@ void RenderRageBotTab()
 				curGroup = WEAPON_GROUPS::SCOUT; break;
 			case 6:
 				curGroup = WEAPON_GROUPS::AWP; break;
-			case 7:
-				curGroup = WEAPON_GROUPS::UNKNOWN; break;
+			
 			}
 
 			ImGui::SliderFloat("Hit-chance", &g_Options.ragebot_hitchance[curGroup], 0, 99);
@@ -275,10 +269,7 @@ void RenderRageBotTab()
 			ImGui::SliderFloat("DMG autowall", &g_Options.ragebot_mindamage[curGroup], 0, 120);
 			ImGui::SliderFloat("DMG visible", &g_Options.ragebot_vis_mindamage[curGroup], 0, 120);
 
-			//ImGui::Checkbox("Delay shot", &g_Options.ragebot_delayshot[curGroup]);  нету в раге
-			//ImGui::Checkbox("Ignore hitchance autostop", &g_Options.ragebot_autostop_if[curGroup]);  Нету  в раге
-			//ImGui::Checkbox("Auto-crouch", &g_Options.ragebot_autocrouch[curGroup]); нету в раге
-			//ImGui::SliderFloat("Baim if hp lower than :", &g_Options.ragebot_baim_if_hp[curGroup], 0, 100); нету в раге
+		
 			static std::string prevValue = "Select";
 			if (ImGui::BeginCombo("Hitscan", "Select", 0)) {
 				//prevValue = "Hitscan";
@@ -307,6 +298,7 @@ void RenderRageBotTab()
 
 			ImGui::SliderFloat("Point-scale", &g_Options.ragebot_pointscale[curGroup], 0, 100);
 			ImGui::SliderFloat("Body-scale", &g_Options.ragebot_bodyscale[curGroup], 0, 100);
+			ImGui::SliderFloat("Other-scale", &g_Options.ragebot_otherscale[curGroup], 0, 100);
 			//ImGui::Text("Accuracy setting's :");
 			//ImGui::SliderFloat("Damage ovveride", &g_Options.ragebot_mindamage_override[curGroup], 0, 140); нету в раге
 			//ImGui::Checkbox("Alternative-hitchance method", &g_Options.ragebot_alternative_hitchance[curGroup]); нету в раге
@@ -336,7 +328,7 @@ void RenderRageBotTab()
 				const char* pitch[] = { "Down","Up","Zero","Ideal" };
 				const char* yaw[] = { "Backward's" };
 				const char* fake[] = { "Static","Lagsync" };
-				const char* jitter[] = { "Default","Switch" };
+				const char* jitter[] = { "Default","Half-Spin" };
 				const char* lby[] = { "Default","Opposite","Sway","Low-delta" };
 				ImGui::Combo("Pitch", &g_Options.antihit_pitch, pitch, IM_ARRAYSIZE(pitch));
 				ImGui::Combo("Yaw", &g_Options.antihit_yaw, yaw, IM_ARRAYSIZE(yaw));

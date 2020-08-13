@@ -1,8 +1,7 @@
 #include "bullet-event.h"
 #include "../../valve_sdk/interfaces/IVRenderBeams.h"
 
-void BulletImpactEvent::FireGameEvent(IGameEvent *event)
-{
+void BulletImpactEvent::FireGameEvent(IGameEvent *event) {
 	if (!g_LocalPlayer || !event) return;
 	static ConVar* sv_showimpacts = g_CVar->FindVar("sv_showimpacts");
 	if (g_Options.misc_bullet_impacts)
@@ -17,7 +16,10 @@ void BulletImpactEvent::FireGameEvent(IGameEvent *event)
 			bulletImpactInfo.push_back({ g_GlobalVars->curtime, Vector(x, y, z) });
 		}
 	}
+
+
 	
+
 }
 
 int BulletImpactEvent::GetEventDebugID(void)

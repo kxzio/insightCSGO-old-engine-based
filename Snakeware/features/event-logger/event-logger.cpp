@@ -1,7 +1,7 @@
 #include "event-logger.h"
 #include "../../helpers/math.hpp"
 #include "../ragebot/ragebot.h"
-
+#include "../ragebot/resolver/resolver.h"
 
 
 
@@ -34,7 +34,7 @@ void EventLogs::Draw() {
 		}
 
 		const auto text = log.message.c_str();
-		const auto pidoras = ("hanax");
+		const auto pidoras = ("snakeware");
 		
 		auto sz = g_pDefaultFont->CalcTextSizeA(16.f, FLT_MAX, 0.0f, pidoras);
 	
@@ -54,6 +54,7 @@ int EventLogs::GetEventDebugID(void)
 
 void EventLogs::RegisterSelf()
 {
+	g_GameEvents->AddListener(this, "bullet_impact", false);
 	g_GameEvents->AddListener(this, "player_hurt", false);
 	g_GameEvents->AddListener(this, "round_prestart", false);
 	g_GameEvents->AddListener(this, "round_freeze_end", false);
@@ -94,7 +95,9 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 	
 
 
-
+	if (strstr(event->GetName(), "bullet_impact")) {
+	   Resolver::Get().OnBulletImpact(event);
+	}
 
 
 
@@ -119,6 +122,7 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 		if (!g_EngineClient->GetPlayerInfo(attacker_id, &attacker_info)) {
 			return;
 		}
+		
 
 		auto m_victim = static_cast<C_BasePlayer *>(g_EntityList->GetClientEntity(userid_id));
 
@@ -126,8 +130,8 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 		if (attacker_id == g_EngineClient->GetLocalPlayer()) {
 			ss << "you hurt " << userid_info.szName << " in the " << get_hitgroup_name(event->GetInt("hitgroup")) << " for " << event->GetInt("dmg_health");
 			ss << " ( " << Math::Clamp(m_victim->m_iHealth() - event->GetInt("dmg_health"), 0, 100) << " health remaining )";
-
 			Add(ss.str(), Color::White);
+
 		}
 		else if (userid_id == g_EngineClient->GetLocalPlayer()) {
 			ss << "you took " << event->GetInt("dmg_health") << " damage from " << attacker_info.szName << "in the " << get_hitgroup_name(event->GetInt("hitgroup"));
@@ -166,6 +170,8 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 
 		Add(ss.str(), Color::White);
 	}
+
+	
 
 	if (g_Options.event_log_plant && strstr(event->GetName(), "bomb_beginplant")) {
 		auto userid = event->GetInt("userid");

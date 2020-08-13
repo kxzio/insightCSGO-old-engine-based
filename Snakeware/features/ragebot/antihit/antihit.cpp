@@ -50,13 +50,9 @@ float AntiHit::jitterRange (int min,int max) {
 	_switch = !_switch;
 	switch (jitterType) {
 	case 0:
-		return Math::RandomFloat (min, max); // Default jitter.
-		break;
-	case 1:
-		return _switch ? min : max; // Switch jitter.
+		return Math::RandomFloat(min, max); // Default jitter.
 		break;
 	}
-
 	
 }
 
@@ -67,7 +63,7 @@ float AntiHit::yaw () {
 	// Def backwards.
 	switch (yawType) {
 	case 0: 
-		returnYaw += 180 +  jitterRange(-jitterRadius, jitterRadius); // Default.
+		returnYaw +=  jitterType < 1 ? 180 +  jitterRange(-jitterRadius, jitterRadius):  fmodf(g_GlobalVars->tickcount * 10.f, jitterRadius); // Default.
 		break;
 	}
 
@@ -233,7 +229,8 @@ void AntiHit::lby() {
 	            flip = !flip;
 	float sideMove    = 2.28f;  // Side-move value
 	float forwardMove = 1.01f; // Forward-move value
-	if (g_Options.antihit_stabilize_lby)
+
+	if (g_Options.antihit_stabilize_lby && !Snakeware::bSendPacket)
 	userpcmd->forwardmove += flip ? -forwardMove : forwardMove;
 
 	switch (lbyType) {
@@ -274,6 +271,7 @@ void AntiHit::fake () {
 	{
 		// Real angle.
 		userpcmd->viewangles.yaw += realYaw;
+		userpcmd->viewangles.yaw += switchSide ? g_Options.antihit_body_lean * 3.6f : g_Options.antihit_invert_body_lean * 3.6f; //Body lean
 	}
 	else
 	{
@@ -288,7 +286,7 @@ void AntiHit::fake () {
 
 	}
 	// Body-lean set.
-	userpcmd->viewangles.yaw += switchSide ? g_Options.antihit_body_lean * 3, 6 : g_Options.antihit_invert_body_lean * 3, 6;
+	
 
 }
 

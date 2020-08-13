@@ -132,6 +132,8 @@ void Animation::Restore(C_BasePlayer* player) const {
 	player->m_vecOrigin() = origin;
 	player->SetAbsOrigin(abs_origin);
 	player->m_flPoseParameter() = poses;
+	player->m_vecMins() = obb_mins;
+	player->m_vecMaxs() = obb_maxs;
 }
 
 void Animation::Apply(C_BasePlayer* player) const {
@@ -142,6 +144,8 @@ void Animation::Apply(C_BasePlayer* player) const {
 	player->m_flDuckAmount() = duck;
 	player->m_fFlags() = flags;
 	player->m_vecOrigin() = origin;
+	player->m_vecMins() = obb_mins;
+	player->m_vecMaxs() = obb_maxs;
 	player->SetAbsOrigin(origin);
 	/*if (anim_state) {
 		player->SetAnimState(anim_state);
@@ -180,14 +184,9 @@ void Animation::BulidServerBones(C_BasePlayer* player) {
 	player->GetEffect () &= ~0x8;
 }
 
-void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* from)
-{
-	auto Interpolate = [](const Vector from, const Vector to, const float percent) {
-		return to * percent + from * (1.f - percent);
-	};
-	auto Interpolate2 = [](const float from, const float to, const float percent) {
-		return to * percent + from * (1.f - percent);
-	};
+
+void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* from) {
+	
 
 	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 
@@ -197,6 +196,7 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 
 		// fix feet spin.
 		record->anim_state->m_flFeetYawRate = 0.f;
+		
 
 		// apply record.
 		record->Apply(player);
@@ -213,33 +213,41 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 	memcpy(player->GetAnimOverlays(), from->layers, sizeof(AnimationLayer) * 13);
 	player->SetAbsOrigin(record->origin);
 	player->SetAbsAngles(from->abs_ang);
-	player->m_vecVelocity() = from->velocity;
+	
 
-	// setup velocity.
-	record->velocity = new_velocity;
-
-	// did the player shoot?
 
 	// setup extrapolation parameters.
 	auto old_origin = from->origin;
 	auto old_flags = from->flags;
 
+	const auto Shot = record->is_backtrackable = record->last_shot_time > from->sim_time&& record->last_shot_time <= record->sim_time;
 
-
-	for (auto i = 0; i < record->lag; i++)
-	{
+	for (auto i = 0; i < record->lag; i++) {
 
 		// move time forward.
 		const auto time = from->sim_time + TICKS_TO_TIME(i + 1);
-		const auto lerp = 1.f - (record->sim_time - time) / (record->sim_time - from->sim_time);
+		const auto lerp = 1.f * (((float)i + 1.f) / (float)record->lag);
 
-		/*player->GetDuckAmount() = Interpolate2(from->duck, record->duck, lerp);*/
+		if (record->lag > 1)	{
+			// lerp eye angles.
+			auto eye_angles = Math::Interpolate(from->eye_angles, record->eye_angles, lerp);
+			Math::NormalizeAng(eye_angles);
+			player->m_angEyeAngles() = eye_angles;
 
-		// resolve player.
+			// lerp duck amount.
+			player->m_flDuckAmount() = Math::Interpolate(from->duck, record->duck, lerp);
+
+			// lerp velocity.
+			player->m_vecVelocity() = player->m_vecAbsVelocity() = Math::Interpolate(from->velocity, record->velocity, lerp);
+			
+		}
+
 		if (record->lag - 1 == i)
 		{
-			player->m_vecVelocity() = new_velocity;
+			player->m_vecVelocity() = Math::Interpolate(from->velocity, record->velocity, 0.5f);
 			player->m_fFlags() = record->flags;
+		
+
 		}
 		else // compute velocity and flags.
 		{
@@ -247,7 +255,13 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 			old_flags = player->m_fFlags();
 		}
 
-		//record->resolver = ResolverMode[player->GetIndex()];
+		if (Shot)
+		{
+			player->m_angEyeAngles() = record->last_reliable_angle;
+
+			if (record->last_shot_time <= time)
+				player->m_angEyeAngles() = record->eye_angles;
+		}
 
 		player->GetPlayerAnimState()->m_flFeetYawRate = 0.f;
 
@@ -333,6 +347,10 @@ void Animations::UpdatePlayerAnimations() {
 		
 		}
 	
+		
+    	Resolver::Get().Resolve     (_animation.player);
+		
+		Resolver::Get().ResolvePitch(_animation.player);
 
 		// have we already seen this update?
 		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())  continue;
@@ -366,8 +384,8 @@ void Animations::UpdatePlayerAnimations() {
 			info.second.last_reliable_angle = player->m_angEyeAngles();
 
 		// store server record
+		
 		auto& record = _animation.frames.emplace_front(player, info.second.last_reliable_angle);
-
 		// run full update
 		_animation.UpdateAnimations(&record, previous);
 

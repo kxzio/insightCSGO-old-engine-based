@@ -7,8 +7,6 @@
 #include "../../render.hpp"
 
 
-void ProcessMissedShots();
-
 class EventLogs : public IGameEventListener2, public Singleton<EventLogs> {
 public:
 	void Draw();

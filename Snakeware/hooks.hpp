@@ -74,7 +74,7 @@ namespace Hooks
 	void __fastcall hkFFireEvent(IVEngineClient* ecx);
 	void __fastcall DoExtraBoneProcessing(void* ecx, void* edx, int a2, int a3, int a4, int a5, int a6, int a7);
 	bool  __fastcall InPrediction(IPrediction* prediction, uint32_t);
-	void __stdcall   HkSetupMove(C_BasePlayer* m_pPlayer, CUserCmd* m_pCmd, IMoveHelper* m_pMoveHelper, CMoveData* m_pMoveData);
+	void __stdcall    HkSetupMove(C_BasePlayer* m_pPlayer, CUserCmd* m_pCmd, IMoveHelper* m_pMoveHelper, CMoveData* m_pMoveData);
 	void __fastcall  HkRunCommand(void* ecx, void* edx, C_BasePlayer* player, CUserCmd* ucmd, IMoveHelper* moveHelper);
 	bool  __fastcall hkIsConnected();
 	bool __fastcall WriteUsercmdDeltaToBuffer_hook(void* ECX, void* EDX, int nSlot, bf_write* buf, int from, int to, bool isNewCmd);
