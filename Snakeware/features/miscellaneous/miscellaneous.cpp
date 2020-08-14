@@ -473,6 +473,7 @@ void Miscellaneous::LegitAntiAim(CUserCmd *cmd)
 }
 #include "../../imgui/imgui.h"
 #include "../../render.hpp"
+#include "../ragebot/antihit/antihit.h"
 
 int IsCheater() {
 
@@ -939,3 +940,74 @@ void Miscellaneous::FakeFps()
 	g_GlobalVars->absoluteframetime = 1.f / 1338.f;
 }
 
+void Miscellaneous::Binds()
+{
+
+	bool open = false;
+	ImGui::SetNextWindowSize(ImVec2{ 300, 200 }, ImGuiSetCond_Once);
+
+	if (ImGui::Begin("Binds_lol", &open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+
+		ImGui::SetCursorPos(ImVec2(25, 15 + 15));
+		ImGui::BeginChild("Binds", ImVec2(200 - 10, 110), true, ImGuiWindowFlags_NoMouseInputs | ImGuiWindowFlags_NoInputs);
+		{
+			ImGui::PushFont(g_pPixel);
+			{
+
+				int fps = g_GlobalVars->absoluteframetime;
+				ImGui::Text(" ");
+				ImGui::SetCursorPosY(+26);
+
+				if (GetAsyncKeyState(g_Options.misc_slowwalk_key))
+				{
+					if (g_Options.misc_slowwalk)
+					{
+						ImGui::Text("Slowwalk");
+						ImGui::SameLine();	
+						ImGui::SetCursorPosX(140);
+						ImGui::Text("[Hold]");
+					}
+				}
+					
+
+				if (GetAsyncKeyState(g_Options.misc_fakeduck_key))
+				{
+					if (g_Options.misc_fakeduck)
+					{
+						ImGui::Text("Fakeduck");
+						ImGui::SameLine();
+						ImGui::SetCursorPosX(140);
+						ImGui::Text("[Hold]");
+					}
+				}
+
+				if (GetAsyncKeyState(g_Options.exploit_doubletap_key))
+				{
+					if (g_Options.exploit_doubletap)
+					{
+						ImGui::Text("Fastfire");
+						ImGui::SameLine();
+						ImGui::SetCursorPosX(140);
+						ImGui::Text("[Hold]");
+					}
+				}
+
+				if (AntiHit::Get().switchSide)
+				{
+					if (g_Options.antihit_enabled)
+					{
+						ImGui::Text("Desync switched");
+						ImGui::SameLine();
+						ImGui::SetCursorPosX(140);
+						ImGui::Text("[Toogle]");
+					}
+				}
+
+
+			}
+			ImGui::PopFont();
+		}
+		ImGui::EndChild();
+	}
+	ImGui::End();
+}

@@ -453,6 +453,7 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 		strcpy(buf_display, "None");
 	}
 
+
 	const ImRect clip_rect(frame_bb.Min.x, frame_bb.Min.y, frame_bb.Min.x + size.x, frame_bb.Min.y + size.y); // Not using frame_bb.Max because we have adjusted size
 	ImVec2 render_pos = frame_bb.Min + style.FramePadding;
 	RenderTextClipped(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding, buf_display, NULL, NULL);

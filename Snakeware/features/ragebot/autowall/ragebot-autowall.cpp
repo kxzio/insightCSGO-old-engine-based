@@ -432,49 +432,6 @@ bool CAutoWall::is_breakable(C_BasePlayer* e) {
 	return breakable;
 }
 
-float CAutoWall::get_estimated_point_damage(Vector point) {
-	if (!g_LocalPlayer)
-		return -1.f;
-
-	fbdata bullet;
-	auto filter = CTraceFilter();
-	filter.pSkip = g_LocalPlayer;
-
-	bullet.filter = &filter;
-	bullet.start = g_LocalPlayer->GetEyePos();
-	bullet.end = point;
-	bullet.pos = g_LocalPlayer->GetEyePos();
-	Math_AngleVectors(Math_CalcAngle(bullet.start, point), bullet.dir);
-	bullet.trace.startpos = bullet.start;
-	bullet.trace.endpos = point;
-
-	auto wep = g_LocalPlayer->m_hActiveWeapon();
-	if (!wep)
-		return -2.f;
-
-	bullet.walls = 1;
-	bullet.thickness = 0.f;
-
-	auto inf = wep->GetCSWeaponData();
-	if (!inf)
-		return -3.f;
-
-	bullet.damage = inf->iDamage;
-
-	Ray_t ray;
-	ray.Init(bullet.start, bullet.end);
-
-	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &bullet.trace);
-
-	if (bullet.trace.fraction == 1.f)
-		return -4.f;
-
-	if (this->handle_bullet_penetration(inf, bullet))
-		return bullet.damage;
-
-	return -5.f;
-}
-
 
 void CAutoWall::TraceLine(Vector& start, Vector& end, unsigned int mask, C_BasePlayer* ignore, trace_t* trace)
 {

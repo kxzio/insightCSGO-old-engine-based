@@ -185,6 +185,7 @@ namespace Hooks {
 		Miscellaneous::Get().SpectatorList();
 		Miscellaneous::Get().RenderIndicators();
 		Miscellaneous::Get().RenderRadar();
+		Miscellaneous::Get().Binds();
 		ImGui::Render(esp_drawlist);
 
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());

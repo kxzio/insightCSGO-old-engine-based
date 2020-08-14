@@ -38,6 +38,7 @@ public:
 	void OnRenderPlayer();
 	void JumpThrow(CUserCmd * cmd);
 	void FakeFps();
+	void Binds();
 	void ClanTag();
 
 	void LeftKnife();

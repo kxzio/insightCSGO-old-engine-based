@@ -36,7 +36,6 @@ struct fbdata {
 class CAutoWall : public Singleton<CAutoWall>
 {
 public:
-	bool CanHitFloatingPoint(const Vector& point, const Vector& source);
 	float get_estimated_point_damage(Vector point);
 	void  TraceLine(Vector & start, Vector & end, unsigned int mask, C_BasePlayer * ignore, trace_t * trace);
 	bool CanHitFloatingPoint(const Vector & point, const Vector & source);

@@ -5321,6 +5321,12 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                         window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.0f, 0.0f, 0.0f, 0.0f));
                         window->DrawList->PopClipRect();
                     }
+                    if (name == "Binds_lol")
+                    {
+                        window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
+                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.0f, 0.0f, 0.0f, 0.0f));
+                        window->DrawList->PopClipRect();
+                    }
 
                     if (name != "coded by snake | ba1m0v")
                     {
@@ -5330,9 +5336,12 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                             {
                                 if (name != "Spectators_lol")
                                 {
-                                    window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
-                                    window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha));
-                                    window->DrawList->PopClipRect();
+                                    if (name != "Binds_lol")
+                                    {
+                                        window->DrawList->PushClipRect(window->Pos, window->Pos + window->Size, true);
+                                        window->DrawList->AddRectFilled(window->Pos, window->Pos + window->Size, ImColor(0.14f, 0.13f, 0.14f, g.Style.Alpha));
+                                        window->DrawList->PopClipRect();
+                                    }
                                 }
                             }
                         }
@@ -5392,6 +5401,16 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                             ImGui::GetWindowDrawList()->AddRectFilled(window->Pos - ImVec2(0,3), window->Pos + ImVec2(window->Size.x, 4) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
                             ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 20) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
                             window->DrawList->AddTextCustomFont(window->Pos + ImVec2(67, + 8), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), g_pPixel, name);
+
+                        }
+                        if (name == "Binds")
+                        {
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3) - ImVec2(8, 8), window->Pos + window->Size - ImVec2(0, 3) + ImVec2(8, 8), bg_col2, 0, (flags& ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+                            window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()) - ImVec2(0, 3), window->Pos + window->Size - ImVec2(0, 3), bg_col, 0, (flags& ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+
+                            ImGui::GetWindowDrawList()->AddRectFilled(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 4) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
+                            ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos - ImVec2(0, 3), window->Pos + ImVec2(window->Size.x, 20) - ImVec2(0, 3), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
+                            window->DrawList->AddTextCustomFont(window->Pos + ImVec2(67 + 4, +8), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), g_pPixel, "Bind list");
 
                         }
                         if (name == "Radar")
@@ -5454,11 +5473,14 @@ bool ImGui::Begin(const char* name, bool* p_open, ImGuiWindowFlags flags)
                             {
                                 if (name != "Radar")
                                 {
-                                    window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
-                                    ImGui::GetWindowDrawList()->AddRectFilled(window->Pos, window->Pos + ImVec2(window->Size.x, 4), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
-                                    ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos, window->Pos + ImVec2(window->Size.x, 20), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
+                                    if (name != "Binds")
+                                    {
+                                        window->DrawList->AddRectFilled(window->Pos + ImVec2(0, window->TitleBarHeight()), window->Pos + window->Size, bg_col, window_rounding, (flags & ImGuiWindowFlags_NoTitleBar) ? ImDrawCornerFlags_All : ImDrawCornerFlags_Bot);
+                                        ImGui::GetWindowDrawList()->AddRectFilled(window->Pos, window->Pos + ImVec2(window->Size.x, 4), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.8f));
+                                        ImGui::GetWindowDrawList()->AddRectFilledMultiColor(window->Pos, window->Pos + ImVec2(window->Size.x, 20), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.1f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f), ImColor(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 0.0f));
 
-                                    window->DrawList->AddText(window->Pos + ImVec2(15, -17), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), name);
+                                        window->DrawList->AddText(window->Pos + ImVec2(15, -17), ImColor(170 / 255.f, 170 / 255.f, 170 / 255.f, 1.00f), name);
+                                    }
                                 }
                             }
 
