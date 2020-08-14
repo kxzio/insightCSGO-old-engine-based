@@ -38,22 +38,16 @@ public:
 	T default_value;
 };
 
-class ConfigSystem
+class ConfigSystem : public Singleton<ConfigSystem>
 {
 protected:
 	std::vector< ConfigValue< int >* > ints;
 	std::vector< ConfigValue< char >* > chars;
 	std::vector< ConfigValue< bool >* > bools;
 	std::vector< ConfigValue< float >* > floats;
+
 private:
-	void SetupValue(int&, int, std::string, std::string);
-	void SetupValue(char * value, char * def, std::string category, std::string name);
-	void SetupValue(bool&, bool, std::string, std::string);
-	void SetupValue(float&, float, std::string, std::string);
-	void SetupColor(float value[4], std::string name);
-	void SetupValue2(int & value, std::string category, std::string name);
-	void SetupColor2(char & value, const std::string & name);
-	void SetupColor2(Color & value, const std::string & name);
+
 	void SetupRage();
 	void SetupLegit();
 	
@@ -61,6 +55,14 @@ private:
 	void SetupMisc();
 	void SetupSkins();
 	void SetupColors();
+	void SetupValue(int&, int, std::string, std::string);
+	void SetupValue(char* value, char* def, std::string category, std::string name);
+	void SetupValue(bool&, bool, std::string, std::string);
+	void SetupValue(float&, float, std::string, std::string);
+	void SetupColor(float value[4], std::string name);
+	void SetupValue2(int& value, std::string category, std::string name);
+	void SetupColor2(char& value, const std::string& name);
+	void SetupColor2(Color& value, const std::string& name);
 public:
 	ConfigSystem()
 	{

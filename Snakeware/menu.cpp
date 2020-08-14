@@ -22,6 +22,8 @@
 #include "fonts/Main_googlefont.h"
 #include "Protected/enginer.h"
 #include "render.hpp"
+#include "Lua/sol.hpp"
+#include "Lua/api.h"
 namespace fs = std::filesystem;
 
 
@@ -1127,6 +1129,92 @@ void RenderSkinsTab()
 	}
 	ImGui::EndChild();
 }
+
+void draw_lua_items(std::string tab, std::string container) {
+	for (auto i : lua::menu_items[tab][container]) {
+		if (!i.is_visible)
+			continue;
+
+		auto type = i.type;
+		switch (type)
+		{
+		case lua::MENUITEM_CHECKBOX:
+			if (ImGui::Checkbox(i.label.c_str(), &(GET_BOOL[i.key]))) {
+				if (i.callback != sol::nil)
+					i.callback(GET_BOOL[i.key]);
+			}
+
+			dmt(i.key);
+			break;
+		case lua::MENUITEM_SLIDERINT:
+			if (ImGui::SliderInt(i.label.c_str(), &(GET_INT[i.key]), i.i_min, i.i_max, i.format.c_str())) {
+				if (i.callback != sol::nil)
+					i.callback(GET_INT[i.key]);
+			}
+
+			dmt(i.key);
+			break;
+		case lua::MENUITEM_SLIDERFLOAT:
+			if (ImGui::SliderFloat(i.label.c_str(), &(GET_FLOAT[i.key]), i.f_min, i.f_max, i.format.c_str())) {
+				if (i.callback != sol::nil)
+					i.callback(GET_FLOAT[i.key]);
+			}
+
+			dmt(i.key);
+			break;
+			/*
+		case lua::MENUITEM_KEYBIND:
+			if (ImGui::Keybind(i.label.c_str(), &cfg->i[i.key], i.allow_style_change ? &cfg->i[i.key + "style"] : NULL)) {
+				if (i.callback != sol::nil)
+					i.callback(cfg->i[i.key], cfg->i[i.key + "style"]);
+			}
+
+			dmt(i.key + (i.allow_style_change ? " | " + i.key + "style" : ""));
+			break;
+			*/
+		case lua::MENUITEM_TEXT:
+			ImGui::Text(i.label.c_str());
+			break;
+
+			/*
+		case lua::MENUITEM_SINGLESELECT:
+			if (ImGui::SingleSelect(i.label.c_str(), &cfg->i[i.key], i.items)) {
+				if (i.callback != sol::nil)
+					i.callback(cfg->i[i.key]);
+			}
+
+			dmt(i.key);
+			break;
+
+		case lua::MENUITEM_MULTISELECT:
+			if (ImGui::MultiSelect(i.label.c_str(), &cfg->m[i.key], i.items)) {
+				if (i.callback != sol::nil)
+					i.callback(cfg->m[i.key]);
+			}
+
+			dmt(i.key);
+			break;
+			*/
+		case lua::MENUITEM_COLORPICKER:
+			if (ImGui::ColorEdit4(i.label.c_str(), GET_COLOR[i.key])) {
+				if (i.callback != sol::nil)
+					i.callback(GET_COLOR[i.key][0] * 255, GET_COLOR[i.key][1] * 255, GET_COLOR[i.key][2] * 255, GET_COLOR[i.key][3] * 255);
+			}
+
+			dmt(i.key);
+			break;
+		case lua::MENUITEM_BUTTON:
+			if (ImGui::Button(i.label.c_str())) {
+				if (i.callback != sol::nil)
+					i.callback();
+			}
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 void RenderConfigTab()
 {
 	static int SubTabs;
