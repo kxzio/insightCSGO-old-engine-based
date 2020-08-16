@@ -61,6 +61,7 @@ namespace Snakeware
 	extern std::string Delta;
 	extern std::string Delta2;
 	extern std::string Delta3;
+	extern std::string Delta4;
 }
 class Cmd {
 public:

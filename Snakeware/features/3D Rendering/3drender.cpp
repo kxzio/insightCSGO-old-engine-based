@@ -17,14 +17,13 @@
 
 void RENDER_3D_GUI::LocalCircle()
 {
-	if (g_LocalPlayer->IsAlive())
-	{
+	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
+
 		auto weapon = g_LocalPlayer->m_hActiveWeapon();
 
-
+		if (!weapon) return;
 
 		Vector pos = g_LocalPlayer->m_angAbsOrigin();
-
 		auto idx = weapon->m_Item().m_iItemDefinitionIndex();
 
 		auto weapon_data = weapon->GetCSWeaponData();
@@ -40,13 +39,14 @@ void RENDER_3D_GUI::LocalCircle()
 			int radius2 = 80;
 			Render::Get().RenderCircle3D(pos, radius2 * 3, radius2, Color(255, 255, 255));
 		}
-	}
+	
 
 
 
 }
 
-void RENDER_3D_GUI::DrawMolotov() {
+void RENDER_3D_GUI::DrawMolotov () {
+
 	if (!g_Options.esp_molotov_timer)                                  return;
 	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 
@@ -90,8 +90,8 @@ void RENDER_3D_GUI::DrawMolotov() {
 
 void RENDER_3D_GUI::AutowallCrosshair()
 {
-	if (g_LocalPlayer->IsAlive())
-	{
+	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
+
 		QAngle direction, EyeAng, angles;
 		Vector forward, dst;
 		g_EngineClient->GetViewAngles(&EyeAng);
@@ -131,7 +131,7 @@ void RENDER_3D_GUI::AutowallCrosshair()
 		Render::Get().RenderCircleFilled(screenX / 2, screenY / 2, 5, 5 * 3, Color(0, 0, 0, 20));
 		Render::Get().RenderCircleFilled(screenX / 2, screenY / 2, 5, 4 * 3, col);
 		Render::Get().RenderTextPixel(ss.str(), screenX / 2 - 15, screenY / 2 + 50, 14.f, col);
-	}
+	
 }
 
 void RENDER_3D_GUI::SpreadCircle()

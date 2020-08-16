@@ -31,6 +31,7 @@ namespace Snakeware
 	std::string Delta;
 	std::string Delta2;
 	std::string Delta3;
+	std::string Delta4;
 	std::string EyeDelta;
 
 	bool bVisualAimbotting = false;

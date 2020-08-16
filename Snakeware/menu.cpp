@@ -316,6 +316,7 @@ void RenderRageBotTab()
 
 			ImGui::SliderFloat("Point-scale", &g_Options.ragebot_pointscale[curGroup], 0, 100);
 			ImGui::SliderFloat("Body-scale", &g_Options.ragebot_bodyscale[curGroup], 0, 100);
+			ImGui::SliderFloat("Other-scale", &g_Options.ragebot_otherscale[curGroup], 0, 100);
 			//ImGui::Text("Accuracy setting's :");
 			//ImGui::SliderFloat("Damage ovveride", &g_Options.ragebot_mindamage_override[curGroup], 0, 140); íåòó â ðàãå
 			//ImGui::Checkbox("Alternative-hitchance method", &g_Options.ragebot_alternative_hitchance[curGroup]); íåòó â ðàãå
@@ -653,20 +654,20 @@ void RenderEspTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::CheckboxEX("enabled", &g_Options.esp_enabled, "Enable wallhack");
-			ImGui::CheckboxEX("enemy only", &g_Options.esp_enemies_only, "Enemy wallhack");
-			ImGui::CheckboxEX("boxes", &g_Options.esp_player_boxes, "Box around player");
-			const char* box_type[4] = { "default", "outlined", "corner" , "corner-outlined" };
+			ImGui::CheckboxEX("Enabled", &g_Options.esp_enabled, "Enable wallhack");
+			ImGui::CheckboxEX("Enemy-olny", &g_Options.esp_enemies_only, "Enemy wallhack");
+			ImGui::CheckboxEX("Player boxes", &g_Options.esp_player_boxes, "Box around player");
+			const char* box_type[4] = { "Default", "Outlined", "Corner" , "Corner-outlined" };
 			if (g_Options.esp_player_boxes)
-				ImGui::Combo("box-type", &g_Options.esp_player_boxes_type, box_type, IM_ARRAYSIZE(box_type));
-			ImGui::CheckboxEX("names", &g_Options.esp_player_names, "Draw player name");
-			ImGui::CheckboxEX("health", &g_Options.esp_player_health, "Draw player health");
-			ImGui::CheckboxEX("armour", &g_Options.esp_player_armour, "Draw armour");
-			ImGui::CheckboxEX("weapon", &g_Options.esp_player_weapons, "Show weapon");
-			ImGui::CheckboxEX("snaplines", &g_Options.esp_player_snaplines, "Line to player");
-			ImGui::CheckboxEX("skeleton", &g_Options.esp_player_skeleton, "Draw skeleton");
-			ImGui::CheckboxEX("ammo##1", &g_Options.esp_player_ammo, "Show ammo");
-			ImGui::CheckboxEX("head dot", &g_Options.esp_head_dot, "Pos of head");
+				ImGui::Combo("Box-type", &g_Options.esp_player_boxes_type, box_type, IM_ARRAYSIZE(box_type));
+			ImGui::CheckboxEX("Draw name", &g_Options.esp_player_names, "Draw player name");
+			ImGui::CheckboxEX("Draw healthbar", &g_Options.esp_player_health, "Draw player health");
+			ImGui::CheckboxEX("Draw armour", &g_Options.esp_player_armour, "Draw armour");
+			ImGui::CheckboxEX("Draw weapon", &g_Options.esp_player_weapons, "Show weapon");
+			ImGui::CheckboxEX("Draw snaplines", &g_Options.esp_player_snaplines, "Line to player");
+			ImGui::CheckboxEX("Draw skeleton", &g_Options.esp_player_skeleton, "Draw skeleton");
+			ImGui::CheckboxEX("Draw ammo##1", &g_Options.esp_player_ammo, "Show ammo");
+			ImGui::CheckboxEX("Draw head-dot", &g_Options.esp_head_dot, "Pos of head");
 
 
 
@@ -682,18 +683,18 @@ void RenderEspTab()
 
 		ImGui::BeginChild("Flags", ImVec2(310, 118 + 50), true);
 		{
-			ImGui::Checkbox("flags enabled", &g_Options.esp_player_flags);
+			ImGui::Checkbox("Flags enabled", &g_Options.esp_player_flags);
 
 			if (g_Options.esp_player_flags)
 			{
-				ImGui::Text("flags  :");
-				ImGui::CheckboxEX("player", &g_Options.esp_player_flags_player, "Is entity player");
-				ImGui::CheckboxEX("scoped", &g_Options.esp_player_flags_scoped, "Is scoped");
-				ImGui::CheckboxEX("armour", &g_Options.esp_flags_armour, "Have armour");
-				ImGui::CheckboxEX("defuse-kit", &g_Options.esp_flags_kit, "Have D.Kits");
-				ImGui::CheckboxEX("on move", &g_Options.esp_flags_move, "Is moving");
-				ImGui::CheckboxEX("choking", &g_Options.esp_flags_choking, "Is choking");
-				ImGui::CheckboxEX("flashed", &g_Options.esp_flags_flash, "Is flashed");
+				ImGui::Text("Flags  :");
+				ImGui::CheckboxEX("Player", &g_Options.esp_player_flags_player, "Is entity player");
+				ImGui::CheckboxEX("Scoped", &g_Options.esp_player_flags_scoped, "Is scoped");
+				ImGui::CheckboxEX("Armour", &g_Options.esp_flags_armour, "Have armour");
+				ImGui::CheckboxEX("Defuse-kit", &g_Options.esp_flags_kit, "Have D.Kits");
+				ImGui::CheckboxEX("On move", &g_Options.esp_flags_move, "Is moving");
+				ImGui::CheckboxEX("Choking", &g_Options.esp_flags_choking, "Is choking");
+				ImGui::CheckboxEX("Flashed", &g_Options.esp_flags_flash, "Is flashed");
 			}
 
 
@@ -709,39 +710,39 @@ void RenderEspTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::CheckboxEX("chams enabled", &g_Options.chams_player_enabled, "Model chams");
-			static const char* glow_type[] = { "outer", "cover", "inner" };
-			const char* chams_type[5] = { "material", "flat", "glow-1" , "glow-2", "metallic" };
+			ImGui::CheckboxEX("Chams enabled", &g_Options.chams_player_enabled, "Model chams");
+			static const char* glow_type[] = { "Outer", "Cover", "Inner" };
+			const char* chams_type[5] = { "Material", "Flat", "Glow#1" , "Glow#2", "Metallic" };
 			if (g_Options.chams_player_enabled)
-				ImGui::Combo("chams-type", &g_Options.chams_player_type, chams_type, IM_ARRAYSIZE(chams_type));
-			ImGui::CheckboxEX("ignore wall", &g_Options.chams_player_ignorez, "Draw behind wall");
-			ImGui::CheckboxEX("ignore team", &g_Options.chams_player_enemies_only, "Only enemy");
-			ImGui::Text("arms-chams");
-			ImGui::CheckboxEX("arms enabled", &g_Options.chams_arms_enabled, "Draw hands");
-			ImGui::CheckboxEX("no arms", &g_Options.misc_no_hands, "Remove hands");
+				ImGui::Combo("Chams-type", &g_Options.chams_player_type, chams_type, IM_ARRAYSIZE(chams_type));
+			ImGui::CheckboxEX("Ignore wall", &g_Options.chams_player_ignorez, "Draw behind wall");
+			ImGui::CheckboxEX("Ignore team", &g_Options.chams_player_enemies_only, "Only enemy");
+			ImGui::Text("Arms-chams");
+			ImGui::CheckboxEX("Arms enabled", &g_Options.chams_arms_enabled, "Draw hands");
+			ImGui::CheckboxEX("No arms", &g_Options.misc_no_hands, "Remove hands");
 			if (g_Options.chams_arms_enabled && !g_Options.misc_no_hands)
-				ImGui::Combo("arms-type", &g_Options.chams_arms_type, chams_type, IM_ARRAYSIZE(chams_type));
+				ImGui::Combo("Arms-type", &g_Options.chams_arms_type, chams_type, IM_ARRAYSIZE(chams_type));
 
-			ImGui::CheckboxEX("weapons enabled", &g_Options.chams_weapons, "Weapon chams");
+			ImGui::CheckboxEX("Weapons enabled", &g_Options.chams_weapons, "Weapon chams");
 			if (g_Options.chams_weapons)
-				ImGui::Combo("gun-type", &g_Options.chams_weapons_type, chams_type, IM_ARRAYSIZE(chams_type));
-			ImGui::Text("fake-chams");
-			ImGui::CheckboxEX("fake-chams", &g_Options.chams_fake, "Draw desync");
+				ImGui::Combo("Gun-type", &g_Options.chams_weapons_type, chams_type, IM_ARRAYSIZE(chams_type));
+			ImGui::Text("Fake-chams");
+			ImGui::CheckboxEX("Fake-chams", &g_Options.chams_fake, "Draw desync");
 			if (g_Options.chams_fake)
 			{
-				ImGui::Combo("fake-model", &g_Options.chams_fake_types, chams_type, IM_ARRAYSIZE(chams_type));
+				ImGui::Combo("Fake-model", &g_Options.chams_fake_types, chams_type, IM_ARRAYSIZE(chams_type));
 			}
 
-			ImGui::Text("player-glow");
-			ImGui::CheckboxEX("glow enabled", &g_Options.glow_enabled, "Player outline");
-			ImGui::CheckboxEX("glow player's", &g_Options.glow_players, "Players");
-			ImGui::CheckboxEX("only enemy", &g_Options.glow_enemies_only, "Only enemy");
+			ImGui::Text("Player glow-ESP");
+			ImGui::CheckboxEX("Glow enabled", &g_Options.glow_enabled, "Player outline");
+			ImGui::CheckboxEX("Glow player's", &g_Options.glow_players, "Players");
+			ImGui::CheckboxEX("Only enemy", &g_Options.glow_enemies_only, "Only enemy");
 			if (g_Options.glow_enabled)
 			{
 				if (g_Options.glow_enemies_only)
-					ImGui::Combo("enemy glow", &g_Options.glow_type, glow_type, IM_ARRAYSIZE(glow_type));
+					ImGui::Combo("Enemy glow", &g_Options.glow_type, glow_type, IM_ARRAYSIZE(glow_type));
 				else
-					ImGui::Combo("team glow", &g_Options.glow_team_type, glow_type, IM_ARRAYSIZE(glow_type));
+					ImGui::Combo("Team glow", &g_Options.glow_team_type, glow_type, IM_ARRAYSIZE(glow_type));
 			}
 
 
@@ -764,36 +765,36 @@ void RenderEspTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::Text("viewmodel-setting's");
-			ImGui::SliderInt("viewmodel_fov:", &g_Options.viewmodel_fov, 65, 135);
-			ImGui::SliderInt("world_fov:", &g_Options.world_fov, 0, 65);
-			ImGui::SliderFloat("aspect ratio:", &g_Options.esp_aspect_ratio, 0, 5.5);
-			ImGui::Text("grenade prediction :");
-			ImGui::CheckboxEX("nade prediction", &g_Options.esp_nade_prediction, "Draw local grenade way");
-			ImGui::CheckboxEX("molotov timer", &g_Options.esp_molotov_timer, "Molotov timer (sec)");
-			ImGui::Text("sound esp :");
-			ImGui::CheckboxEX("sound esp", &g_Options.sound_esp, "Draw sound of player");
+			ImGui::Text("Viewmodel-setting's");
+			ImGui::SliderInt("Viewmodel_fov:", &g_Options.viewmodel_fov, 65, 135);
+			ImGui::SliderInt("World_fov:", &g_Options.world_fov, 0, 65);
+			ImGui::SliderFloat("Aspect ratio:", &g_Options.esp_aspect_ratio, 0, 5.5);
+			ImGui::Text("Grenade prediction :");
+			ImGui::CheckboxEX("Nade prediction", &g_Options.esp_nade_prediction, "Draw local grenade way");
+			ImGui::CheckboxEX("Molotov timer", &g_Options.esp_molotov_timer, "Molotov timer (sec)");
+			ImGui::Text("Sound esp :");
+			ImGui::CheckboxEX("Sound esp", &g_Options.sound_esp, "Draw sound of player");
 			if (g_Options.sound_esp)
 			{
 				//ImGui::Checkbox("animated beam's (sexy)", &g_Options.sound_esp_animated);
-				ImGui::SliderFloat("sound esp radius", &g_Options.sound_esp_radius, 5, 30);
-				ImGui::SliderFloat("sound esp time", &g_Options.sound_esp_time, 0.3, 5);
+				ImGui::SliderFloat("Sound esp radius", &g_Options.sound_esp_radius, 5, 30);
+				ImGui::SliderFloat("Sound esp time", &g_Options.sound_esp_time, 0.3, 5);
 			}
 
-			ImGui::Text("other :");
+			ImGui::Text("Other :");
 			//	ImGui::Checkbox("draw bullet-tracer's", &g_Options.esp_bullet_impacts);
-			ImGui::CheckboxEX("draw crosshair", &g_Options.esp_crosshair, "Default crosshair");
-			ImGui::CheckboxEX("draw recoil-crosshair", &g_Options.esp_recoil_crosshair, "Recoil based crosshair");
-			ImGui::CheckboxEX("draw legitbot fov", &g_Options.esp_draw_fov, "Aim radius for legitbot");
-			ImGui::CheckboxEX("draw angle's", &g_Options.esp_angle_lines, "Fake and Real angles");
-			ImGui::CheckboxEX("draw shot-hitboxes", &g_Options.shot_hitboxes, "Hitbox Positions");
+			ImGui::CheckboxEX("Draw crosshair", &g_Options.esp_crosshair, "Default crosshair");
+			ImGui::CheckboxEX("Draw recoil-crosshair", &g_Options.esp_recoil_crosshair, "Recoil based crosshair");
+			ImGui::CheckboxEX("Draw legitbot fov", &g_Options.esp_draw_fov, "Aim radius for legitbot");
+			ImGui::CheckboxEX("Draw angle's", &g_Options.esp_angle_lines, "Fake and Real angles");
+			ImGui::CheckboxEX("Draw shot-hitboxes", &g_Options.shot_hitboxes, "Hitbox Positions");
 			if (g_Options.shot_hitboxes)
-				ImGui::SliderFloat("shot-hitboxes duration", &g_Options.shot_hitboxes_duration, 0, 7);
+				ImGui::SliderFloat("Shot-hitboxes duration", &g_Options.shot_hitboxes_duration, 0, 7);
 			ImGui::CheckboxEX("OFESP", &g_Options.esp_offscreen, "Flag invisible players on screen");
 			if (g_Options.esp_offscreen)
 			{
-				ImGui::SliderFloat("offscreen-radius:", &g_Options.esp_offscreen_range, 0, 600);
-				ImGui::SliderFloat("offscreen-size", &g_Options.esp_offscreen_size, 10, 60);
+				ImGui::SliderFloat("Offscreen-radius:", &g_Options.esp_offscreen_range, 0, 600);
+				ImGui::SliderFloat("Offscreen-size", &g_Options.esp_offscreen_size, 10, 60);
 			}
 
 
@@ -810,32 +811,32 @@ void RenderEspTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::CheckboxEX("remove smoke", &g_Options.remove_smoke, "No smoke effect");
-			ImGui::CheckboxEX("remove flash", &g_Options.remove_flash, "No flasheffect");
+			ImGui::CheckboxEX("Remove smoke", &g_Options.remove_smoke, "No smoke effect");
+			ImGui::CheckboxEX("Remove flash", &g_Options.remove_flash, "No flasheffect");
 			if (g_Options.remove_flash)
-				ImGui::SliderInt("flash-ammount", &g_Options.esp_flash_ammount, 0, 255);
-			ImGui::CheckboxEX("remove scope", &g_Options.remove_scope, "Sniper crosshair");
-			ImGui::CheckboxEX("remove vis-recoil", &g_Options.remove_visual_recoil, "No recoil");
-			ImGui::CheckboxEX("remove sleeves", &g_Options.remove_sleeves, "Delete sleeves");
+				ImGui::SliderInt("Flash-ammount", &g_Options.esp_flash_ammount, 0, 255);
+			ImGui::CheckboxEX("Remove scope", &g_Options.remove_scope, "Sniper crosshair");
+			ImGui::CheckboxEX("Remove vis-recoil", &g_Options.remove_visual_recoil, "No recoil");
+			ImGui::CheckboxEX("Remove sleeves", &g_Options.remove_sleeves, "Delete sleeves");
 
-			ImGui::CheckboxEX("bloom effect", &g_Options.esp_bloom_effect, "CSGO bloom");
+			ImGui::CheckboxEX("Bloom effect", &g_Options.esp_bloom_effect, "CSGO bloom");
 			if (g_Options.esp_bloom_effect)
 			{
-				ImGui::Text("bloom :");
-				ImGui::SliderInt("  bloom factor", &g_Options.esp_bloom_factor, 0, 100);
-				ImGui::SliderFloat("model ambient", &g_Options.esp_model_ambient, 0, 11.1f);
+				ImGui::Text("Bloom :");
+				ImGui::SliderInt("  Bloom factor", &g_Options.esp_bloom_factor, 0, 100);
+				ImGui::SliderFloat("Model ambient", &g_Options.esp_model_ambient, 0, 11.1f);
 			}
 
-			ImGui::SliderFloat("red", &g_Options.mat_ambient_light_r, 0, 1);
-			ImGui::SliderFloat("green", &g_Options.mat_ambient_light_g, 0, 1);
-			ImGui::SliderFloat("blue", &g_Options.mat_ambient_light_b, 0, 1);
+			ImGui::SliderFloat("Red", &g_Options.mat_ambient_light_r, 0, 1);
+			ImGui::SliderFloat("Green", &g_Options.mat_ambient_light_g, 0, 1);
+			ImGui::SliderFloat("Blue", &g_Options.mat_ambient_light_b, 0, 1);
 
-			ImGui::Text("postprocessing:");
+			ImGui::Text("Postprocessing:");
 			ImGui::Checkbox("Nightmode", &g_Options.esp_nightmode);
 			if (g_Options.esp_nightmode)
 				ImGui::SliderFloat("Nightmode bright", &g_Options.esp_nightmode_bright, 0, 100);
 
-			ImGui::CheckboxEX("fullbright", &g_Options.esp_fullbright, "Remove shadows");
+			ImGui::CheckboxEX("Fullbright", &g_Options.esp_fullbright, "Remove shadows");
 
 
 		}
@@ -880,49 +881,49 @@ void RenderMiscTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::CheckboxEX("anti-untrusted", &g_Options.misc_anti_untrusted, "Remove untrusted angles");
-			ImGui::CheckboxEX("infinity duck", &g_Options.misc_infinity_duck, "Nolimit for duck");
-			ImGui::CheckboxEX("anti-obs", &g_Options.misc_anti_screenshot, "No ESP on OBS and screenshot");
-			ImGui::CheckboxEX("legit resolver", &g_Options.misc_legit_resolver, "Resolve legit aa");
+			ImGui::CheckboxEX("Anti-Untrusted", &g_Options.misc_anti_untrusted, "Remove untrusted angles");
+			ImGui::CheckboxEX("Infinity duck", &g_Options.misc_infinity_duck, "Nolimit for duck");
+			ImGui::CheckboxEX("Anti-obs", &g_Options.misc_anti_screenshot, "No ESP on OBS and screenshot");
+			ImGui::CheckboxEX("Legit resolver", &g_Options.misc_legit_resolver, "Resolve legit aa");
 
 
-			ImGui::CheckboxEX("legit antihit", &g_Options.misc_legit_antihit, "local legit AA");
+			ImGui::CheckboxEX("Legit antihit", &g_Options.misc_legit_antihit, "local legit AA");
 			if (g_Options.misc_legit_antihit)
 			{
-				ImGui::CheckboxEX("lby based", &g_Options.misc_legit_antihit_lby, "LBY mode");
-				ImGui::Text("switch side key :");
+				ImGui::CheckboxEX("LBY based", &g_Options.misc_legit_antihit_lby, "LBY mode");
+				ImGui::Text("Switch side key :");
 				ImGui::Hotkey("##3side", &g_Options.misc_legit_antihit_key, ImVec2(150, 20));
 
 			}
 
-			ImGui::Text("movement");
-			ImGui::CheckboxEX("auto-jump", &g_Options.misc_bhop, "Bunnyhop");
-			ImGui::CheckboxEX("auto-strafe", &g_Options.misc_autostrafe, "StrafeBot");
-			ImGui::CheckboxEX("jump-throw", &g_Options.misc_jump_throw, "Jump Throw props"); // @blick1337
-			ImGui::CheckboxEX("third-person", &g_Options.misc_thirdperson, "Local thirdperson");
+			ImGui::Text("Movement");
+			ImGui::CheckboxEX("Auto-jump", &g_Options.misc_bhop, "Bunnyhop");
+			ImGui::CheckboxEX("Auto-strafe", &g_Options.misc_autostrafe, "StrafeBot");
+			ImGui::CheckboxEX("Jump-throw", &g_Options.misc_jump_throw, "Jump Throw props"); // @blick1337
+			ImGui::CheckboxEX("Third-person", &g_Options.misc_thirdperson, "Local thirdperson");
 			if (g_Options.misc_thirdperson)
 			{
-				ImGui::Text("thirdperson-key:");
+				ImGui::Text("Thirdperson-key:");
 				ImGui::Hotkey("##3rdkey", &g_Options.misc_thirdperson_key, ImVec2(150, 20));
 				//	ImGui::SliderFloat("distance", &g_Options.misc_thirdperson_dist, 0.f, 150.f);
 			}
-			ImGui::CheckboxEX("inventory-access", &g_Options.misc_unlock_inventory, "change weapons in inventory");
-			ImGui::CheckboxEX("left-knife", &g_Options.misc_left_knife, "Left hand if knife");
-			ImGui::CheckboxEX("fake-fps", &g_Options.misc_fake_fps, "Boost FPS");
-			ImGui::CheckboxEX("show-ranks", &g_Options.misc_showranks, "Show MM ranks");
-			ImGui::CheckboxEX("clan-tag", &g_Options.misc_clantag, "Cheat tag");
-			ImGui::CheckboxEX("chat-spam", &g_Options.misc_chat_spam, "Spam in chat");
+			ImGui::CheckboxEX("Inventory-access", &g_Options.misc_unlock_inventory, "change weapons in inventory");
+			ImGui::CheckboxEX("Left-knife", &g_Options.misc_left_knife, "Left hand if knife");
+			ImGui::CheckboxEX("Fake-fps", &g_Options.misc_fake_fps, "Boost FPS");
+			ImGui::CheckboxEX("Show-ranks", &g_Options.misc_showranks, "Show MM ranks");
+			ImGui::CheckboxEX("Clan-tag", &g_Options.misc_clantag, "Cheat tag");
+			ImGui::CheckboxEX("Chat-spam", &g_Options.misc_chat_spam, "Spam in chat");
 
 			static const char* models[] = { "Default","Special Agent Ava "," FBI","Operator "," FBI SWAT","Markus Delrow "," FBI HRT","Michael Syfers "," FBI Sniper","B Squadron Officer "," SAS","Seal Team 6 Soldier "," NSWC SEAL","Buckshot "," NSWC SEAL","Lt. Commander Ricksaw "," NSWC SEAL","Third Commando Company "," KSK","'Two Times' McCoy "," USAF TACP","Dragomir "," Sabre","Rezan The Ready "," Sabre","'The Doctor' Romanov "," Sabre","Maximus "," Sabre","Blackwolf "," Sabre","The Elite Mr. Muhlik "," Elite Crew","Ground Rebel "," Elite Crew","Osiris "," Elite Crew","Prof. Shahmat "," Elite Crew","Enforcer "," Phoenix","Slingshot "," Phoenix","Soldier "," Phoenix" };
 
-			ImGui::Combo("player t", &g_Options.playerModelT, models, IM_ARRAYSIZE(models));
+			ImGui::Combo("Player t", &g_Options.playerModelT, models, IM_ARRAYSIZE(models));
 
-			ImGui::Combo("player ct", &g_Options.playerModelCT, models, IM_ARRAYSIZE(models));
+			ImGui::Combo("Player ct", &g_Options.playerModelCT, models, IM_ARRAYSIZE(models));
 
 
-			ImGui::CheckboxEX("bullet-impact's", &g_Options.misc_bullet_impacts, "Bullet pos");
-			ImGui::CheckboxEX("bullet-tracer", &g_Options.misc_bullet_tracer, "Bullet way");
-			ImGui::CheckboxEX("hit-marker", &g_Options.misc_hitmarker, "Marker if hit");
+			ImGui::CheckboxEX("Bullet-impact's", &g_Options.misc_bullet_impacts, "Bullet pos");
+			ImGui::CheckboxEX("Bullet-tracer", &g_Options.misc_bullet_tracer, "Bullet way");
+			ImGui::CheckboxEX("Hit-marker", &g_Options.misc_hitmarker, "Marker if hit");
 
 
 		}
@@ -937,38 +938,38 @@ void RenderMiscTab()
 
 			ImGui::SetCursorPosY(+15);
 
-			ImGui::CheckboxEX("slow-walk", &g_Options.misc_slowwalk, "Slowmotion");
+			ImGui::CheckboxEX("Slow-walk", &g_Options.misc_slowwalk, "Slowmotion");
 			if (g_Options.misc_slowwalk)
 			{
 				ImGui::Hotkey("##slow-walk key", &g_Options.misc_slowwalk_key, ImVec2(150, 20));
-				ImGui::SliderInt("slow-walk speed %", &g_Options.misc_slowwalk_speed, 0, 99);
+				ImGui::SliderInt("Slow-walk speed %", &g_Options.misc_slowwalk_speed, 0, 99);
 			}
-			ImGui::CheckboxEX("fake-duck", &g_Options.misc_fakeduck, "Fakeduck");
+			ImGui::CheckboxEX("Fake-duck", &g_Options.misc_fakeduck, "Fakeduck");
 			if (g_Options.misc_fakeduck)
 			{
 				ImGui::Text("fakeduck key :");
 				ImGui::Hotkey("##fakeduck key", &g_Options.misc_fakeduck_key, ImVec2(150, 20));
 				ImGui::SliderInt("fakeduck tick's", &g_Options.misc_fakeduck_ticks, 0, 16);
 			}
-			const char* fakelag_type[4] = { "default", "adaptive", "on peek", "switch" };
-			ImGui::CheckboxEX("fakelag", &g_Options.misc_fakelag, "Fake lags");
+			const char* fakelag_type[4] = { "Default", "Adaptive", "On peek", "Switch" };
+			ImGui::CheckboxEX("Fakelag", &g_Options.misc_fakelag, "Fake lags");
 			ImGui::CheckboxEX("Shot ignore", &g_Options.misc_fakelag_on_shot, "No fl on shot");
 			if (g_Options.misc_fakelag)
 			{
-				ImGui::Combo("fakelag-type", &g_Options.misc_fakelag_type, fakelag_type, IM_ARRAYSIZE(fakelag_type));
-				ImGui::SliderInt("fakelag ticks :", &g_Options.misc_fakelag_ticks, 0, 16);
+				ImGui::Combo("Fakelag-type", &g_Options.misc_fakelag_type, fakelag_type, IM_ARRAYSIZE(fakelag_type));
+				ImGui::SliderInt("Fakelag ticks :", &g_Options.misc_fakelag_ticks, 0, 16);
 			}
-			ImGui::CheckboxEX("knife-bot", &g_Options.misc_knifebot, "Autoknife");
+			ImGui::CheckboxEX("Knife-bot", &g_Options.misc_knifebot, "Autoknife");
 			if (g_Options.misc_knifebot)
 			{
-				ImGui::CheckboxEX("auto atack", &g_Options.misc_auto_knifebot, "Always attack");
+				ImGui::CheckboxEX("Auto atack", &g_Options.misc_auto_knifebot, "Always attack");
 				ImGui::Checkbox("360 atack[untrusted]", &g_Options.misc_knifebot_360);
 			}
-			ImGui::CheckboxEX("double-tap", &g_Options.exploit_doubletap, "Fast fire exploit");
+			ImGui::CheckboxEX("Double-tap", &g_Options.exploit_doubletap, "Fast fire exploit");
 			if (g_Options.exploit_doubletap)
 			{
 				ImGui::Hotkey("##rapidfire key", &g_Options.exploit_doubletap_key, ImVec2(150, 20));
-				ImGui::CheckboxEX("hide-shots", &g_Options.exploit_hideshots, "hideshots exploit");
+				ImGui::CheckboxEX("Hide-shots", &g_Options.exploit_hideshots, "hideshots exploit");
 			}
 
 		}
@@ -998,14 +999,14 @@ void RenderMiscTab()
 
 
 
-			ImGui::CheckboxEX("watermark", &g_Options.misc_watermark, "Cheat watermark");
-			ImGui::CheckboxEX("spectator-list", &g_Options.misc_spectator_list, "Spectator list");
-			ImGui::CheckboxEX("in-game radar", &g_Options.misc_engine_radar, "Csgo radar");
-			ImGui::CheckboxEX("radar-window", &g_Options.misc_radar, "Cheat radar");
+			ImGui::CheckboxEX("Watermark", &g_Options.misc_watermark, "Cheat watermark");
+			ImGui::CheckboxEX("Spectator-list", &g_Options.misc_spectator_list, "Spectator list");
+			ImGui::CheckboxEX("In-game radar", &g_Options.misc_engine_radar, "Csgo radar");
+			ImGui::CheckboxEX("Radar-window", &g_Options.misc_radar, "Cheat radar");
 			ImGui::Text("other # 2 :");
 			ImGui::Checkbox("Gravity ragdolls", &g_Options.misc_exaggerated_ragdolls);
 			if (g_Options.misc_exaggerated_ragdolls)
-				ImGui::SliderInt("ragdolls force :", &g_Options.misc_exaggerated_ragdolls_force, 1, 35);
+				ImGui::SliderInt("Ragdolls force :", &g_Options.misc_exaggerated_ragdolls_force, 1, 35);
 
 
 
@@ -1022,21 +1023,21 @@ void RenderMiscTab()
 			ImGui::SetCursorPosY(+15);
 
 			if (g_Options.misc_hitmarker)
-				ImGui::SliderFloat("hit-marker size", &g_Options.misc_hitmarker_size, 1.f, 30.f);
-			ImGui::CheckboxEX("hit-sound", &g_Options.misc_hitsound, "Sound if hit");
+				ImGui::SliderFloat("Hit-marker size", &g_Options.misc_hitmarker_size, 1.f, 30.f);
+			ImGui::CheckboxEX("Hit-sound", &g_Options.misc_hitsound, "Sound if hit");
 			const char* sound_type[5] = { "Arena switch", "Bank" ,"Hit", "Metalic", "Rifk" };
 			ImGui::Combo("HitSound type", &g_Options.misc_hitsound_type, sound_type, IM_ARRAYSIZE(sound_type));
 
-			ImGui::CheckboxEX("hit-effect", &g_Options.misc_hiteffect, "Effect if hit");
+			ImGui::CheckboxEX("Hit-effect", &g_Options.misc_hiteffect, "Effect if hit");
 			if (g_Options.misc_hiteffect)
-				ImGui::SliderFloat("hit-effect duration", &g_Options.misc_hiteffect_duration, 0.1f, 5.f);
-			ImGui::Text("event logger");
-			ImGui::CheckboxEX("event log's", &g_Options.misc_event_log, "CSGO event log");
-			ImGui::Text("log's :");
-			ImGui::CheckboxEX("player hit", &g_Options.event_log_hit, "Log it, if was hit");
-			ImGui::CheckboxEX("player purchases", &g_Options.event_log_item, "Log purchases");
-			ImGui::CheckboxEX("planting", &g_Options.event_log_plant, "Log it, if bomb has been planted");
-			ImGui::CheckboxEX("defusing", &g_Options.event_log_defuse, "Log it, if bomb is defusing");
+				ImGui::SliderFloat("Hit-effect duration", &g_Options.misc_hiteffect_duration, 0.1f, 5.f);
+			ImGui::Text("Event logger");
+			ImGui::CheckboxEX("Event log's", &g_Options.misc_event_log, "CSGO event log");
+			ImGui::Text("Log's :");
+			ImGui::CheckboxEX("Player hit", &g_Options.event_log_hit, "Log it, if was hit");
+			ImGui::CheckboxEX("Player purchases", &g_Options.event_log_item, "Log purchases");
+			ImGui::CheckboxEX("Planting", &g_Options.event_log_plant, "Log it, if bomb has been planted");
+			ImGui::CheckboxEX("Defusing", &g_Options.event_log_defuse, "Log it, if bomb is defusing");
 
 
 		}
@@ -1212,15 +1213,15 @@ void RenderConfigTab()
 				ShellExecuteA(0, "open", "C:/snakeware", NULL, NULL, SW_NORMAL);
 			if (!current_config.empty()) {
 
-				if (ImGui::Button("load", ImVec2(250, 20)))
+				if (ImGui::Button("Load", ImVec2(250, 20)))
 					Config->Load(current_config);
 
 
-				if (ImGui::Button("save", ImVec2(250, 20)))
+				if (ImGui::Button("Save", ImVec2(250, 20)))
 					Config->Save(current_config);
 
 
-				if (ImGui::Button("delete", ImVec2(250, 20)) && fs::remove("C:\\snakware\\" + current_config)) {
+				if (ImGui::Button("Delete", ImVec2(250, 20)) && fs::remove("C:\\snakware\\" + current_config)) {
 					current_config.clear();
 					is_configs_loaded = false;
 				}

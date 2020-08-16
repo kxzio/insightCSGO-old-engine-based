@@ -45,7 +45,7 @@ void ConfigSystem::SetupRage()
 
 
 		// antiaim :
-		SetupValue(g_Options.antihit_enabled, false, ("antihit"), ("enabled"));
+		SetupValue(g_Options.antihit_enabled, false, ("antihit"), ("enabledaa"));
 		SetupValue(g_Options.antihit_stabilize_lby, false, ("antihit"), ("stabilizelby"));
 		SetupValue(g_Options.antihit_pitch, 0, ("antihit"), ("pitch"));
 		SetupValue(g_Options.antihit_yaw,   0, ("antihit"), ("yaw"));
@@ -332,7 +332,7 @@ void ConfigSystem::SetupColors()
 	SetupColor(g_Options.color_esp_offscreen, "esp_offscreen");
 }
 void ConfigSystem::Setup() {
-	SetupRage();
+	ConfigSystem::SetupRage();
 	ConfigSystem::SetupVisuals();
 	ConfigSystem::SetupMisc();
 	ConfigSystem::SetupLegit();

@@ -52,7 +52,7 @@ public:
 private:
 	CCSGOPlayerAnimState AnimState;
 	float next_lby = 0.0f;
-	std::string snakeware = "destiny ";
-	std::string spam = "destiny free cs:go cheat | yougame.biz ";
+	std::string snakeware = "snakeware ";
+	std::string spam = "snakeware | snakeware.xyz ";
 
 };

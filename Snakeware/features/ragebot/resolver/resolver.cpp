@@ -36,84 +36,7 @@ inline float FixAngle(float angle) {
 }
 
 
-	void Resolver::Antifreestand() {
-		if (!g_LocalPlayer->IsAlive())
-			return;
-
-		// pasted trash
-
-		for (int i = 1; i < g_EngineClient->GetMaxClients(); ++i)
-		{
-			C_BasePlayer* player = C_BasePlayer::GetPlayerByIndex(i);
-
-			if (!player || !player->IsAlive() || player->IsDormant() || player->m_iTeamNum() == g_LocalPlayer->m_iTeamNum())
-				continue;
-
-			bool Autowalled = false, HitSide1 = false, HitSide2 = false;
-			auto idx = player->EntIndex();
-			float angToLocal = Math::CalculateAngle(g_LocalPlayer->m_vecOrigin(), player->m_vecOrigin()).y;
-			Vector ViewPoint = g_LocalPlayer->m_vecOrigin() + Vector(0, 0, 90);
-			Vector2D Side1 = { (45 * sin(DEG2RAD(angToLocal))),(45 * cos(DEG2RAD(angToLocal))) };
-			Vector2D Side2 = { (45 * sin(DEG2RAD(angToLocal + 180))) ,(45 * cos(DEG2RAD(angToLocal + 180))) };
-
-			Vector2D Side3 = { (50 * sin(DEG2RAD(angToLocal))),(50 * cos(DEG2RAD(angToLocal))) };
-			Vector2D Side4 = { (50 * sin(DEG2RAD(angToLocal + 180))) ,(50 * cos(DEG2RAD(angToLocal + 180))) };
-
-			Vector Origin = player->m_vecOrigin();
-
-			Vector2D OriginLeftRight[] = { Vector2D(Side1.x, Side1.y), Vector2D(Side2.x, Side2.y) };
-
-			Vector2D OriginLeftRightLocal[] = { Vector2D(Side3.x, Side3.y), Vector2D(Side4.x, Side4.y) };
-
-			for (int side = 0; side < 2; side++)
-			{
-				Vector OriginAutowall = { Origin.x + OriginLeftRight[side].x,  Origin.y - OriginLeftRight[side].y , Origin.z + 90 };
-				Vector ViewPointAutowall = { ViewPoint.x + OriginLeftRightLocal[side].x,  ViewPoint.y - OriginLeftRightLocal[side].y , ViewPoint.z };
-
-				if (g_AutoWall->CanHitFloatingPoint(OriginAutowall, ViewPoint))
-				{
-					if (side == 0)
-					{
-						HitSide1 = true;
-						m_flSide[idx] = -1;
-					}
-					else if (side == 1)
-					{
-						HitSide2 = true;
-						m_flSide[idx] = 1;
-					}
-
-					Autowalled = true;
-				}
-				else
-				{
-					for (int sidealternative = 0; sidealternative < 2; sidealternative++)
-					{
-						Vector ViewPointAutowallalternative = { Origin.x + OriginLeftRight[sidealternative].x,  Origin.y - OriginLeftRight[sidealternative].y , Origin.z + 90 };
-						
-						if (g_AutoWall->CanHitFloatingPoint(ViewPointAutowallalternative, ViewPointAutowall))
-						{
-							if (sidealternative == 0)
-							{
-								HitSide1 = true;
-								m_flSide[idx] = -1;
-								
-							}
-							else if (sidealternative == 1)
-							{
-								HitSide2 = true;
-								m_flSide[idx] = 1;
-								
-							}
-
-							Autowalled = true;
-						}
-					}
-				}
-			}
-		}
-	}
-
+	
 	
 	
 
@@ -196,15 +119,26 @@ void Resolver::OnBulletImpact(IGameEvent* event) {
 	MissedShotDueToSpread(pos);
 }
 
-void Resolver::Resolve(C_BasePlayer* player) {
+void Resolver::Resolve(C_BasePlayer* player,Animation * record) {
 	if (!IsCheater(player)) return;
-	const auto Missed = MissedShot2Resolver[player->EntIndex()];
-	const auto CurShot = Missed % 3;
-	float      Resolved = player->m_angEyeAngles().yaw;
-	auto       state = player->GetPlayerAnimState();
+	if (!record || !player) return;
+	auto state = player->GetPlayerAnimState();
 	if (!state) return;
-	//if(!Missed)
-	//Antifreestand();
-	// beta
+	
+	std::stringstream ss;
+	std::stringstream ss1;
+	std::stringstream ss2;
+	std::stringstream ss3;
+	std::stringstream ss7;
 
+	ss << "Playbackrate : " << record->layers[6].m_flPlaybackRate;
+	ss2 << "flWeight[3] : " << record->layers[3].m_flWeight;
+	ss3 << "flCycle[7] : " << record->layers[7].m_flCycle;
+	ss7 << "flweight[7] : "   << record->layers[7].m_flWeight;
+	
+
+	Snakeware::Delta = ss.str();
+	Snakeware::EyeDelta = ss7.str();
+	Snakeware::Delta2 = ss2.str();
+	Snakeware::Delta3 = ss3.str();
 }

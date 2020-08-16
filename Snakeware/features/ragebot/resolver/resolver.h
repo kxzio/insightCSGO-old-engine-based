@@ -15,11 +15,10 @@ public :
 	int                     m_flSide[65];
 	AnimationLayer          ResolvedAnimLayer[3][15];
 
-	void DetectDesyncSide   (Animation * animation);
 
-	void Resolve            (C_BasePlayer * player);
+	void Resolve            (C_BasePlayer * player,Animation * record);
 
-	void Antifreestand();
+
 
 	void ResolvePitch       (C_BasePlayer* player);
 
