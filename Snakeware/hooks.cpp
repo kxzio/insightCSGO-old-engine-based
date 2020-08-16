@@ -9,6 +9,11 @@
 #include "helpers/utils.hpp"
 #include "features/bhop.hpp"
 #include "features/chams.hpp"
+
+//LUA EXTENDS
+#include "Lua/API.h"
+
+
 #include "features/visuals.hpp"
 #include "features/glow.hpp"
 #include "features/miscellaneous/miscellaneous.h"
@@ -30,6 +35,7 @@
 #include "materials/Materials.h"
 #include "Protected/enginer.h"
 #include "Achievment_sys.h"
+#include "Lua/API.h"
 #define Snake
 #pragma intrinsic(_ReturnAddress)  
 float real_angle = 0.0f;
@@ -617,7 +623,20 @@ namespace Hooks {
 		}
 		
 		
+		for (auto hk : lua::hooks->getHooks("on_create_move"))
+		{
+			try
+			{
+				auto result = hk.func(cmd);
+				if (!result.valid()) {
+					sol::error err = result;
+				}
+			}
+			catch (const std::exception&)
+			{
 
+			}
+		}
 
 		return false;
 	}
@@ -677,7 +696,20 @@ namespace Hooks {
 
 			Render::Get().BeginScene();
 
-		
+			for (auto hk : lua::hooks->getHooks("on_paint"))
+			{
+				try
+				{
+					auto result = hk.func();
+					if (!result.valid()) {
+						sol::error err = result;
+					}
+				}
+				catch (const std::exception&)
+				{
+
+				}
+			}
 	
 		}
 	}
@@ -760,6 +792,8 @@ namespace Hooks {
 
 
 		}
+
+
 	
 	
 
@@ -789,6 +823,8 @@ namespace Hooks {
 
 				g_Nightmode.Run();
 				Visuals::Get().PlayerChanger(FRAME_RENDER_START);
+
+
 			
 		}
 
@@ -849,6 +885,22 @@ namespace Hooks {
 		{
 			*aim_punch = aim_punch_old;
 			*view_punch = view_punch_old;
+		}
+
+
+		for (auto hk : lua::hooks->getHooks("on_frame_stage_notify"))
+		{
+			try
+			{
+				auto result = hk.func((int)stage);
+				if (!result.valid()) {
+					sol::error err = result;
+				}
+			}
+			catch (const std::exception&)
+			{
+
+			}
 		}
 		
 	}
