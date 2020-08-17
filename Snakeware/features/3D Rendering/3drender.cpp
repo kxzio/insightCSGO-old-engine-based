@@ -28,15 +28,17 @@ void RENDER_3D_GUI::LocalCircle()
 
 		auto weapon_data = weapon->GetCSWeaponData();
 
+		int radius = 40;
+		int radius2 = 100;
 
 		if (weapon_data->iWeaponType == WEAPONTYPE_KNIFE)
 		{
-			int radius = 40;
+			
 			Render::Get().RenderCircle3D(pos, radius * 3, radius, Color(255, 255, 255));
 		}
 		else if (idx == WEAPON_ZEUS)
 		{
-			int radius2 = 80;
+			
 			Render::Get().RenderCircle3D(pos, radius2 * 3, radius2, Color(255, 255, 255));
 		}
 	

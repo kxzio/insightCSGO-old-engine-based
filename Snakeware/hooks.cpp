@@ -11,8 +11,6 @@
 #include "features/chams.hpp"
 
 //LUA EXTENDS
-#include "Lua/API.h"
-
 
 #include "features/visuals.hpp"
 #include "features/glow.hpp"
@@ -35,7 +33,6 @@
 #include "materials/Materials.h"
 #include "Protected/enginer.h"
 #include "Achievment_sys.h"
-#include "Lua/API.h"
 #define Snake
 #pragma intrinsic(_ReturnAddress)  
 float real_angle = 0.0f;
@@ -623,20 +620,6 @@ namespace Hooks {
 		}
 		
 		
-		for (auto hk : lua::hooks->getHooks("on_create_move"))
-		{
-			try
-			{
-				auto result = hk.func(cmd);
-				if (!result.valid()) {
-					sol::error err = result;
-				}
-			}
-			catch (const std::exception&)
-			{
-
-			}
-		}
 
 		return false;
 	}
@@ -696,20 +679,7 @@ namespace Hooks {
 
 			Render::Get().BeginScene();
 
-			for (auto hk : lua::hooks->getHooks("on_paint"))
-			{
-				try
-				{
-					auto result = hk.func();
-					if (!result.valid()) {
-						sol::error err = result;
-					}
-				}
-				catch (const std::exception&)
-				{
-
-				}
-			}
+			
 	
 		}
 	}
@@ -888,20 +858,8 @@ namespace Hooks {
 		}
 
 
-		for (auto hk : lua::hooks->getHooks("on_frame_stage_notify"))
-		{
-			try
-			{
-				auto result = hk.func((int)stage);
-				if (!result.valid()) {
-					sol::error err = result;
-				}
-			}
-			catch (const std::exception&)
-			{
 
-			}
-		}
+		
 		
 	}
 	//--------------------------------------------------------------------------------
