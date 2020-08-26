@@ -440,7 +440,7 @@ public:
 	// RAGEBOT
 	// 
 
-
+	int cheatmode;
 
 
 

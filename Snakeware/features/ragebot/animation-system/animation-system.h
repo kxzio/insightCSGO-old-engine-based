@@ -60,6 +60,8 @@ public:
 
 		void UpdateAnimations(Animation* to, Animation* from);
 
+		void EnemyAnimFix(C_BasePlayer* entity);
+
 		C_BasePlayer* player{};
 		std::deque<Animation> frames;
 

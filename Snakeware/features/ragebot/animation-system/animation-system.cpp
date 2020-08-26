@@ -348,8 +348,8 @@ void Animations::UpdatePlayerAnimations() {
 	
 		
     	
-		
 		Resolver::Get().ResolvePitch(_animation.player);
+		//Resolver::Get().Resolve(_animation.player);
 
 		// have we already seen this update?
 		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())  continue;
@@ -386,6 +386,9 @@ void Animations::UpdatePlayerAnimations() {
 		
 		auto& record = _animation.frames.emplace_front(player, info.second.last_reliable_angle);
 		// run full update
+
+
+
 		_animation.UpdateAnimations(&record, previous);
 
 		// use uninterpolated data to generate our bone matrix

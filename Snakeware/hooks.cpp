@@ -804,7 +804,6 @@ namespace Hooks {
 			
 			//Animations::Get().FakeAnimation();
 			Miscellaneous::Get().CallLegitResolver();
-			Animations::Get().UpdatePlayerAnimations();// Возможный виновник
 			Animations::Get().FixLocalPlayer();
 		}
 		if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_START)
@@ -844,6 +843,7 @@ namespace Hooks {
 						continue;
 
 					SoundEsp::Get().AddSound(*sound.m_pOrigin, is_enemy);
+
 				}
 
 				sndList.RemoveAll();

@@ -2583,7 +2583,7 @@ bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* v, co
 	char value_buf[64];
 	const char* value_buf_end = value_buf + DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, v, format);
 
-	RenderTextClipped(frame_bb.Min - ImVec2(0, 5) + ImVec2(0,13), frame_bb.Max - ImVec2(8, 1) + ImVec2(0, 13), value_buf, value_buf_end, NULL, ImVec2(1.f, 1.f));
+    RenderText(frame_bb.Min - ImVec2(0, 5) + ImVec2(0,5), value_buf, value_buf_end, NULL, ImVec2(1.f, 1.f));
 
 
 	if (label_size.x > 0.0f)

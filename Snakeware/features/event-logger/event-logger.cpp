@@ -148,6 +148,8 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 			return;
 		}
 
+		std::stringstream ss;
+
 		auto userid_id = g_EngineClient->GetPlayerForUserID(userid);
 
 		player_info_t userid_info;

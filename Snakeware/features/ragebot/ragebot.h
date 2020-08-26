@@ -11,6 +11,12 @@
 #define square( x ) ( x * x )
 class RageBot : public Singleton <RageBot> {
 public:
+
+	C_BasePlayer* player_global;
+	int shots_missed[65];
+	int shots_hit[65];
+	int shots_fire[65];
+
 	struct AimInfo {
 		AimInfo(const Vector position, const float damage, Animation* animation, const bool alt_attack,
 			const Vector center, const float radius, const float rs, const int hitbox)

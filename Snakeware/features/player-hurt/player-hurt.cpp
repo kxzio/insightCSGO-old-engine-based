@@ -4,6 +4,7 @@
 #include "../../render.hpp"
 #include "../../helpers/math.hpp"
 #include "../../features/ragebot/ragebot.h"
+#include "../../features/ragebot/resolver/resolver.h"
 #include "../../fonts/Sound_bite.h"
 
 IGameEvent* event_ex;
@@ -61,7 +62,7 @@ void PlayerHurtEvent::FireGameEvent(IGameEvent *event)
 			hitMarkerInfo.push_back({ g_GlobalVars->curtime + 0.8f, event->GetInt("dmg_health") });
 			if (g_Options.misc_hitsound)
 			{
-
+				Resolver::Get().shots_hit[Resolver::Get().LastMissedShotIndex]++;
 				switch (g_Options.misc_hitsound_type)
 				{
 				case 0: g_EngineClient->ExecuteClientCmd("play buttons\\arena_switch_press_02.wav");     break;

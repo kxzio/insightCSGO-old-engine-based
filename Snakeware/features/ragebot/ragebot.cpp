@@ -531,10 +531,10 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 	UpdateConfig();
 
 
-
 	Snakeware::OnShot = false;
 	for (int i = 1; i < g_GlobalVars->maxClients; i++) {
 		C_BasePlayer* player = C_BasePlayer::GetPlayerByIndex(i);
+
 
 		if (!IsViable(player)) continue;
 
@@ -545,7 +545,7 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 
 		const auto rtt = 2.f * g_EngineClient->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
 	
-
+		
 		const auto oldest = Animations::Get().get_oldest_animation(player);
 
 
@@ -628,6 +628,7 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 	}
 
 
+
 	cmd->viewangles = angle;
 	cmd->tick_count = TIME_TO_TICKS(best_match.animation->sim_time + LagCompensation::Get().GetLerpTime());
 	if (!g_Options.ragebot_silent)
@@ -646,6 +647,7 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 				Resolver::Get().LastEyePos = local->GetShootPos();
 				Resolver::Get().LastMissedShotIndex = best_match.animation->index;
 				Resolver::Get().LastHitbox = best_match.hitbox;
+				Resolver::Get().shots_fire[Resolver::Get().LastMissedShotIndex]++;
 				
 			}
 			Snakeware::OnShot = true;

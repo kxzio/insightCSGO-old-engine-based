@@ -7,8 +7,10 @@
 #include "../../../valve_sdk/interfaces/IGameEventmanager.hpp"
 #include "../../event-logger/event-logger.h"
 
+static float ResolvedYaw[65];
 
-
+int shots_hit[65];
+int shots_fire[65];
 bool IsCheater(C_BasePlayer * player) {
      // credits : @LNK1181 aka platina300
 	 const auto choked_ticks = std::max(0, TIME_TO_TICKS(player->m_flSimulationTime() - player->m_flOldSimulationTime()) - 1);
@@ -100,6 +102,7 @@ void Resolver::OnBulletImpact(IGameEvent* event) {
 		{
 			const auto Studio = g_MdlInfo->GetStudioModel(Target->GetModel());
 			if (!Studio) return;
+
 			if (!can_hit_hitbox(LastEyePos,LastEyePos + end.Normalize() * 8192.f, LastBones, Studio, LastHitbox)) {
 				MissedShot2Spread[LastMissedShotIndex]++;
 				MissedShot2Spread[LastMissedShotIndex] = std::clamp(MissedShot2Spread[LastMissedShotIndex], 0, 99);
@@ -107,10 +110,10 @@ void Resolver::OnBulletImpact(IGameEvent* event) {
 				EventLogs::Get().Add("missed due to spread", Color(255,0,120));
 		
 			}
-			else {
+			if (can_hit_hitbox(LastEyePos, LastEyePos + end.Normalize() * 8192.f, LastBones, Studio, LastHitbox))
+			{
 				MissedShot2Resolver[LastMissedShotIndex]++;
 				MissedShot2Resolver[LastMissedShotIndex] = std::clamp(MissedShot2Resolver[LastMissedShotIndex], 0, 99);
-
 				EventLogs::Get().Add("missed due to animation desync", Color(255, 0, 120));
 			}
 		}
@@ -119,12 +122,59 @@ void Resolver::OnBulletImpact(IGameEvent* event) {
 	MissedShotDueToSpread(pos);
 }
 
-void Resolver::Resolve(C_BasePlayer* player,Animation * record) {
-	if (!IsCheater(player)) return;
+float sub_1001F720(float a1) {
+	float v1; // ST0C_4
+	float v2; // ST08_4
+
+	if (a1 <= 180.0f) {
+		if (a1 < -180.0f) {
+			v2 = std::roundf(a1 / 360.0f);
+			a1 = (float)(v2 * -360.0f) + a1;
+		}
+	}
+	else {
+		v1 = std::roundf(a1 / 360.0f);
+		a1 = a1 - (float)(v1 * 360.0f);
+	}
+
+	return a1;
+}
+
+float sub_1001F720_1(float st7_0, float a1)
+{
+	float v2; // ST0C_4
+	float v3; // ST08_4
+
+	if (a1 <= 180.0) {
+		if (a1 < -180.0) {
+			v3 = std::roundf(a1 / 360.0f);
+			a1 = (float)(v3 * -360.0) + a1;
+		}
+	}
+	else {
+		v2 = std::roundf(a1 / 360.0f);
+		a1 = a1 - (float)(v2 * 360.0);
+	}
+
+	return a1;
+}
+
+float __stdcall sub_1000F820235235253(float a1, float a2, float a3, float a4, float a5) {
+	float v6; // [esp+8h] [ebp-4h]
+
+	if (a2 != a3)
+		return (float)((float)((float)((float)(a5 - a4) * (float)(a1 - a2)) / (float)(a3 - a2)) + a4);
+	if (a1 < a3)
+		v6 = a4;
+	else
+		v6 = a5;
+
+	return v6;
+}
+
+void GetFlags(C_BasePlayer* player, Animation* record)
+{
 	if (!record || !player) return;
-	auto state = player->GetPlayerAnimState();
-	if (!state) return;
-	
 	std::stringstream ss;
 	std::stringstream ss1;
 	std::stringstream ss2;
@@ -134,11 +184,35 @@ void Resolver::Resolve(C_BasePlayer* player,Animation * record) {
 	ss << "Playbackrate : " << record->layers[6].m_flPlaybackRate;
 	ss2 << "flWeight[3] : " << record->layers[3].m_flWeight;
 	ss3 << "flCycle[7] : " << record->layers[7].m_flCycle;
-	ss7 << "flweight[7] : "   << record->layers[7].m_flWeight;
-	
+	ss7 << "flweight[7] : " << record->layers[7].m_flWeight;
+
 
 	Snakeware::Delta = ss.str();
 	Snakeware::EyeDelta = ss7.str();
 	Snakeware::Delta2 = ss2.str();
 	Snakeware::Delta3 = ss3.str();
+}
+void Resolver::Resolve(C_BasePlayer* player) {
+
+	if (!player) return;
+	if (!player->IsAlive())
+		return;
+
+	const auto entity_animstate = player->GetPlayerAnimState();
+
+
+		switch (MissedShot2Spread[LastMissedShotIndex] % 2)
+		{
+		case 0:
+			ResolvedYaw[player->EntIndex()] = ResolvedYaw[player->EntIndex()] + 58.f;
+			break;
+
+		case 1:
+			ResolvedYaw[player->EntIndex()] = ResolvedYaw[player->EntIndex()] - 58.f;
+			break;
+		}
+		entity_animstate->m_flGoalFeetYaw = ResolvedYaw[player->EntIndex()];
+
+
+	
 }

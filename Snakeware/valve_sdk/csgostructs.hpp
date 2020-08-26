@@ -377,7 +377,10 @@ public:
 	matrix3x4_t**& get_bone_cache() {
 		return *reinterpret_cast<matrix3x4_t***>(reinterpret_cast<uintptr_t>(this) + 0x2910);
 	}
-
+	int GetIndex()
+	{
+		return *reinterpret_cast<int*>(uintptr_t(this) + 0x64);
+	}
 	Vector& m_angAbsOrigin() {
 		typedef Vector& (__thiscall* OriginalFn)(void*);
 		if (this) return ((OriginalFn)CallVFunction<OriginalFn>(this, 10))(this);

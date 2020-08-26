@@ -322,6 +322,7 @@ void LegitBot::OnMove(CUserCmd *pCmd) {
 
 	Math::FixAngles(angles);
 	pCmd->viewangles = angles;
+
 	if (IsNotSilent(fov)) {
 		g_EngineClient->SetViewAngles(&angles);
 	}

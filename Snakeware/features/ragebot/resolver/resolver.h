@@ -16,7 +16,7 @@ public :
 	AnimationLayer          ResolvedAnimLayer[3][15];
 
 
-	void Resolve            (C_BasePlayer * player,Animation * record);
+	void Resolve            (C_BasePlayer * player);
 
 
 
@@ -28,12 +28,18 @@ public :
 	void                     OnBulletImpact(IGameEvent * event);
 
 	//StoreMissedShot's like rifk cheat
+
+	 int shots_missed[65];
+	 int shots_hit[65];
+	 int shots_fire[65];
+
 	int      LastHitbox;
 	int      LastMissedShotIndex;
 	int      MissedShot2Spread  [65];
 	int      MissedShot2Resolver[65];
 	matrix3x4_t LastBones       [128];
 	Vector   LastEyePos;
+	int resolvermode;
 
 };
 
