@@ -61,7 +61,7 @@ void Resolver::StoreAnimOverlays(C_BasePlayer * player) {
 }
 
 void Resolver::OnPlayerHurt(IGameEvent* event) {
-	    if (!event || !g_Options.ragebot_enabled)        return;
+	    if (!g_Options.ragebot_enabled)        return;
 
 	    if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
 
@@ -75,7 +75,7 @@ void Resolver::OnPlayerHurt(IGameEvent* event) {
 
 
 void Resolver::OnBulletImpact(IGameEvent* event) {
-	if (!event || !g_Options.ragebot_enabled)        return;
+	if (!g_Options.ragebot_enabled)        return;
 
 	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
 

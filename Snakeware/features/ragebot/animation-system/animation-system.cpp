@@ -201,9 +201,10 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		record->Apply(player);
 
 		// run update.
-		Animations::Get().UpdatePlayer(player);
+		 Animations::Get().UpdatePlayer(player);
 
-		return;
+		 // return 
+		 return;
 
 	}
 
@@ -359,10 +360,11 @@ void Animations::UpdatePlayerAnimations() {
 		// reset animstate
 		if (_animation.last_spawn_time != player->m_flSpawnTime()) {
 			const auto state = player->GetPlayerAnimState();
-			if (state)
+			if  (state)
 				player->ResetAnimationState(state);
 
-			_animation.last_spawn_time = player->m_flSpawnTime();
+			state->m_flLastClientSideAnimationUpdateTime = g_GlobalVars->curtime - g_GlobalVars->interval_per_tick;
+			_animation.last_spawn_time                   = player->m_flSpawnTime();
 		}
 
 		// grab weapon
@@ -388,8 +390,6 @@ void Animations::UpdatePlayerAnimations() {
 		
 		auto& record = _animation.frames.emplace_front(player, info.second.last_reliable_angle);
 		// run full update
-
-
 
 		_animation.UpdateAnimations(&record, previous);
 

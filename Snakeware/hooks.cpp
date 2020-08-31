@@ -805,6 +805,7 @@ namespace Hooks {
 			//Animations::Get().FakeAnimation();
 			Miscellaneous::Get().CallLegitResolver();
 			Animations::Get().FixLocalPlayer();
+			Animations::Get().UpdatePlayerAnimations();
 		}
 		if (stage == ClientFrameStage_t::FRAME_NET_UPDATE_START)
 		{

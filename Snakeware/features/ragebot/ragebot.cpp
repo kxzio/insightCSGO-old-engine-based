@@ -584,7 +584,7 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 		if (aimbot_info.has_value())
 			hitpoints.push_back(aimbot_info.value());
 	}
-
+	
 	AimInfo best_match = { Vector(), 0.f, nullptr, false, Vector(), 0.f, 0.f, HITBOX_HEAD };
 
 	// find best target spot of all valid spots.
@@ -601,7 +601,7 @@ void RageBot::CreateMove(C_BasePlayer* local, CUserCmd* cmd, bool& send_packet)
 
 	// store pitch for eye correction.
 	last_pitch = angle.pitch;
-
+	
 
 	if (!can_hit(best_match.animation, best_match.center, g_Options.ragebot_hitchance[curGroup] / 100.f, best_match.hitbox))
 	{
