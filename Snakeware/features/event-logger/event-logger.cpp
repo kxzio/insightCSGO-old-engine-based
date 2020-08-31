@@ -167,7 +167,7 @@ void EventLogs::FireGameEvent(IGameEvent * event) {
 			return;
 		}
 
-		std::stringstream ss;
+		
 		ss << userid_info.szName << " purchased a(n) " << event->GetString("weapon");
 
 		Add(ss.str(), Color::White);

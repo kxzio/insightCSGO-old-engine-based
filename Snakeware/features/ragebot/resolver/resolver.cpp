@@ -110,7 +110,7 @@ void Resolver::OnBulletImpact(IGameEvent* event) {
 				EventLogs::Get().Add("missed due to spread", Color(255,0,120));
 		
 			}
-			if (can_hit_hitbox(LastEyePos, LastEyePos + end.Normalize() * 8192.f, LastBones, Studio, LastHitbox))
+			else
 			{
 				MissedShot2Resolver[LastMissedShotIndex]++;
 				MissedShot2Resolver[LastMissedShotIndex] = std::clamp(MissedShot2Resolver[LastMissedShotIndex], 0, 99);

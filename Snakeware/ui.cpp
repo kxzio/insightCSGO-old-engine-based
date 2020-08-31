@@ -5,8 +5,7 @@
 #include <vector>
 
 
-bool ImGui::ToggleButton(const char* label, bool* v, const ImVec2& size_arg)
-{
+bool ImGuiEX::ToggleButton(const char* label, bool* v, const ImVec2& size_arg) {
 
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
@@ -55,21 +54,21 @@ static auto vector_getter = [](void* vec, int idx, const char** out_text) {
 	return true;
 };
 
-bool ImGui::Combo(const char* label, int* currIndex, std::vector<std::string>& values) {
+bool ImGuiEX::Combo(const char* label, int* currIndex, std::vector<std::string>& values) {
 	if (values.empty()) { return false; }
 	return ImGui::Combo(label, currIndex, vector_getter,
 		static_cast<void*>(&values), values.size());
 }
 
-void ImGui::TabButton(const char* label, int* selected, int num, int total) {
-	ImGuiWindow* window = GetCurrentWindow();
+void ImGuiEX::TabButton(const char* label, int* selected, int num, int total) {
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
 		return;
 
 	ImGuiContext& g = *GImGui;
 	const ImGuiStyle& style = g.Style;
 	const ImGuiID id = window->GetID(label);
-	const ImVec2 label_size = CalcTextSize(label, NULL, true);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
 
 	ImVec2 pos = window->Pos + ImVec2(220, 33) + ImVec2((window->Size.x - 12) / total * num, 0) - ImVec2(0, 1);
 	ImVec2 size = ImVec2((window->Size.x - 12) / total, 24);
@@ -78,9 +77,9 @@ void ImGui::TabButton(const char* label, int* selected, int num, int total) {
 
 
 	bool hovered, held;
-	bool pressed = ButtonBehavior(bb, id, &hovered, &held, 0);
+	bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
 	if (pressed)
-		MarkItemEdited(id);
+		ImGui::MarkItemEdited(id);
 
 
 	if (pressed)
@@ -96,15 +95,15 @@ void ImGui::TabButton(const char* label, int* selected, int num, int total) {
 
 }
 
-void ImGui::SubTabButton(const char* label, int* selected, int num, int total) {
-	ImGuiWindow* window = GetCurrentWindow();
+void ImGuiEX::SubTabButton(const char* label, int* selected, int num, int total) {
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
 		return;
 
 	ImGuiContext& g = *GImGui;
 	const ImGuiStyle& style = g.Style;
 	const ImGuiID id = window->GetID(label);
-	const ImVec2 label_size = CalcTextSize(label, NULL, true);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
 
 	ImVec2 pos = window->Pos + ImVec2(0, 33) + ImVec2((window->Size.x - 12) / total * num, 0) - ImVec2(0, 1) + ImVec2(0,455) ;
 	ImVec2 size = ImVec2((window->Size.x - 12) / total, 24);
@@ -112,9 +111,9 @@ void ImGui::SubTabButton(const char* label, int* selected, int num, int total) {
 	const ImRect bb(pos, pos + size);
 
 	bool hovered, held;
-	bool pressed = ButtonBehavior(bb, id, &hovered, &held, 0);
+	bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
 	if (pressed)
-		MarkItemEdited(id);
+		ImGui::MarkItemEdited(id);
 
 
 	if (pressed)
@@ -130,8 +129,7 @@ void ImGui::SubTabButton(const char* label, int* selected, int num, int total) {
 	window->DrawList->AddTextMiddle(ImVec2(pos.x + size.x / 2 - label_size.x / 2, pos.y + size.y / 2 - label_size.y / 2 - 1), textColor, label);
 
 }
-bool ImGui::BeginGroupBox(const char* name, const ImVec2& size_arg)
-{
+bool ImGuiEX::BeginGroupBox(const char* name, const ImVec2& size_arg) {
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_ChildWindow;
 
@@ -168,7 +166,7 @@ bool ImGui::BeginGroupBox(const char* name, const ImVec2& size_arg)
 	return ret;
 }
 
-void ImGui::EndGroupBox()
+void ImGuiEX::EndGroupBox()
 {
 	ImGui::EndChild();
 	ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -343,10 +341,10 @@ const char* const KeyNames[] = {
 	"Right menu" 
 };
 
-bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
+bool ImGuiEX::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 {
-	SameLine();
-	ImGuiWindow* window = GetCurrentWindow();
+	ImGui::SameLine();
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
 	if (window->SkipItems)
 		return false;
 
@@ -355,24 +353,24 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 	const ImGuiStyle& style = g.Style;
 
 	const ImGuiID id = window->GetID(label);
-	const ImVec2 label_size = CalcTextSize(label, NULL, true);
-	ImVec2 size = CalcItemSize(ImVec2(150, 20), CalcItemWidth(), label_size.y + style.FramePadding.y*2.0f);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+	ImVec2 size = ImGui::CalcItemSize(ImVec2(150, 20), ImGui::CalcItemWidth(), label_size.y + style.FramePadding.y*2.0f);
 	const ImRect frame_bb(window->DC.CursorPos + ImVec2(label_size.x + style.ItemInnerSpacing.x + 80, 0.0f), window->DC.CursorPos + size );
 	const ImRect total_bb(window->DC.CursorPos, frame_bb.Max);
 
-	ItemSize(total_bb, style.FramePadding.y);
-	if (!ItemAdd(total_bb, id))
+	ImGui::ItemSize(total_bb, style.FramePadding.y);
+	if (!ImGui::ItemAdd(total_bb, id))
 		return false;
 
-	const bool focus_requested = FocusableItemRegister(window, g.ActiveId == id, false);
+	const bool focus_requested = ImGui::FocusableItemRegister(window, g.ActiveId == id, false);
 	const bool focus_requested_by_code = focus_requested && (window->FocusIdxAllCounter == window->FocusIdxAllRequestCurrent);
 	const bool focus_requested_by_tab = focus_requested && !focus_requested_by_code;
 
-	const bool hovered = ItemHoverable(frame_bb, id);
+	const bool hovered = ImGui::ItemHoverable(frame_bb, id);
 
 	if (hovered)
 	{
-		SetHoveredID(id);
+		ImGui::SetHoveredID(id);
 		g.MouseCursor = ImGuiMouseCursor_TextInput;
 	}
 
@@ -385,12 +383,12 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 			memset(io.KeysDown, 0, sizeof(io.KeysDown));
 			*k = 0;
 		}
-		SetActiveID(id, window);
-		FocusWindow(window);
+		ImGui::SetActiveID(id, window);
+		ImGui::FocusWindow(window);
 	}
 	else if (io.MouseClicked[0]) {
 		if (g.ActiveId == id)
-			ClearActiveID();
+			ImGui::ClearActiveID();
 	}
 
 	bool value_changed = false;
@@ -417,7 +415,7 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 					break;
 				}
 				value_changed = true;
-				ClearActiveID();
+				ImGui::ClearActiveID();
 			}
 		}
 		if (!value_changed) {
@@ -425,14 +423,14 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 				if (io.KeysDown[i]) {
 					key = i;
 					value_changed = true;
-					ClearActiveID();
+					ImGui::ClearActiveID();
 				}
 			}
 		}
 
-		if (IsKeyPressedMap(ImGuiKey_Escape)) {
+		if (ImGui::IsKeyPressedMap(ImGuiKey_Escape)) {
 			*k = 0;
-			ClearActiveID();
+			ImGui::ClearActiveID();
 		}
 		else {
 			*k = key;
@@ -444,7 +442,7 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 
 	char buf_display[64] = "None";
 
-	RenderFrame(frame_bb.Min, frame_bb.Max , GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+	ImGui::RenderFrame(frame_bb.Min, frame_bb.Max , ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
 
 	if (*k != 0 && g.ActiveId != id) {
 		strcpy(buf_display, KeyNames[*k]);
@@ -456,14 +454,14 @@ bool ImGui::Hotkey(const char * label, int * k, const ImVec2 & size_arg)
 
 	const ImRect clip_rect(frame_bb.Min.x, frame_bb.Min.y, frame_bb.Min.x + size.x, frame_bb.Min.y + size.y); // Not using frame_bb.Max because we have adjusted size
 	ImVec2 render_pos = frame_bb.Min + style.FramePadding;
-	RenderTextClipped(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding, buf_display, NULL, NULL);
+	ImGui::RenderTextClipped(frame_bb.Min + style.FramePadding, frame_bb.Max - style.FramePadding, buf_display, NULL, NULL);
 	//draw_window->DrawList->AddText(g.Font, g.FontSize, render_pos, GetColorU32(ImGuiCol_Text), buf_display, NULL, 0.0f, &clip_rect);
 
 	return value_changed;
 }
 
 
-bool ImGui::ListBox(const char* label, int* current_item, std::string items[], int items_count, int height_items) {
+bool ImGuiEX::ListBox(const char* label, int* current_item, std::string items[], int items_count, int height_items) {
 	char **tmp;
 	tmp = new char*[items_count];//(char**)malloc(sizeof(char*) * items_count);
 	for (int i = 0; i < items_count; i++) {
@@ -475,7 +473,7 @@ bool ImGui::ListBox(const char* label, int* current_item, std::string items[], i
 	return value_changed;
 }
 
-bool ImGui::ListBox(const char* label, int* current_item, std::function<const char*(int)> lambda, int items_count, int height_in_items)
+bool ImGuiEX::ListBox(const char* label, int* current_item, std::function<const char*(int)> lambda, int items_count, int height_in_items)
 {
 	return ImGui::ListBox(label, current_item, [](void* data, int idx, const char** out_text)
 	{
@@ -484,7 +482,7 @@ bool ImGui::ListBox(const char* label, int* current_item, std::function<const ch
 	}, &lambda, items_count, height_in_items);
 }
 
-bool ImGui::Combo(const char* label, int* current_item, std::function<const char*(int)> lambda, int items_count, int height_in_items)
+bool ImGuiEX::Combo(const char* label, int* current_item, std::function<const char*(int)> lambda, int items_count, int height_in_items)
 {
 	return ImGui::Combo(label, current_item, [](void* data, int idx, const char** out_text)
 	{

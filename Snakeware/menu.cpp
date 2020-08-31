@@ -178,10 +178,10 @@ void RenderRageBotTab()
 
 	static int SubTabs = 1;
 
-	ImGui::SubTabButton("Ragebot", &SubTabs, 0, 4);
-	ImGui::SubTabButton("AA", &SubTabs, 1, 4);
-	ImGui::SubTabButton("Legit", &SubTabs, 2, 4);
-	ImGui::SubTabButton("Other", &SubTabs, 3, 4);
+	ImGuiEX::SubTabButton("Ragebot", &SubTabs, 0, 4);
+	ImGuiEX::SubTabButton("AA", &SubTabs, 1, 4);
+	ImGuiEX::SubTabButton("Legit", &SubTabs, 2, 4);
+	ImGuiEX::SubTabButton("Other", &SubTabs, 3, 4);
 
 
 
@@ -215,7 +215,7 @@ void RenderRageBotTab()
 			//ImGui::Text("Force-baim key :");
 			//ImGui::Hotkey("##13Keybind", &g_Options.ragebot_baim_key, ImVec2(150, 20)); íåòó â ðàãå
 			//ImGui::Text("Damage override key :");
-			ImGui::Hotkey("test", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
+			ImGuiEX::Hotkey("test", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
 
 			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
 			const char* autostop_if[] = { "If low hitchance","Always" };
@@ -372,7 +372,7 @@ void RenderRageBotTab()
 			ImGui::SliderInt("Inverted body-lean", &g_Options.antihit_invert_body_lean, 0, 69);
 			ImGui::Text("Key-bind's :");
 			ImGui::Text("Switch fake side :");
-			ImGui::Hotkey("##Fakekey", &g_Options.antihit_fake_switch_key, ImVec2(150, 20));
+			ImGuiEX::Hotkey("##Fakekey", &g_Options.antihit_fake_switch_key, ImVec2(150, 20));
 
 
 		}
@@ -504,7 +504,7 @@ void RenderRageBotTab()
 			if (settings->on_key) {
 				ImGui::Text("Bind");
 				ImGui::SameLine();
-				ImGui::Hotkey("##Keybind", &settings->key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##Keybind", &settings->key, ImVec2(150, 20));
 			}
 
 
@@ -593,7 +593,7 @@ void RenderRageBotTab()
 
 				ImGui::Text("Trigger");
 				ImGui::SameLine();
-				ImGui::Hotkey("##Triggerkeybind", &g_Options.legitbot_trigger_key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##Triggerkeybind", &g_Options.legitbot_trigger_key, ImVec2(150, 20));
 			}
 			ImGui::Text("Trigger-bot setting's");
 			{
@@ -628,8 +628,8 @@ void RenderEspTab()
 
 	static int SubTabs = 1;
 
-	ImGui::SubTabButton("Esp", &SubTabs, 0, 2);
-	ImGui::SubTabButton("World", &SubTabs, 1, 2);
+	ImGuiEX::SubTabButton("Esp", &SubTabs, 0, 2);
+	ImGuiEX::SubTabButton("World", &SubTabs, 1, 2);
 
 
 	bool placeholder_true = true;
@@ -859,10 +859,10 @@ void RenderMiscTab()
 
 	static int SubTabs;
 
-	ImGui::SubTabButton("Main", &SubTabs, 0, 4);
-	ImGui::SubTabButton("Other", &SubTabs, 1, 4);
-	ImGui::SubTabButton("Skins", &SubTabs, 2, 4);
-	ImGui::SubTabButton("Info", &SubTabs, 3, 4);
+	ImGuiEX::SubTabButton("Main", &SubTabs, 0, 4);
+	ImGuiEX::SubTabButton("Other", &SubTabs, 1, 4);
+	ImGuiEX::SubTabButton("Skins", &SubTabs, 2, 4);
+	ImGuiEX::SubTabButton("Info", &SubTabs, 3, 4);
 
 	switch (SubTabs)
 	{
@@ -892,7 +892,7 @@ void RenderMiscTab()
 			{
 				ImGui::CheckboxEX("LBY based", &g_Options.misc_legit_antihit_lby, "LBY mode");
 				ImGui::Text("Switch side key :");
-				ImGui::Hotkey("##3side", &g_Options.misc_legit_antihit_key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##3side", &g_Options.misc_legit_antihit_key, ImVec2(150, 20));
 
 			}
 
@@ -904,7 +904,7 @@ void RenderMiscTab()
 			if (g_Options.misc_thirdperson)
 			{
 				ImGui::Text("Thirdperson-key:");
-				ImGui::Hotkey("##3rdkey", &g_Options.misc_thirdperson_key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##3rdkey", &g_Options.misc_thirdperson_key, ImVec2(150, 20));
 				//	ImGui::SliderFloat("distance", &g_Options.misc_thirdperson_dist, 0.f, 150.f);
 			}
 			ImGui::CheckboxEX("Inventory-access", &g_Options.misc_unlock_inventory, "change weapons in inventory");
@@ -941,14 +941,14 @@ void RenderMiscTab()
 			ImGui::CheckboxEX("Slow-walk", &g_Options.misc_slowwalk, "Slowmotion");
 			if (g_Options.misc_slowwalk)
 			{
-				ImGui::Hotkey("##slow-walk key", &g_Options.misc_slowwalk_key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##slow-walk key", &g_Options.misc_slowwalk_key, ImVec2(150, 20));
 				ImGui::SliderInt("Slow-walk speed %", &g_Options.misc_slowwalk_speed, 0, 99);
 			}
 			ImGui::CheckboxEX("Fake-duck", &g_Options.misc_fakeduck, "Fakeduck");
 			if (g_Options.misc_fakeduck)
 			{
 				ImGui::Text("fakeduck key :");
-				ImGui::Hotkey("##fakeduck key", &g_Options.misc_fakeduck_key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##fakeduck key", &g_Options.misc_fakeduck_key, ImVec2(150, 20));
 				ImGui::SliderInt("fakeduck tick's", &g_Options.misc_fakeduck_ticks, 0, 16);
 			}
 			const char* fakelag_type[4] = { "Default", "Adaptive", "On peek", "Switch" };
@@ -968,7 +968,7 @@ void RenderMiscTab()
 			ImGui::CheckboxEX("Double-tap", &g_Options.exploit_doubletap, "Fast fire exploit");
 			if (g_Options.exploit_doubletap)
 			{
-				ImGui::Hotkey("##rapidfire key", &g_Options.exploit_doubletap_key, ImVec2(150, 20));
+				ImGuiEX::Hotkey("##rapidfire key", &g_Options.exploit_doubletap_key, ImVec2(150, 20));
 				ImGui::CheckboxEX("Hide-shots", &g_Options.exploit_hideshots, "hideshots exploit");
 			}
 
@@ -1133,8 +1133,8 @@ void RenderConfigTab()
 {
 	static int SubTabs;
 
-	ImGui::SubTabButton("Configs", &SubTabs, 0, 2);
-	ImGui::SubTabButton("Scripts", &SubTabs, 1, 2);
+	ImGuiEX::SubTabButton("Configs", &SubTabs, 0, 2);
+	ImGuiEX::SubTabButton("Scripts", &SubTabs, 1, 2);
 
 	switch (SubTabs)
 	{
@@ -1407,10 +1407,10 @@ void Menu::Render()
 
 		_style.Colors[ImGuiCol_CheckMark] = ImVec4(g_Options.menu_color[0], g_Options.menu_color[1], g_Options.menu_color[2], 1.f);
 
-		ImGui::TabButton("Aimbot", &active_menu_tab, 0, 6);
-		ImGui::TabButton("Visuals", &active_menu_tab, 1, 6);
-		ImGui::TabButton("Misc", &active_menu_tab, 2, 6);
-		ImGui::TabButton("Files", &active_menu_tab, 3, 6);
+		ImGuiEX::TabButton("Aimbot", &active_menu_tab, 0, 6);
+		ImGuiEX::TabButton("Visuals", &active_menu_tab, 1, 6);
+		ImGuiEX::TabButton("Misc", &active_menu_tab, 2, 6);
+		ImGuiEX::TabButton("Files", &active_menu_tab, 3, 6);
 
 
 

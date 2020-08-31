@@ -201,7 +201,9 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		record->Apply(player);
 
 		// run update.
-		return 	Animations::Get().UpdatePlayer(player);
+		Animations::Get().UpdatePlayer(player);
+
+		return;
 
 	}
 
