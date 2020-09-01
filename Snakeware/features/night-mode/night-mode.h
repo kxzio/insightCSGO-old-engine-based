@@ -3,9 +3,9 @@
 
 class Nightmode {
 public:
-	void Run() noexcept;
-	void Apply() noexcept;
-	void Remove() noexcept;
+	void Run() ;
+	void Apply() ;
+	void Remove() ;
 };
 
 extern Nightmode g_Nightmode;

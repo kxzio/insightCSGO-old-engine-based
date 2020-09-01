@@ -6,17 +6,22 @@
 class QAngle;
 class C_BasePlayer;
 
+struct ResolveInfo {
 
+	ResolveInfo() { };
+
+};
 class Resolver : public Singleton<Resolver>
 {
 public :
 
 
-	int                     m_flSide[65];
+	int                     iResolvingWay;
+	bool                    WillUpdate;
 	AnimationLayer          ResolvedAnimLayer[3][15];
+	AnimationLayer          ServerAnimLayer  [15];
 
-
-	void Resolve            (C_BasePlayer * player);
+	void UpdateResolve      (Animation * record,C_BasePlayer * player);
 
 
 

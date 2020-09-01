@@ -60,7 +60,7 @@ namespace Hooks
 
 	typedef bool(__fastcall* ShouldSkipAnimFrameFn)();
 	typedef void(__thiscall* BuildTransformationsFn)(void* ecx, int a2, int a3, int a4, int a5, int a6, int a7);
-	typedef void(__thiscall* DoExtraBoneProcessingFn)(C_BasePlayer*, studiohdr_t*, Vector*, Quaternion*, const matrix3x4_t&, uint8_t*, void*);
+	typedef void(__thiscall* DoExtraBoneProcessingFn)(C_BasePlayer*, CStudioHdr*, Vector*, Quaternion*, const matrix3x4_t&, uint8_t*, void*);
 	typedef void(__thiscall* StandardBlendingRulesFn)(C_BasePlayer*, studiohdr_t*, Vector*, Quaternion*, float, int);
 	typedef bool(__thiscall* InPredictionFn)(IPrediction*);
 	typedef void(__thiscall* SetupMoveFn)(C_BasePlayer*, CUserCmd*, IMoveHelper*, CMoveData*);
@@ -69,13 +69,16 @@ namespace Hooks
 
 
 
+
 	int32_t __fastcall hkIsBoxVisible(IVEngineClient* engine_client, uint32_t, Vector& min, Vector& max);
 	bool __fastcall hkIsHLTV(IVEngineClient* IEngineClient, uint32_t);
 	void __fastcall hkFFireEvent(IVEngineClient* ecx);
-	void __fastcall DoExtraBoneProcessing(void* ecx, void* edx, int a2, int a3, int a4, int a5, int a6, int a7);
+	void __fastcall hkDoExtraBoneProcessing(C_BasePlayer* Player, uint32_t, CStudioHdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& matrix, uint8_t* bone_computed, void* context);
+	void __fastcall hkUpdateClientSideAnimation(C_BasePlayer* player, uint32_t);
 	bool  __fastcall InPrediction(IPrediction* prediction, uint32_t);
-	void __stdcall    HkSetupMove(C_BasePlayer* m_pPlayer, CUserCmd* m_pCmd, IMoveHelper* m_pMoveHelper, CMoveData* m_pMoveData);
+	void __fastcall  HkSetupMove(C_BasePlayer* m_pPlayer, CUserCmd* m_pCmd, IMoveHelper* m_pMoveHelper, CMoveData* m_pMoveData);
 	void __fastcall  HkRunCommand(void* ecx, void* edx, C_BasePlayer* player, CUserCmd* ucmd, IMoveHelper* moveHelper);
+	void __fastcall HkBuildTransformations(C_BasePlayer* player, uint32_t, CStudioHdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& transform, int32_t mask, byte* computed);
 	bool  __fastcall hkIsConnected();
 	bool __fastcall WriteUsercmdDeltaToBuffer_hook(void* ECX, void* EDX, int nSlot, bf_write* buf, int from, int to, bool isNewCmd);
     long __stdcall hkEndScene(IDirect3DDevice9* device);

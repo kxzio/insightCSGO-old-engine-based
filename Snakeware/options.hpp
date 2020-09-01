@@ -44,6 +44,7 @@ namespace Snakeware
 	extern QAngle Aimangle;
 	extern bool bSendPacket;
 	extern bool OnShot;
+	extern bool UpdateAnims;
 	extern bool DoubleTapCharged;
 	extern uint32_t ShotCmd;
 	extern int UnpredTick;

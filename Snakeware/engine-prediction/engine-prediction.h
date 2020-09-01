@@ -27,5 +27,6 @@ public:
 		float m_flViewmodelAnimTime;
 	} StoredViewmodel;
 private:
+	int32_t TickBase{}, SeqDiff{};
 	Vector unpred_vel, unpred_eyepos,pred_vel;
 };

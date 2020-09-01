@@ -19,8 +19,6 @@ void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
 	unpred_eyepos = g_LocalPlayer->GetEyePos();
 
 
-
-
 	old_vars.curtime = g_GlobalVars->curtime;
 	old_vars.frametime = g_GlobalVars->frametime;
 	old_vars.tickcount = g_GlobalVars->tickcount;

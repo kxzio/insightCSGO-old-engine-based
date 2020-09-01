@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../math/Vector.hpp"
-
+#include "../misc/UtlVector.hpp"
 typedef float Quaternion[4];
 typedef float RadianEuler[3];
 
@@ -87,7 +87,7 @@ enum Hitboxes
 
 
 typedef unsigned short MDLHandle_t;
-
+struct virtualmodel_t;
 
 struct mstudiobone_t
 {
@@ -225,3 +225,17 @@ public:
 	};
 
 };//Size=0x00D4
+
+class CStudioHdr
+{
+public:
+	mutable studiohdr_t                  * m_pStudioHdr; //0x0000 
+	mutable virtualmodel_t               * m_pVModel; //0x0004 
+	char				                   pad_unknown[0x4]; //0x0008 
+	mutable CUtlVector<const studiohdr_t*> m_pStudioHdrCache; //0x000C 
+	mutable int			                   m_nFrameUnlockCounter; //0x0020 
+	int*				                   m_pFrameUnlockCounter; //0x0024 
+	char				                   pad_mutex[0x8]; //0x0028 
+	CUtlVector<int>	                       bone_flags; //0x0030
+	CUtlVector<int>	                       m_boneParent; //0x0050
+};

@@ -286,13 +286,7 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 void Animations::UpdatePlayerAnimations() {
 
 	if (!g_EngineClient->IsInGame()) return;
-	if (!g_LocalPlayer) {
-		if (animation_infos.size()) {
-			animation_infos.clear();
-		}
-
-		return;
-	}
+	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
 	// why?
 
 
@@ -360,11 +354,12 @@ void Animations::UpdatePlayerAnimations() {
 		// reset animstate
 		if (_animation.last_spawn_time != player->m_flSpawnTime()) {
 			const auto state = player->GetPlayerAnimState();
-			if  (state)
+			if (state)
+			{
 				player->ResetAnimationState(state);
-
-			state->m_flLastClientSideAnimationUpdateTime = g_GlobalVars->curtime - g_GlobalVars->interval_per_tick;
-			_animation.last_spawn_time                   = player->m_flSpawnTime();
+				state->m_flLastClientSideAnimationUpdateTime = g_GlobalVars->curtime - g_GlobalVars->interval_per_tick;
+				_animation.last_spawn_time                   = player->m_flSpawnTime();
+			}   continue;
 		}
 
 		// grab weapon

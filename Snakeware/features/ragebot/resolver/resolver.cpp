@@ -192,27 +192,51 @@ void GetFlags(C_BasePlayer* player, Animation* record)
 	Snakeware::Delta2 = ss2.str();
 	Snakeware::Delta3 = ss3.str();
 }
-void Resolver::Resolve(C_BasePlayer* player) {
-
-	if (!player) return;
-	if (!player->IsAlive())
-		return;
-
-	const auto entity_animstate = player->GetPlayerAnimState();
 
 
-		switch (MissedShot2Spread[LastMissedShotIndex] % 2)
-		{
-		case 0:
-			ResolvedYaw[player->EntIndex()] = ResolvedYaw[player->EntIndex()] + 58.f;
-			break;
 
-		case 1:
-			ResolvedYaw[player->EntIndex()] = ResolvedYaw[player->EntIndex()] - 58.f;
-			break;
+
+void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
+	// OneTap cheat reverse.
+	// Credit's : @Snake.
+	if (!g_EngineClient->IsConnected() || !g_EngineClient->IsInGame()) return;
+	
+
+	if (record) {
+
+		WillUpdate = false;
+		if (player->m_fFlags() & FL_ONGROUND || record->flags & FL_ONGROUND) {
+
+			if (player->m_vecVelocity().Length2D() <= 0.1f) {
+				auto EyeDiff = AngleDiffPidoras(player->m_angEyeAngles().yaw, record->anim_state->m_flGoalFeetYaw);
+
+				if (ServerAnimLayer[3].m_flWeight == 0.0f && ServerAnimLayer[3].m_flCycle == 0.0f) {
+					iResolvingWay = Math::Clamp((2 * (EyeDiff <= 0.f) - 1), -1, 1);
+					WillUpdate = true;
+				}
+			}
+			else {
+
+				float Rate1 = abs(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[0][6].m_flPlaybackRate);
+				float Rate2 = abs(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[1][6].m_flPlaybackRate);
+				float Rate3 = abs(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[2][6].m_flPlaybackRate);
+				if (Rate1 < Rate3 || Rate2 <= Rate3 || (int)(float)(Rate3 * 1000.0f)) {
+					if (Rate1 >= Rate2 && Rate3 > Rate2 && !(int)(float)(Rate2 * 1000.0f)) {
+
+						iResolvingWay = 1;
+						WillUpdate = true;
+					}
+				}
+				else {
+					iResolvingWay = -1;
+					WillUpdate = true;
+				}
+
+
+			}
+
 		}
-		entity_animstate->m_flGoalFeetYaw = ResolvedYaw[player->EntIndex()];
 
-
+	}
 	
 }

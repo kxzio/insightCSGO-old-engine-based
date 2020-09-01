@@ -377,7 +377,7 @@ std::optional<RageBot::AimInfo> RageBot::scan_record_gun(C_BasePlayer* local, An
 
 	std::vector<int> hitboxes;
 
-	if (g_Options.ragebot_hitbox[0][curGroup])
+	if (g_Options.ragebot_hitbox[0][curGroup] && animation->player->m_iHealth() > 35)
 	{
 		hitboxes.push_back((int)HITBOX_HEAD);
 	}

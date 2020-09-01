@@ -386,7 +386,11 @@ public:
 		if (this) return ((OriginalFn)CallVFunction<OriginalFn>(this, 10))(this);
 		return Vector(0, 0, 0);
 	}
-
+	static uint32_t* GetVT()
+	{
+		static const auto vt = reinterpret_cast<uint32_t>(Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 89 7C 24 0C")) + 0x47;
+		return *reinterpret_cast<uint32_t**>(vt);
+	}
 	/*Gladiator v2.1*/
 	void InvalidateBoneCache();
 	void SetSnakewareAngles(QAngle angles);

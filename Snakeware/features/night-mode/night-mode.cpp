@@ -9,13 +9,14 @@ bool executed = false;
 bool NighmoveActive = true;
 int BRUH = 1;
 
-void Nightmode::Run() noexcept {
-	if (g_EngineClient->IsInGame()&& g_Options.esp_nightmode)
-	Nightmode::Apply();
+void Nightmode::Run()  {
+
+	if (g_EngineClient->IsInGame() && g_Options.esp_nightmode)
+	Apply();
 
 }
 
-void Nightmode::Apply() noexcept {
+void Nightmode::Apply()  {
 
 	static auto st_spops   = g_CVar->FindVar("r_DrawSpecificStaticProp");
 	static auto r_3dsky	   = g_CVar->FindVar("r_3dsky");

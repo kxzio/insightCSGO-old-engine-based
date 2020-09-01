@@ -596,9 +596,6 @@ void C_BasePlayer::InvalidateBoneCache()
 }
 
 
-
-
-
 void C_BasePlayer::SetSnakewareAngles(QAngle angles)
 {
 	// nixer paster esli 4o ))00)0

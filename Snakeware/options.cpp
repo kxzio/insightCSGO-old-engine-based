@@ -4,6 +4,7 @@ int realAimSpot[] = { 8, 7, 6, 0 };
 int realHitboxSpot[] = { 0, 1, 2, 3 };
 namespace Snakeware
 {
+	bool UpdateAnims;
 	int MissedShots[65];
 	int CmdTick = 0;
 	int BaseTick = 0;

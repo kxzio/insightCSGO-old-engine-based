@@ -1,6 +1,7 @@
 #include "hooks.hpp"
 #include <intrin.h>  
 #include <algorithm>
+#include "valve_sdk/misc/UtlVector.hpp"
 
 #include "render.hpp"
 #include "menu.hpp"
@@ -49,7 +50,9 @@ namespace Hooks {
 	void Initialize() {
 
 		INetChannel* g_NetChannel = (INetChannel*)g_ClientState->m_NetChannel;
+		static uint32_t g_PlayerHook[1] = { reinterpret_cast<uint32_t>(C_BasePlayer::GetVT()) };
 
+		player_hook.setup(g_PlayerHook);
 		net_hook.setup(g_NetChannel);
 		prediction_hook.setup(g_Prediction);
 		engine_hook.setup(g_EngineClient);
@@ -74,6 +77,8 @@ namespace Hooks {
 			net_hook.hook_index(index::SendNetMes, HkSendNetMsg);
 		}
 		//prediction_hook.hook_index(index::SetupMove, HkSetupMove);
+
+		player_hook.hook_index(223, hkUpdateClientSideAnimation );
 		prediction_hook.hook_index(index::InPrediction, InPrediction);
 		prediction_hook.hook_index(index::RunCommand, HkRunCommand);
 		direct3d_hook.hook_index(index::EndScene, hkEndScene);
@@ -105,7 +110,7 @@ namespace Hooks {
 	//--------------------------------------------------------------------------------
 	void Shutdown()
 	{
-		
+		player_hook.unhook_all();
 		prediction_hook.unhook_all();
 		engine_hook.unhook_all();
 		hlclient_hook.unhook_all();
@@ -251,15 +256,45 @@ namespace Hooks {
 	
 	//--------------------------------------------------------------------------------
 	
-	void __stdcall  HkSetupMove(C_BasePlayer * m_pPlayer, CUserCmd * m_pCmd, IMoveHelper * m_pMoveHelper, CMoveData * m_pMoveData)
+	void __fastcall  HkSetupMove(C_BasePlayer * m_pPlayer, CUserCmd * m_pCmd, IMoveHelper * m_pMoveHelper, CMoveData * m_pMoveData)
 	{
 		static auto ofunc = prediction_hook.get_original<SetupMoveFn>(index::SetupMove);
 		if (!m_pPlayer || m_pPlayer != g_LocalPlayer) return;
 
-		if (m_pMoveData && &EnginePrediction::Get().data != m_pMoveData)
-			std::memcpy(&EnginePrediction::Get().data, m_pMoveData, sizeof(CMoveData));
+		if (&EnginePrediction::Get().data != m_pMoveData && m_pMoveData != nullptr)
+			memcpy(&EnginePrediction::Get().data, m_pMoveData, 0x564);
 
 		return ofunc(m_pPlayer, m_pCmd, m_pMoveHelper, m_pMoveData);
+	}
+
+	void __fastcall HkBuildTransformations(C_BasePlayer* Player, uint32_t, CStudioHdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& transform, const int32_t mask, byte* computed)
+	{
+	
+	}
+
+	void __fastcall HkStandardBlendingRules(int a2, int a3, int a4, int a5, int a6) {
+		  
+	}
+
+	void __fastcall hkDoExtraBoneProcessing(C_BasePlayer* Player, uint32_t, CStudioHdr* hdr, Vector* pos, Quaternion* q, const matrix3x4_t& matrix, uint8_t* bone_computed, void* context)
+	{
+		
+	}
+
+	
+	using FnUpdateClientSideAnimation = void(__thiscall*)(C_BasePlayer*);
+	void __fastcall hkUpdateClientSideAnimation(C_BasePlayer* player, uint32_t)
+	{
+		static auto OriginalUpdate  = player_hook.get_original< FnUpdateClientSideAnimation >(223);
+		const auto  ValidPlayer = player->IsLocalPlayer() || player->IsEnemy();
+
+		if (!g_LocalPlayer || !g_LocalPlayer->IsAlive() || !ValidPlayer)
+			return OriginalUpdate(player);
+
+		if (Snakeware::UpdateAnims)
+		{
+			OriginalUpdate(player);
+		}
 	}
 
 	void __fastcall HkRunCommand(void* ecx, void* edx, C_BasePlayer* player, CUserCmd* ucmd, IMoveHelper* moveHelper) {
