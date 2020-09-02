@@ -12,9 +12,10 @@ class AntiHit : public Singleton<AntiHit> {
 
 	bool switchSide = true;
 
+	bool sideLeft, sideRight, sideBack;
+
 	void createMove (CUserCmd * pcmd);
 
-	
 
 	void pitch (), fake (), lby(), oppositeLby();
 
@@ -30,7 +31,7 @@ class AntiHit : public Singleton<AntiHit> {
 
 	float jitterRange (int min, int max), jitterRadius;
 
-	float idealPitch (), yaw ();
+	float idealPitch (), yaw (), manualYaw();
 
 	int pitchType, yawType, jitterType, lbyType;
 

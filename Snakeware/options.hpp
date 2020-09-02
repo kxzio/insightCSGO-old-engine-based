@@ -399,6 +399,12 @@ public:
 	OPTION(int, antihit_fake_switch_key, 5);
 	OPTION(float, antihit_fake_ammount, 58);
 
+	// MANUAL ANTIHIT
+	OPTION(int, antihit_manual_left, 40);
+	OPTION(int, antihit_manual_right, 41);
+	OPTION(int, antihit_manual_back, 42);
+	
+
 	OPTION(int, playerModelT, 0);
 	OPTION(int, playerModelCT, 0);
 

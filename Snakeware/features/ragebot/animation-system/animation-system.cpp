@@ -197,6 +197,8 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		// fix feet spin.
 		record->anim_state->m_flFeetYawRate = 0.f;
 		
+	//	Resolver::Get().UpdateResolve(record, player);
+
 		// apply record.
 		record->Apply(player);
 
@@ -248,6 +250,8 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		{
 			player->m_vecVelocity() = Math::Interpolate(from->velocity, record->velocity, 0.5f);
 			player->m_fFlags() = record->flags;
+
+			//Resolver::Get().UpdateResolve(record, player);
 			
 
 		}

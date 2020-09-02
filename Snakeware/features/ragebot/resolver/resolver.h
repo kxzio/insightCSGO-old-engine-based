@@ -21,6 +21,8 @@ public :
 	AnimationLayer          ResolvedAnimLayer[3][15];
 	AnimationLayer          ServerAnimLayer  [15];
 
+	void GetFlags(C_BasePlayer * player, Animation * record);
+
 	void UpdateResolve      (Animation * record,C_BasePlayer * player);
 
 

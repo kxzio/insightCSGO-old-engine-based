@@ -344,7 +344,7 @@ void RenderRageBotTab()
 			ImGui::CheckboxEX("Enabled##aa", &g_Options.antihit_enabled, "Changing ur angles to be anhitable");
 			ImGui::CheckboxEX("Stabilize lby", &g_Options.antihit_stabilize_lby, "Lower body yaw stab");
 			const char* pitch[] = { "Down","Up","Zero","Ideal" };
-			const char* yaw[] = { "Backward's" };
+			const char* yaw[] = { "Backward's","Manual's" };
 			const char* fake[] = { "Static","Lagsync" };
 			const char* jitter[] = { "Default","Switch" };
 			const char* lby[] = { "Default","Opposite","Sway","Low-delta" };
@@ -373,7 +373,14 @@ void RenderRageBotTab()
 			ImGui::Text("Key-bind's :");
 			ImGui::Text("Switch fake side :");
 			ImGuiEX::Hotkey("##Fakekey", &g_Options.antihit_fake_switch_key, ImVec2(150, 20));
+			ImGui::Text("Manual left :");
 
+			ImGuiEX::Hotkey("##LeftAa", &g_Options.antihit_manual_left, ImVec2(150, 20));
+
+			ImGui::Text("Manual right :");
+			ImGuiEX::Hotkey("##Right", &g_Options.antihit_manual_right, ImVec2(150, 20));
+			ImGui::Text("Manual back :");
+			ImGuiEX::Hotkey("##Back", &g_Options.antihit_manual_back, ImVec2(150, 20));
 
 		}
 		ImGui::EndChild();

@@ -195,7 +195,7 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 	// OneTap cheat reverse.
 	// Credit's : @Snake.
 	if (!g_EngineClient->IsConnected() || !g_EngineClient->IsInGame()) return;
-
+	
 	auto EyeDiff = AngleDiffPidoras(player->m_angEyeAngles().yaw, record->anim_state->m_flGoalFeetYaw);
 	auto Diff = EyeDiff < 0.0f;
 
@@ -210,8 +210,8 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 		std::memcpy(player->GetAnimOverlays(), ServerAnimLayer, 0x38 * player->GetNumAnimOverlays());
 
 	}
-	std::memcpy (ResolvedAnimLayer[0],      player->GetAnimOverlays(), 0x38 * player->GetNumAnimOverlays());
-	std::memcpy (player->GetAnimOverlays(), ServerAnimLayer, 0x38 * player->GetNumAnimOverlays          ());
+	std::memcpy(ResolvedAnimLayer[0], player->GetAnimOverlays(), 0x38 * player->GetNumAnimOverlays());
+	std::memcpy(player->GetAnimOverlays(), ServerAnimLayer, 0x38 * player->GetNumAnimOverlays());
 
 	if (record) {
 
@@ -249,6 +249,6 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 		}
 
 	}
-	//GetFlags(player, record);
+	GetFlags(player, record);
 	
 }

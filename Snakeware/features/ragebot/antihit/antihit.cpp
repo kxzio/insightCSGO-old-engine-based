@@ -28,12 +28,31 @@ void AntiHit::createMove (CUserCmd * pcmd) {
 
 	if (InputSys::Get().WasKeyPressed(g_Options.antihit_fake_switch_key)) switchSide = !switchSide;
 
+
+	// Manual antihit part..
+	if (InputSys::Get().WasKeyPressed(g_Options.antihit_manual_left)) {
+		sideLeft  = true;
+		sideRight = false;
+		sideBack  = false;
+	}
+	else if (InputSys::Get().WasKeyPressed(g_Options.antihit_manual_right)) {
+		sideLeft  = false;
+		sideRight = true;
+		sideBack  = false;
+	}
+	else if (InputSys::Get().WasKeyPressed(g_Options.antihit_manual_back)) {
+		sideLeft  = false;
+		sideRight = false;
+		sideBack  = true;
+	}
+
+
+    // Init part.
 	pitchType    = g_Options.antihit_pitch;
 	yawType      = g_Options.antihit_yaw;
 	lbyType      = g_Options.antihit_lby;
 	jitterType   = g_Options.antihit_jitter_type;
 	jitterRadius = g_Options.antihit_jitter_radius;
-
 
 
 
@@ -56,17 +75,32 @@ float AntiHit::jitterRange (int min,int max) {
 	
 }
 
+float AntiHit::manualYaw() {
+	// 02.09.20
+	// Selfcoded by @Snake
+	float flReturnValue = 1.f;
+
+	if      (sideLeft)  flReturnValue =  -90.f;
+	else if (sideRight) flReturnValue =  +90.f;
+	else if (sideBack)  flReturnValue =   180.f;
+
+	return flReturnValue;
+}
+
 float AntiHit::yaw () {
 	
 	 float returnYaw = 0.f;
 
 	// Def backwards.
-	switch (yawType) {
-	case 0: 
-		returnYaw +=  jitterType < 1 ? 180 +  jitterRange(-jitterRadius, jitterRadius):  fmodf(g_GlobalVars->tickcount * 10.f, jitterRadius); // Default.
-		break;
-	}
+	 switch (yawType) {
+	 case 0:
+		 returnYaw += jitterType < 1 ? 180 + jitterRange(-jitterRadius, jitterRadius) : fmodf(g_GlobalVars->tickcount * 10.f, jitterRadius); // Default.
+		 break;
 
+	 case 1:
+		 returnYaw += manualYaw();
+		 break;
+	 }
 	return returnYaw; // Return nullptr.
 }
 
@@ -228,10 +262,10 @@ void AntiHit::lby() {
 	static bool flip = false;
 	            flip = !flip;
 	float sideMove    = 2.28f;  // Side-move value
-	float forwardMove = 1.01f; // Forward-move value
+	float forwardMove = 1.1f;  // Forward-move value | Old move : 1.01f;
 
-	if (g_Options.antihit_stabilize_lby && !Snakeware::bSendPacket)
-	userpcmd->forwardmove += flip ? -forwardMove : forwardMove;
+	if (g_Options.antihit_stabilize_lby && !Snakeware::bSendPacket && g_LocalPlayer->m_fFlags() & FL_ONGROUND)
+	    userpcmd->forwardmove += flip ? -forwardMove : forwardMove;
 
 	switch (lbyType) {
 	case 0: // Micr0 move's.
