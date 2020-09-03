@@ -70,57 +70,6 @@ Animation::Animation(C_BasePlayer* player, QAngle last_reliable_angle) : Animati
 	this->last_reliable_angle = last_reliable_angle;
 }
 
-void Extrapolate(C_BasePlayer* player, Vector& origin, Vector& velocity, int& flags, bool on_ground) {
-	static const auto sv_gravity = g_CVar->FindVar("sv_gravity");
-	static const auto sv_jump_impulse = g_CVar->FindVar("sv_jump_impulse");
-
-	if (!(flags & FL_ONGROUND))
-		velocity.z -= TICKS_TO_TIME(sv_gravity->GetFloat());
-	else if (player->m_fFlags() & FL_ONGROUND && !on_ground)
-		velocity.z = sv_jump_impulse->GetFloat();
-
-	const auto src = origin;
-	auto end = src + velocity * g_GlobalVars->interval_per_tick;
-
-	Ray_t r;
-	r.Init(src, end, player->m_vecMins(), player->m_vecMaxs());
-
-	trace_t t;
-	CTraceFilter filter;
-	filter.pSkip = player;
-
-	g_EngineTrace->TraceRay(r, MASK_PLAYERSOLID, &filter, &t);
-
-	if (t.fraction != 1.f) {
-		for (auto i = 0; i < 2; i++) {
-			velocity -= t.plane.normal * velocity.Dot(t.plane.normal);
-
-			const auto dot = velocity.Dot(t.plane.normal);
-			if (dot < 0.f)
-				velocity -= Vector(dot * t.plane.normal.x,
-					dot * t.plane.normal.y, dot * t.plane.normal.z);
-
-			end = t.endpos + velocity * TICKS_TO_TIME(1.f - t.fraction);
-
-			r.Init(t.endpos, end, player->m_vecMins(), player->m_vecMaxs());
-			g_EngineTrace->TraceRay(r, MASK_PLAYERSOLID, &filter, &t);
-
-			if (t.fraction == 1.f)
-				break;
-		}
-	}
-
-	origin = end = t.endpos;
-	end.z -= 2.f;
-
-	r.Init(origin, end, player->m_vecMins(), player->m_vecMaxs());
-	g_EngineTrace->TraceRay(r, MASK_PLAYERSOLID, &filter, &t);
-
-	flags &= ~FL_ONGROUND;
-
-	if (t.DidHit() && t.plane.normal.z > .7f)
-		flags |= FL_ONGROUND;
-}
 
 
 void Animation::Restore(C_BasePlayer* player) const {
@@ -166,7 +115,6 @@ void Animation::BulidServerBones(C_BasePlayer* player) {
 	
 	jiggle_bones->SetValue(0);
 		
-	player->InvalidateBoneCache();
 
 	player->GetEffect () |= 0x8;
 
@@ -203,14 +151,13 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		record->Apply(player);
 
 		// run update.
-		 Animations::Get().UpdatePlayer(player);
+		  Animations::Get().UpdatePlayer(player);
 
-		 // return 
-		 return;
+		  return;
 
 	}
 
-	const auto new_velocity = player->m_vecVelocity();
+	
 
 	// restore old record.
 
@@ -250,17 +197,10 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		{
 			player->m_vecVelocity() = Math::Interpolate(from->velocity, record->velocity, 0.5f);
 			player->m_fFlags() = record->flags;
-
 			//Resolver::Get().UpdateResolve(record, player);
 			
-
 		}
-		else // compute velocity and flags.
-		{
-			Extrapolate(player, old_origin, player->m_vecVelocity(), player->m_fFlags(), old_flags & FL_ONGROUND);
-			old_flags = player->m_fFlags();
-		}
-
+		
 		if (Shot)
 		{
 			player->m_angEyeAngles() = record->last_reliable_angle;
@@ -283,14 +223,14 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		// restore old simtime.
 		player->m_flSimulationTime() = backup_simtime;
 	}
-	if (!record->dormant && !from->dormant)
-		record->didshot = record->last_shot_time > from->sim_time&& record->last_shot_time <= record->sim_time;
+	
 }
 
 void Animations::UpdatePlayerAnimations() {
 
 	if (!g_EngineClient->IsInGame()) return;
 	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
+
 	// why?
 
 
@@ -354,16 +294,16 @@ void Animations::UpdatePlayerAnimations() {
 
 		// have we already seen this update?
 		if (player->m_flSimulationTime() == player->m_flOldSimulationTime())  continue;
-
+		const auto state                 = player->GetPlayerAnimState();
 		// reset animstate
 		if (_animation.last_spawn_time != player->m_flSpawnTime()) {
-			const auto state = player->GetPlayerAnimState();
-			if (state)
-			{
+			if (state) 	{
 				player->ResetAnimationState(state);
 				state->m_flLastClientSideAnimationUpdateTime = g_GlobalVars->curtime - g_GlobalVars->interval_per_tick;
-				_animation.last_spawn_time                   = player->m_flSpawnTime();
-			}   continue;
+				
+			} 
+			_animation.last_spawn_time = player->m_flSpawnTime();
+			continue;
 		}
 
 		// grab weapon
@@ -388,9 +328,14 @@ void Animations::UpdatePlayerAnimations() {
 		// store server record
 		
 		auto& record = _animation.frames.emplace_front(player, info.second.last_reliable_angle);
+		
 		// run full update
-
 		_animation.UpdateAnimations(&record, previous);
+
+
+		//restore server layers
+		memcpy(player->GetAnimOverlays(), backup.layers, sizeof(AnimationLayer) * 13);
+
 
 		// use uninterpolated data to generate our bone matrix
 		record.BulidServerBones(player);
@@ -406,32 +351,33 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 
 
 	//// make a backup of globals
-	const auto interpolation = g_GlobalVars->interpolation_amount;
-	const auto backup_frametime = g_GlobalVars->frametime;
-	const auto backup_curtime = g_GlobalVars->curtime;
-	const auto backup_realtime = g_GlobalVars->realtime;
-	const auto old_flags = player->m_fFlags();
+	const auto interpolation       = g_GlobalVars->interpolation_amount;
+	const auto backup_absframetime = g_GlobalVars->absoluteframetime;
+	const auto backup_frametime    = g_GlobalVars->frametime;
+	const auto backup_curtime      = g_GlobalVars->curtime;
+	const auto backup_realtime     = g_GlobalVars->realtime;
+	const auto old_flags           = player->m_fFlags();
 
 	// get player anim state
-	auto state = player->GetPlayerAnimState();
-
-	if (state->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount)
-		state->m_iLastClientSideAnimationUpdateFramecount -= 1.f;
+	auto  state = player->GetPlayerAnimState();
+	if  (!state ) return;
 
 	// fixes for networked players
 	g_GlobalVars->interpolation_amount = 0.f;
-	g_GlobalVars->frametime = g_GlobalVars->interval_per_tick;
-	g_GlobalVars->curtime = player->m_flSimulationTime();
-	g_GlobalVars->realtime = player->m_flSimulationTime();
+	g_GlobalVars->frametime            = g_GlobalVars->interval_per_tick;
+	g_GlobalVars->absoluteframetime    = g_GlobalVars->interval_per_tick;
+	g_GlobalVars->curtime              = player->m_flSimulationTime();
+	g_GlobalVars->realtime             = player->m_flSimulationTime();
+
 	player->m_iEFlags() &= ~0x1000;
-
-	player->m_vecAbsVelocity() = player->m_vecVelocity();
-
-	
-
+	player->m_vecAbsVelocity()  = player->m_vecVelocity();
 	const auto old_invalidation = enable_bone_cache_invalidation;
 
 	// notify the other hooks to instruct animations and pvs fix
+
+
+	if (state->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount)
+		state->m_iLastClientSideAnimationUpdateFramecount -= 1.f;
 
 	player->m_bClientSideAnimation() = true;
 	player->UpdateClientSideAnimation();
@@ -446,9 +392,10 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 
 	// restore globals
 	g_GlobalVars->interpolation_amount = interpolation;
-	g_GlobalVars->curtime = backup_curtime;
-	g_GlobalVars->realtime = backup_realtime;
-	g_GlobalVars->frametime = backup_frametime;
+	g_GlobalVars->curtime              = backup_curtime;
+	g_GlobalVars->realtime             = backup_realtime;
+	g_GlobalVars->frametime            = backup_frametime;
+	g_GlobalVars->absoluteframetime    = backup_absframetime;
 
 	player->m_fFlags() = old_flags;
 }

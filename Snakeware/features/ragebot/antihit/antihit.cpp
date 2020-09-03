@@ -80,8 +80,8 @@ float AntiHit::manualYaw() {
 	// Selfcoded by @Snake
 	float flReturnValue = 1.f;
 
-	if      (sideLeft)  flReturnValue =  -90.f;
-	else if (sideRight) flReturnValue =  +90.f;
+	if      (sideLeft)  flReturnValue =    90.f;
+	else if (sideRight) flReturnValue =   -90.f;
 	else if (sideBack)  flReturnValue =   180.f;
 
 	return flReturnValue;

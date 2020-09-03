@@ -78,7 +78,7 @@ namespace Hooks {
 		}
 		//prediction_hook.hook_index(index::SetupMove, HkSetupMove);
 
-		player_hook.hook_index(223, hkUpdateClientSideAnimation );
+	   // player_hook.hook_index(223, hkUpdateClientSideAnimation );
 		prediction_hook.hook_index(index::InPrediction, InPrediction);
 		prediction_hook.hook_index(index::RunCommand, HkRunCommand);
 		direct3d_hook.hook_index(index::EndScene, hkEndScene);
@@ -251,6 +251,9 @@ namespace Hooks {
 		}
 		else if (m_bLastAttack && !m_bInvalidCycle)
 			m_bInvalidCycle = g_LocalPlayer->m_flCycle() == 0.f && m_flLastCycle > 0.f;
+
+		if      (m_bInvalidCycle)
+			g_LocalPlayer->m_flCycle() = m_flLastCycle;
 	}
 
 	

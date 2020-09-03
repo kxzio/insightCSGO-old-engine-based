@@ -23,6 +23,8 @@ public :
 
 	void GetFlags(C_BasePlayer * player, Animation * record);
 
+	void SetResolveIndex    (C_BasePlayer * player, int m_flSide);
+
 	void UpdateResolve      (Animation * record,C_BasePlayer * player);
 
 

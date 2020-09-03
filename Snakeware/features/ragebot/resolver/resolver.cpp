@@ -14,8 +14,9 @@ int shots_fire[65];
 bool IsCheater(C_BasePlayer * player) {
      // credits : @LNK1181 aka platina300
 	 const auto choked_ticks = std::max(0, TIME_TO_TICKS(player->m_flSimulationTime() - player->m_flOldSimulationTime()) - 1);
-	 if (choked_ticks > 1)
+	 if (choked_ticks >= 1)
 		 return true;
+
 	 return false;
 }
 
@@ -52,7 +53,7 @@ inline float NormalizeFloat(float angle) {
 void Resolver::ResolvePitch(C_BasePlayer * player) {
 
 	if (IsCheater(player))
-    player->m_angEyeAngles().pitch = std::clamp(FixAngle(player->m_angEyeAngles().pitch), -89.f, 89.f);
+    player->m_angEyeAngles().pitch = std::clamp(FixAngle(player->m_angEyeAngles().pitch), -89.9f, 89.9f);
 
 }
 void Resolver::StoreAnimOverlays(C_BasePlayer * player) {
@@ -189,6 +190,50 @@ void Resolver::GetFlags(C_BasePlayer* player, Animation* record)
 }
 
 
+void Resolver::SetResolveIndex (C_BasePlayer* player, int m_iSide) {
+	// Safe-point resolver...
+	// Credit's : @Snake && Onetap crack & v3 dump's
+
+	auto state = player->GetPlayerAnimState();
+	if (!state || !g_EngineClient->IsInGame() || !g_LocalPlayer || !g_LocalPlayer->IsAlive())  return;
+
+	float m_flResolved = 0.f;
+
+	if (player->m_fFlags() & FL_ONGROUND) {
+
+		// Choked == 1 // Like onetap cheat
+		if (IsCheater(player)) 		{
+
+			if (m_iSide) {
+
+				if (m_iSide <= 0)
+					m_flResolved = player->m_angEyeAngles().yaw - 60.f; // viewangles.y - *&ConstFloat::60;
+				else
+					m_flResolved = player->m_angEyeAngles().yaw + 60.f; // viewangles.y + *&ConstFloat::60;
+
+				Math::NormalizeYaw(m_flResolved); // Some normalize for yaw-angle
+			}
+			else {
+
+				if (m_iSide <= 0)
+					m_flResolved = player->m_angEyeAngles().yaw - 58.f;       // LeftDormancy
+				else
+					m_flResolved = player->m_angEyeAngles().yaw + 58.f;       // RightDormancy
+
+				Math::NormalizeYaw(m_flResolved); // Some normalize for dormancy
+
+			}
+
+			state->m_flGoalFeetYaw = m_flResolved; // *(*(v10 + v11 - 16) + 0x80) = ResolvedYaw;
+		}
+
+
+	}
+
+	Animations::Get().UpdatePlayer(player); // Update player animation's
+
+	// Some rebulid's / update's / store here..
+}
 
 
 void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
@@ -227,9 +272,9 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 			}
 			else {
 
-				float Rate1 = abs(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[0][6].m_flPlaybackRate);
-				float Rate2 = abs(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[1][6].m_flPlaybackRate);
-				float Rate3 = abs(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[2][6].m_flPlaybackRate);
+				float Rate1 = fabsf(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[0][6].m_flPlaybackRate);
+				float Rate2 = fabsf(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[1][6].m_flPlaybackRate);
+				float Rate3 = fabsf(ServerAnimLayer[6].m_flPlaybackRate - ResolvedAnimLayer[2][6].m_flPlaybackRate);
 				if (Rate1 < Rate3 || Rate2 <= Rate3 || (int)(float)(Rate3 * 1000.0f)) {
 					if (Rate1 >= Rate2 && Rate3 > Rate2 && !(int)(float)(Rate2 * 1000.0f)) {
 						

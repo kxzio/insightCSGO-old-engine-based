@@ -11,8 +11,9 @@ int BRUH = 1;
 
 void Nightmode::Run()  {
 
-	if (g_EngineClient->IsInGame() && g_Options.esp_nightmode)
-	Apply();
+	if (g_EngineClient->IsInGame() && g_Options.esp_nightmode) {
+		Apply();
+	}
 
 }
 
