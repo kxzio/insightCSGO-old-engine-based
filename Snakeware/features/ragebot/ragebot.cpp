@@ -57,9 +57,11 @@ std::optional<RageBot::AimInfo> RageBot::scan_record(C_BasePlayer* local, Animat
 
 	const auto info = weapon->GetCSWeaponData();
 
-	if (!info)  return std::nullopt;
+	if (!info)             return std::nullopt;
 
-	if (!weapon->IsKnife()) return scan_record_gun(local, animation);
+	if (weapon->IsKnife()) return std::nullopt;
+
+	return scan_record_gun(local, animation);
 }
 
 bool can_hit_hitbox(const Vector start, const Vector end, matrix3x4_t* bones, studiohdr_t* hdr, int box) {
@@ -135,8 +137,6 @@ bool can_hit(Animation* animation, const Vector position, const float chance, in
 	const auto sniper = weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_AWP || weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_SCAR20
 		|| weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_G3SG1 || weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_SSG08;
 	const auto crouched = g_LocalPlayer->m_fFlags() & IN_DUCK;
-
-	weapon->UpdateAccuracyPenalty();
 
 	// calculate inaccuracy.
 	const auto weapon_inaccuracy = weapon->GetInaccuracy();
@@ -417,8 +417,7 @@ std::optional<RageBot::AimInfo> RageBot::scan_record_gun(C_BasePlayer* local, An
 	}
 
 
-	for (auto hitbox : hitboxes)
-	{
+	for (auto hitbox : hitboxes) {
 		scan_box(hitbox);
 	}
 

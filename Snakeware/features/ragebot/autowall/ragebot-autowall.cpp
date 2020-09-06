@@ -961,3 +961,5 @@ float CAutoWall::get_estimated_point_damage(Vector point) {
 
 	return 0.f;
 }
+
+

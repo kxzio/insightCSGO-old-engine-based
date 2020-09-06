@@ -136,25 +136,21 @@ void Animation::BulidServerBones(C_BasePlayer* player) {
 void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* from) {
 	
 
-	if (!g_EngineClient->IsInGame() || !g_EngineClient->IsConnected()) return;
 
 	if (!from) {
 		// set velocity and layers.
-		record->velocity = player->m_vecVelocity();
+		  record->velocity = player->m_vecVelocity();
 
 		// fix feet spin.
-		record->anim_state->m_flFeetYawRate = 0.f;
-		
-	//	Resolver::Get().UpdateResolve(record, player);
+		  record->anim_state->m_flFeetYawRate = 0.f;
 
 		// apply record.
-		record->Apply(player);
+		  record->Apply(player);
 
 		// run update.
-		  Animations::Get().UpdatePlayer(player);
+		   Animations::Get().UpdatePlayer(player);
 
-		  return;
-
+		   return;
 	}
 
 	
@@ -320,7 +316,7 @@ void Animations::UpdatePlayerAnimations() {
 			previous = &_animation.frames.front();
 		    
 		
-		const auto shot = weapon && previous && weapon->m_fLastShotTime() > previous->sim_time && weapon->m_fLastShotTime() <= player->m_flSimulationTime();
+		const auto shot = weapon && previous && weapon->m_fLastShotTime () != previous->last_shot_time;
 
 		if (!shot)
 			info.second.last_reliable_angle = player->m_angEyeAngles();
@@ -337,6 +333,8 @@ void Animations::UpdatePlayerAnimations() {
 		memcpy(player->GetAnimOverlays(), backup.layers, sizeof(AnimationLayer) * 13);
 
 
+		//UpdatePlayerIndex(player, &record);
+
 		// use uninterpolated data to generate our bone matrix
 		record.BulidServerBones(player);
 
@@ -346,21 +344,75 @@ void Animations::UpdatePlayerAnimations() {
 	}
 
 }
+
+void Animations::UpdatePlayerIndex(C_BasePlayer * pPlayer,Animation * pRecord) {
+
+	const auto BackupPoses    = pPlayer->m_flPoseParameter();
+	const auto BackupAngles   = pPlayer->m_angEyeAngles();
+	const auto BackupVelocity = pPlayer->m_vecVelocity();
+	const auto BackupOrigin   = pPlayer->m_vecOrigin();
+	const auto BackupDuck     = pPlayer->m_flDuckAmount();
+	const auto BackupSimTime  = pPlayer->m_flSimulationTime();
+	const auto BackupFlags    = pPlayer->m_fFlags();
+
+
+	Resolver::Get().SetResolveIndex(pPlayer, - 1);
+	
+
+	pPlayer->m_flPoseParameter()  = BackupPoses;
+	pPlayer->m_vecVelocity()      = BackupVelocity;
+	pPlayer->m_vecOrigin()        = BackupOrigin;
+	pPlayer->m_flDuckAmount()     = BackupDuck;
+	pPlayer->m_flSimulationTime() = BackupSimTime;
+	pPlayer->m_angEyeAngles()     = BackupAngles;
+	pPlayer->m_fFlags()           = BackupFlags;
+	pPlayer->m_vecAbsVelocity()   = BackupVelocity;
+	pPlayer->SetupBones            (nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
+
+	Resolver::Get().SetResolveIndex(pPlayer, 1);
+
+	pPlayer->m_flPoseParameter() = BackupPoses;
+	pPlayer->m_vecVelocity() = BackupVelocity;
+	pPlayer->m_vecOrigin() = BackupOrigin;
+	pPlayer->m_flDuckAmount() = BackupDuck;
+	pPlayer->m_flSimulationTime() = BackupSimTime;
+	pPlayer->m_angEyeAngles() = BackupAngles;
+	pPlayer->m_fFlags() = BackupFlags;
+	pPlayer->m_vecAbsVelocity() = BackupVelocity;
+
+	pPlayer->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
+
+	pPlayer->m_flPoseParameter() = BackupPoses;
+	pPlayer->m_vecVelocity() = BackupVelocity;
+	pPlayer->m_vecOrigin() = BackupOrigin;
+	pPlayer->m_flDuckAmount() = BackupDuck;
+	pPlayer->m_flSimulationTime() = BackupSimTime;
+	pPlayer->m_angEyeAngles() = BackupAngles;
+	pPlayer->m_fFlags() = BackupFlags;
+	pPlayer->m_vecAbsVelocity() = BackupVelocity;
+
+}
+
+
 void Animations::UpdatePlayer(C_BasePlayer* player) {
 	static auto& enable_bone_cache_invalidation = **reinterpret_cast<bool**>( reinterpret_cast<uint32_t>((void*)Utils::PatternScan(GetModuleHandleA("client.dll"), "C6 05 ? ? ? ? ? 89 47 70")) + 2);
 
+	// Onetap code be like <3
 
 	//// make a backup of globals
-	const auto interpolation       = g_GlobalVars->interpolation_amount;
-	const auto backup_absframetime = g_GlobalVars->absoluteframetime;
-	const auto backup_frametime    = g_GlobalVars->frametime;
-	const auto backup_curtime      = g_GlobalVars->curtime;
-	const auto backup_realtime     = g_GlobalVars->realtime;
-	const auto old_flags           = player->m_fFlags();
-
+	const auto m_flSimtime         = player->m_flSimulationTime();
+	const auto interpolation       =  g_GlobalVars->interpolation_amount;
+	const auto backup_absframetime =  g_GlobalVars->absoluteframetime;
+	const auto backup_frametime    =  g_GlobalVars->frametime;
+	const auto backup_curtime      =  g_GlobalVars->curtime;
+	const auto backup_realtime     =  g_GlobalVars->realtime;
+	const auto backup_framecount0  =  g_GlobalVars->framecount;
+	const auto backup_tickcount0   =  g_GlobalVars->tickcount;
+	const auto backup_flags        =  player->m_fFlags();
+	int        m_iOneTap           =  TIME_TO_TICKS(m_flSimtime) ; // (SimTime / MEMORY[0x16E6AAF8]) + 0.5;
 	// get player anim state
 	auto  state = player->GetPlayerAnimState();
-	if  (!state ) return;
+	
 
 	// fixes for networked players
 	g_GlobalVars->interpolation_amount = 0.f;
@@ -368,16 +420,19 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	g_GlobalVars->absoluteframetime    = g_GlobalVars->interval_per_tick;
 	g_GlobalVars->curtime              = player->m_flSimulationTime();
 	g_GlobalVars->realtime             = player->m_flSimulationTime();
+	g_GlobalVars->tickcount            = m_iOneTap;
+	g_GlobalVars->framecount           = m_iOneTap;
 
 	player->m_iEFlags() &= ~0x1000;
 	player->m_vecAbsVelocity()  = player->m_vecVelocity();
+
 	const auto old_invalidation = enable_bone_cache_invalidation;
 
 	// notify the other hooks to instruct animations and pvs fix
 
 
 	if (state->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount)
-		state->m_iLastClientSideAnimationUpdateFramecount -= 1.f;
+		state->m_iLastClientSideAnimationUpdateFramecount =  m_iOneTap - 1;
 
 	player->m_bClientSideAnimation() = true;
 	player->UpdateClientSideAnimation();
@@ -391,13 +446,15 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	enable_bone_cache_invalidation = old_invalidation;
 
 	// restore globals
+	g_GlobalVars->framecount           = backup_framecount0;
+	g_GlobalVars->tickcount            = backup_tickcount0;
 	g_GlobalVars->interpolation_amount = interpolation;
 	g_GlobalVars->curtime              = backup_curtime;
 	g_GlobalVars->realtime             = backup_realtime;
 	g_GlobalVars->frametime            = backup_frametime;
 	g_GlobalVars->absoluteframetime    = backup_absframetime;
 
-	player->m_fFlags() = old_flags;
+	player->m_fFlags() = backup_flags;
 }
 
 Animations::AnimationInfo* Animations::GetAnimInfo(C_BasePlayer* player) {

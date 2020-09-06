@@ -404,7 +404,8 @@ public:
 	OPTION(int, antihit_manual_right, 41);
 	OPTION(int, antihit_manual_back, 42);
 	
-
+	OPTION(int, misc_silentwalk_key, 55);
+	OPTION(int, autopeek_key, 55);
 	OPTION(int, playerModelT, 0);
 	OPTION(int, playerModelCT, 0);
 

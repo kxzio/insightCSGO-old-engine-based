@@ -78,7 +78,7 @@ namespace Hooks {
 		}
 		//prediction_hook.hook_index(index::SetupMove, HkSetupMove);
 
-	   // player_hook.hook_index(223, hkUpdateClientSideAnimation );
+	    player_hook.hook_index(223, hkUpdateClientSideAnimation );
 		prediction_hook.hook_index(index::InPrediction, InPrediction);
 		prediction_hook.hook_index(index::RunCommand, HkRunCommand);
 		direct3d_hook.hook_index(index::EndScene, hkEndScene);
@@ -596,7 +596,9 @@ namespace Hooks {
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
 			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); 
+			Miscellaneous::Get().AutoPeek(cmd);
 			Miscellaneous::Get().SlowWalk(cmd);
+			Miscellaneous::Get().SilentWalk(cmd);
 			Miscellaneous::Get().LegitAntiAim(cmd);
 			Tickbase::Get().DoubleTap(cmd);
 

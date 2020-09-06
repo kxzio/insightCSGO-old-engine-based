@@ -497,6 +497,7 @@ public:
 	bool          CanSeePlayer(C_BasePlayer* player, const Vector& pos);
 	bool CanSeePoint(Vector endpos);
 	void WeaponShootPos(Vector& pos);
+	Vector CalculateSpread(int seed, float inaccuracy, float spread, bool revolver2);
 	Vector GetShootPos();
 	void UpdateClientSideAnimation();
 

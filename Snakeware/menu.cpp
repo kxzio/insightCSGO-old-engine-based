@@ -215,7 +215,9 @@ void RenderRageBotTab()
 			//ImGui::Text("Force-baim key :");
 			//ImGui::Hotkey("##13Keybind", &g_Options.ragebot_baim_key, ImVec2(150, 20)); íåòó â ðàãå
 			//ImGui::Text("Damage override key :");
-			ImGuiEX::Hotkey("test", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
+			//ImGuiEX::Hotkey("test", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
+			ImGui::Text("AutoPeek");
+			ImGuiEX::Hotkey("##Auto-peek", &g_Options.autopeek_key, ImVec2(150, 20));
 
 			const char* autostop[] = { "Default","Maximum","Forced low","Full" };
 			const char* autostop_if[] = { "If low hitchance","Always" };
@@ -373,8 +375,8 @@ void RenderRageBotTab()
 			ImGui::Text("Key-bind's :");
 			ImGui::Text("Switch fake side :");
 			ImGuiEX::Hotkey("##Fakekey", &g_Options.antihit_fake_switch_key, ImVec2(150, 20));
+			ImGui::Text("Manual-mode antiaim:");
 			ImGui::Text("Manual left :");
-
 			ImGuiEX::Hotkey("##LeftAa", &g_Options.antihit_manual_left, ImVec2(150, 20));
 
 			ImGui::Text("Manual right :");
@@ -944,7 +946,8 @@ void RenderMiscTab()
 			ImGui::Text(" ");
 
 			ImGui::SetCursorPosY(+15);
-
+			ImGui::Text("Silent-walk key");
+			ImGuiEX::Hotkey("##Silent-walk", &g_Options.misc_silentwalk_key, ImVec2(150, 20));
 			ImGui::CheckboxEX("Slow-walk", &g_Options.misc_slowwalk, "Slowmotion");
 			if (g_Options.misc_slowwalk)
 			{

@@ -24,23 +24,25 @@ void Nightmode::Apply()  {
 	old_sky_name           = g_CVar->FindVar("sv_skyname");
 	float brightness       = g_Options.esp_nightmode_bright;
 
-		for (auto i = 1; i <= g_EntityList->GetHighestEntityIndex(); ++i) {
+	for (auto i = 1; i <= g_EntityList->GetHighestEntityIndex(); ++i) {
+		{
+			auto entity = C_BasePlayer::GetEntityByIndex(i);
+
+			if (!entity)
+				continue;
+
+			if (entity->GetClientClass()->m_ClassID == ClassId::ClassId_CEnvTonemapController)
 			{
-				auto entity = C_BasePlayer::GetEntityByIndex(i);
-
-				if (!entity)
-					continue;
-
-				if (entity->GetClientClass()->m_ClassID == ClassId::ClassId_CEnvTonemapController)
-				{
-					auto hdr = dynamic_cast<C_EnvTonemapController*> (entity);
-					hdr->use_custom_auto_exposure_min() = true;
-					hdr->use_custom_auto_exposure_max() = true;
-					hdr->custom_auto_exposure_min() = 1.f * (1.f - g_Options.esp_nightmode_bright / 100) + 0.01;
-					hdr->custom_auto_exposure_max() = 1.f * (1.f - g_Options.esp_nightmode_bright / 100) + 0.01;
-				}
+				auto hdr = dynamic_cast<C_EnvTonemapController*> (entity);
+				hdr->use_custom_auto_exposure_min() = true;
+				hdr->use_custom_auto_exposure_max() = true;
+				hdr->custom_auto_exposure_min() = 1.f * (1.f - g_Options.esp_nightmode_bright / 100) + 0.01;
+				hdr->custom_auto_exposure_max() = 1.f * (1.f - g_Options.esp_nightmode_bright / 100) + 0.01;
 			}
-			Utils::LoadNamedSky("sky_csgo_night02");
 		}
+
+
+	}
+		Utils::LoadNamedSky("sky_csgo_night02");
 	
 }

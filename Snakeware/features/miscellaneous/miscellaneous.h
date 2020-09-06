@@ -39,6 +39,9 @@ public:
 	void JumpThrow(CUserCmd * cmd);
 	void FakeFps();
 	void Binds();
+	void AutoPeekStart(CUserCmd * cmd);
+	void AutoPeek(CUserCmd * cmd);
+	void SilentWalk(CUserCmd * cmd);
 	void ClanTag();
 
 	void LeftKnife();

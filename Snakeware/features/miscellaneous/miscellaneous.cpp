@@ -6,6 +6,7 @@
 #include "../../menu.hpp"
 #include "../../Protected/enginer.h"
 
+
 bool Miscellaneous::RemoveSleeves(const char* modelName) noexcept
 {
 	return g_Options.remove_sleeves && std::strstr(modelName, "sleeve");
@@ -1004,10 +1005,89 @@ void Miscellaneous::Binds()
 				}
 
 
+				if (GetAsyncKeyState(g_Options.autopeek_key))
+				{
+					
+						ImGui::Text("Auto-Peek");
+						ImGui::SameLine();
+						ImGui::SetCursorPosX(140);
+						ImGui::Text("[Hold]");
+					
+				}
+
+
 			}
 			ImGui::PopFont();
 		}
 		ImGui::EndChild();
 	}
 	ImGui::End();
+}
+
+
+
+Vector quickPeekStartPos;
+bool   hasShot;
+
+void Miscellaneous::AutoPeekStart(CUserCmd* cmd) {
+
+	Vector playerLoc = g_LocalPlayer->m_angAbsOrigin();
+
+	float Yaw         = cmd->viewangles.yaw;
+	Vector VecForward = playerLoc - quickPeekStartPos;
+
+	Vector translatedVelocity = Vector {
+		(float)(VecForward.x * cos(Yaw / 180 * (float)M_PI) + VecForward.y * sin(Yaw / 180 * (float)M_PI)),
+		(float)(VecForward.y * cos(Yaw / 180 * (float)M_PI) - VecForward.x * sin(Yaw / 180 * (float)M_PI)),
+		VecForward.z
+	};
+
+	cmd->forwardmove = -translatedVelocity.x * 20.f;
+	cmd->sidemove    =  translatedVelocity.y * 20.f;
+}
+
+void Miscellaneous::AutoPeek(CUserCmd* cmd) {
+
+	if (!g_LocalPlayer || g_LocalPlayer->IsDormant() || !g_LocalPlayer->IsAlive()) return;
+
+	if (GetAsyncKeyState(g_Options.autopeek_key)) {
+		if (quickPeekStartPos == Vector(0, 0, 0)) {
+
+			quickPeekStartPos = g_LocalPlayer->m_angAbsOrigin();
+		}
+		else {
+			if (cmd->buttons & IN_ATTACK) 
+				hasShot = true;
+
+			if (hasShot) {
+				AutoPeekStart(cmd);
+			}
+		}
+	}
+	else {
+		hasShot = false;
+		quickPeekStartPos = Vector{ 0, 0, 0 };
+	}
+}
+
+void Miscellaneous::SilentWalk(CUserCmd * cmd) {
+	
+	if (!g_Options.misc_silentwalk_key || !g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
+
+	Vector moveDir = Vector(0.f, 0.f, 0.f);
+	float maxSpeed = 130.f; // Can be a 134..
+	int movetype = g_LocalPlayer->m_nMoveType();
+	bool InAir = !(g_LocalPlayer->m_fFlags() & FL_ONGROUND);
+	if (movetype == MOVETYPE_FLY || movetype == MOVETYPE_NOCLIP || InAir || cmd->buttons & IN_DUCK || !(cmd->buttons & IN_SPEED))
+		return;
+	// Move dir's setup
+	moveDir.x = cmd->sidemove;
+	moveDir.y = cmd->forwardmove;
+	moveDir   = Math::ClampMagnitude(moveDir, maxSpeed);
+
+	// Move's setup
+	cmd->sidemove = moveDir.x;
+	cmd->forwardmove = moveDir.y;
+	if (!(g_LocalPlayer->m_vecVelocity().Length2D() > maxSpeed + 1))
+		cmd->buttons &= ~IN_SPEED;
 }

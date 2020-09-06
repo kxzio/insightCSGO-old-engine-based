@@ -81,6 +81,10 @@ public:
 
 	void UpdatePlayerAnimations();
 
+	void UpdatePlayerIndex(C_BasePlayer * pPlayer, Animation * record);
+
+	
+
 	void UpdatePlayer(C_BasePlayer* player);
 
 	Animations::AnimationInfo* GetAnimInfo(C_BasePlayer* player);

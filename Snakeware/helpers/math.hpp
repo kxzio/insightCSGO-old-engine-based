@@ -7,6 +7,7 @@
 #define RAD2DEG(x) DirectX::XMConvertToDegrees(x)
 #define DEG2RAD(x) DirectX::XMConvertToRadians(x)
 #define M_PI 3.14159265358979323846
+
 #define PI_F	((float)(M_PI)) 
 #define TIME_TO_TICKS(dt) ((int)( 0.5f + (float)(dt) / g_GlobalVars->interval_per_tick))
 #define TICKS_TO_TIME(t) (g_GlobalVars->interval_per_tick * (t) )
@@ -23,6 +24,7 @@ namespace Math
 		return *(float*)&i;
 	}
 	Vector VectorRotate(Vector& in1, Vector& in2);
+	Vector ClampMagnitude(Vector vector, float maxLength);
 	float Segment2Segment(const Vector s1, const Vector s2, const Vector k1, const Vector k2);
 	void vector_i_transform(const Vector& in1, const matrix3x4_t& in2, Vector& out);
 	void vector_i_rotate(Vector in1, matrix3x4_t in2, Vector& out);

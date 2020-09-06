@@ -2,7 +2,23 @@
 #include "intrincics.h"
 namespace Math
 {
-
+	float Magnitude(Vector a)
+	{
+		return sqrt((a.x * a.x) + (a.y * a.y));
+	}
+	Vector Normalize(Vector value)
+	{
+		float num = Magnitude(value);
+		if (num != 0.f)
+			return value / num;
+		return Vector(0.f, 0.f, 0.f);
+	}
+	Vector ClampMagnitude(Vector vector, float maxLength)
+	{
+		if (Magnitude(vector) > maxLength)
+			return Vector(Normalize(vector).x * maxLength, Normalize(vector).y * maxLength, 0);
+		return vector;
+	}
 
 	float Segment2Segment(const Vector s1, const Vector s2, const Vector k1, const Vector k2)
 	{

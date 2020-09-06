@@ -11,7 +11,7 @@ void EnginePrediction::PreStart()
 
 void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
 
-
+	static auto weapon    = local->m_hActiveWeapon();
 	static auto oldorigin = g_LocalPlayer->m_vecOrigin();
 	unpred_vel = (g_LocalPlayer->m_vecOrigin() - oldorigin) * (1.0 / g_GlobalVars->interval_per_tick);
 	oldorigin = g_LocalPlayer->m_vecOrigin();
@@ -36,6 +36,11 @@ void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
 	g_GameMovement->ProcessMovement(local, &data);
 	g_Prediction->FinishMove(local, cmd, &data);
 	unpred_eyepos = g_LocalPlayer->GetEyePos();
+
+	if (weapon && local) {
+		weapon->UpdateAccuracyPenalty();
+	}
+
 }
 
 void EnginePrediction::Finish(C_BasePlayer* local) {
@@ -44,6 +49,7 @@ void EnginePrediction::Finish(C_BasePlayer* local) {
 
 	g_GlobalVars->curtime = old_vars.curtime;
 	g_GlobalVars->frametime = old_vars.frametime;
+	g_GlobalVars->tickcount = old_vars.tickcount;
 }
 // beta shit predict
 
