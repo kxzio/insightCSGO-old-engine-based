@@ -23,6 +23,10 @@ public :
 
 	void GetFlags(C_BasePlayer * player, Animation * record);
 
+	void StoreAntifreestand();
+
+	void ResolveFreestand(C_BasePlayer * player);
+
 	void SetResolveIndex    (C_BasePlayer * player, int m_flSide);
 
 	void UpdateResolve      (Animation * record,C_BasePlayer * player);
@@ -47,6 +51,8 @@ public :
 	int      MissedShot2Spread  [65];
 	int      MissedShot2Resolver[65];
 	matrix3x4_t LastBones       [128];
+	int m_iFreestandSide[64];
+	bool WillUpdated;
 	Vector   LastEyePos;
 	int resolvermode;
 

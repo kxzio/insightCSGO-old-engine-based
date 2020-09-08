@@ -275,7 +275,6 @@ void Visuals::Player::RenderFlags()
 	if (g_Options.esp_player_flags_player && ctx.pl->IsAlive())
 	{
 		AddFlag("player", Color(255, 255, 0, 255));
-		//AddFlag(Snakeware::Delta, Color(255, 255, 255, 255));
 	}
 
 	if (g_Options.esp_player_flags_scoped && ctx.pl->m_bIsScoped())

@@ -120,7 +120,7 @@ public:
 
 	QAngle m_current_real_angle = QAngle(0.f, 0.f, 0.f);
 	QAngle m_current_fake_angle = QAngle(0.f, 0.f, 0.f);
-
+	
 
 private:
 

@@ -144,6 +144,7 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		// fix feet spin.
 		  record->anim_state->m_flFeetYawRate = 0.f;
 
+
 		// apply record.
 		  record->Apply(player);
 
@@ -193,7 +194,7 @@ void Animations::AnimationInfo::UpdateAnimations(Animation* record, Animation* f
 		{
 			player->m_vecVelocity() = Math::Interpolate(from->velocity, record->velocity, 0.5f);
 			player->m_fFlags() = record->flags;
-			//Resolver::Get().UpdateResolve(record, player);
+		
 			
 		}
 		
@@ -400,18 +401,17 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	// Onetap code be like <3
 
 	//// make a backup of globals
-	const auto m_flSimtime         = player->m_flSimulationTime();
+	
 	const auto interpolation       =  g_GlobalVars->interpolation_amount;
 	const auto backup_absframetime =  g_GlobalVars->absoluteframetime;
 	const auto backup_frametime    =  g_GlobalVars->frametime;
 	const auto backup_curtime      =  g_GlobalVars->curtime;
 	const auto backup_realtime     =  g_GlobalVars->realtime;
-	const auto backup_framecount0  =  g_GlobalVars->framecount;
-	const auto backup_tickcount0   =  g_GlobalVars->tickcount;
+
 	const auto backup_flags        =  player->m_fFlags();
-	int        m_iOneTap           =  TIME_TO_TICKS(m_flSimtime) ; // (SimTime / MEMORY[0x16E6AAF8]) + 0.5;
+	
 	// get player anim state
-	auto  state = player->GetPlayerAnimState();
+	auto  aState = player->GetPlayerAnimState();
 	
 
 	// fixes for networked players
@@ -420,8 +420,7 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	g_GlobalVars->absoluteframetime    = g_GlobalVars->interval_per_tick;
 	g_GlobalVars->curtime              = player->m_flSimulationTime();
 	g_GlobalVars->realtime             = player->m_flSimulationTime();
-	g_GlobalVars->tickcount            = m_iOneTap;
-	g_GlobalVars->framecount           = m_iOneTap;
+	
 
 	player->m_iEFlags() &= ~0x1000;
 	player->m_vecAbsVelocity()  = player->m_vecVelocity();
@@ -431,12 +430,12 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	// notify the other hooks to instruct animations and pvs fix
 
 
-	if (state->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount)
-		state->m_iLastClientSideAnimationUpdateFramecount =  m_iOneTap - 1;
+	if (aState->m_iLastClientSideAnimationUpdateFramecount == g_GlobalVars->framecount)
+		aState->m_iLastClientSideAnimationUpdateFramecount =  g_GlobalVars->framecount - 1;
 
 	player->m_bClientSideAnimation() = true;
 	player->UpdateClientSideAnimation();
-	player->m_bClientSideAnimation() = false;
+	if (!player->IsLocalPlayer()) player->m_bClientSideAnimation() = false;
 
 
 	if (!player->IsLocalPlayer())
@@ -446,8 +445,7 @@ void Animations::UpdatePlayer(C_BasePlayer* player) {
 	enable_bone_cache_invalidation = old_invalidation;
 
 	// restore globals
-	g_GlobalVars->framecount           = backup_framecount0;
-	g_GlobalVars->tickcount            = backup_tickcount0;
+	
 	g_GlobalVars->interpolation_amount = interpolation;
 	g_GlobalVars->curtime              = backup_curtime;
 	g_GlobalVars->realtime             = backup_realtime;

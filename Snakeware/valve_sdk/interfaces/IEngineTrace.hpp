@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Math/Vector4D.hpp"
-
+using ShouldHitFunc_t = bool(__cdecl *)(C_BasePlayer *, int);
 #pragma region MASKS
 
 #define   DISPSURF_FLAG_SURFACE           (1<<0)
@@ -306,6 +306,33 @@ public:
     }
 };
 
+class CTraceFilterSimple : public CTraceFilter {
+public:
+	const C_BasePlayer*   m_pass_ent1;
+	int                   m_collision_group;
+	ShouldHitFunc_t       m_shouldhit_check_fn;
+
+public:
+	__forceinline CTraceFilterSimple() {}
+
+	__forceinline CTraceFilterSimple(const C_BasePlayer* pass_ent1, int collision_group = COLLISION_GROUP_NONE, ShouldHitFunc_t shouldhit_check_fn = nullptr) :
+		m_pass_ent1{ pass_ent1 },
+		m_collision_group{ collision_group },
+		m_shouldhit_check_fn{ shouldhit_check_fn } {}
+
+	virtual bool ShouldHitEntity(C_BasePlayer* entity, int contents_mask) {
+		return entity != m_pass_ent1;
+	}
+
+	virtual void SetPassEntity(C_BasePlayer *pass_ent1) {
+		m_pass_ent1 = pass_ent1;
+	}
+
+	virtual void SetCollisionGroup(int collision_group) {
+		m_collision_group = collision_group;
+	}
+};
+
 
 
 
@@ -470,7 +497,7 @@ public:
 	int                 hitgroup;           // 0 == generic, non-zero is specific body part
 	short               physicsbone;        // physics bone hit by trace in studio
 	unsigned short      worldSurfaceIndex;  // Index of the msurface2_t, if applicable
-	C_BasePlayer*      hit_entity;
+	C_BasePlayer*       hit_entity;
 	int                 hitbox;                       // box hit by trace in studio
 
 	CGameTrace() {}

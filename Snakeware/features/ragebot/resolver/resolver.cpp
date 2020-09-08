@@ -190,6 +190,8 @@ void Resolver::GetFlags(C_BasePlayer* player, Animation* record)
 }
 
 
+
+
 void Resolver::SetResolveIndex (C_BasePlayer* player, int m_iSide) {
 	// Safe-point resolver...
 	// Credit's : @Snake && Onetap crack & v3 dump's
@@ -293,7 +295,10 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 
 		}
 
+		
+
 	}
+
 	//GetFlags(player, record);
 	
 }

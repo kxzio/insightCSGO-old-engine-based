@@ -3,6 +3,7 @@
 #include "../Helpers/Utils.hpp"
 #include <iterator>
 #include "../Protected/enginer.h"
+#include "../helpers/memory-address.h"
 //increase it if valve added some funcs to baseentity :lillulmoa:
 constexpr auto VALVE_ADDED_FUNCS = 0ull;
 
@@ -284,6 +285,7 @@ bool C_BasePlayer::IsLocalPlayer() const
 }
 void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angle)
 {
+	
 	using fn = void(__vectorcall*)(void*, void*, float, float, float, void*);
 	static auto ret = reinterpret_cast<fn>(Utils::PatternScan(GetModuleHandleA(solution::Get().Module),"55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 F3 0F 11 54 24"));
 
@@ -293,10 +295,13 @@ void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angl
 	ret(state, nullptr, 0.f, angle.yaw, angle.pitch, nullptr);
 }
 
+
+
+
 void C_BasePlayer::ResetAnimationState(CCSGOPlayerAnimState *state)
 {
 	using ResetAnimState_t = void(__thiscall*)(CCSGOPlayerAnimState*);
-	static auto ResetAnimState = (ResetAnimState_t)Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "56 6A 01 68 ? ? ? ? 8B F1");
+	static auto ResetAnimState = (ResetAnimState_t)Utils::PatternScan(GetModuleHandleA(Xor(solution::Get().Module)), Xor("56 6A 01 68 ? ? ? ? 8B F1"));
 	if (!ResetAnimState)
 		return;
 
@@ -629,7 +634,7 @@ Vector C_BasePlayer::GetShootPos()
 }
 void C_BasePlayer::UpdateClientSideAnimation()
 {
-	return CallVFunction<void(__thiscall*)(void*)>(this, 223 + VALVE_ADDED_FUNCS)(this);
+	return CallVFunction<void(__thiscall*)(void*)>(this, 223)(this);
 }
 bool C_BasePlayer::IsNotTarget() {
 	if (!this || this == g_LocalPlayer)

@@ -7,6 +7,8 @@
 #include <mutex>
 #include <algorithm>
 
+#include "../helpers/x0r-protection/xor.h"
+
 #define Assert( _exp ) ((void)0)
 #define OFFSET(func, type, offset) type& func { return *reinterpret_cast<type*>(reinterpret_cast<uintptr_t>(this) + offset); }
 #define FOFFSET( type, ptr, offset ) ( *( type* ) ( ( std::uintptr_t ) (ptr) + ( offset ) ) )
@@ -305,6 +307,10 @@ public:
 		return static_cast<C_BasePlayer*>(GetEntityByIndex(i));
 	}
 
+	template< typename t >
+	__forceinline t Ass() {
+		return (t)this;
+	}
 	NETVAR(bool, m_bHasDefuser, "DT_CSPlayer", "m_bHasDefuser");
 	NETVAR(bool, m_bGunGameImmunity, "DT_CSPlayer", "m_bGunGameImmunity");
 	NETVAR(int32_t, m_iShotsFired, "DT_CSPlayer", "m_iShotsFired");
