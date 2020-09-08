@@ -131,7 +131,7 @@ struct mstudiobbox_t
     Vector      bbmin;
     Vector      bbmax;
     int         szhitboxnameindex;
-	Vector		rotation;
+	QAngle		rotation; // old :: vector
     float       m_flRadius;
     int32_t     m_iPad02[4];
 

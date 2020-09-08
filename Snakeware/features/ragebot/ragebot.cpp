@@ -59,7 +59,7 @@ void AimPlayer::SetupHitboxes(Animation* record, bool history) {
 	// reset hitboxes.
 	m_hitboxes.clear();
 
-	if (g_cl.m_weapon_id == ZEUS) {
+	if (g_LocalPlayer->m_hActiveWeapon()->m_Item().m_iItemDefinitionIndex() == WEAPON_ZEUS) {
 		// hitboxes for the zeus.
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
 
@@ -80,7 +80,7 @@ void AimPlayer::SetupHitboxes(Animation* record, bool history) {
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::LETHAL2 });
 
 	// prefer, in air.
-	if (g_cfg[XOR("rage_aimbot_baim_prefer_air")].get<bool>() && !(record->m_fFlags & FL_ONGROUND))
+	if (g_cfg[XOR("rage_aimbot_baim_prefer_air")].get<bool>() && !(record->flags & FL_ONGROUND))
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
 
 	bool only{ false };
@@ -493,7 +493,7 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 
 		// convert rotation angle to a matrix.
 		matrix3x4_t rot_matrix;
-		Math::AngleMatrix(bbox->angle, rot_matrix);
+		Math::AngleMatrix(bbox->rotation, rot_matrix);
 
 		// apply the rotation to the entity input space (local).
 		matrix3x4_t matrix;
@@ -588,7 +588,7 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 
 				// add this point only under really specific circumstances.
 				// if we are standing still and have the lowest possible pitch pose.
-				if (state && record->velocity.Length() <= 0.1f && record->eye_angles.pitch <= state->m_flMinPitch) {
+				if (state && record->velocity.Length() <= 0.1f && record->eye_angles.pitch <= 89.9f)  {
 
 					// bottom point.
 					points.push_back({ bbox->bbmax.x - r, bbox->bbmax.y, bbox->bbmax.z });
@@ -897,12 +897,12 @@ bool Aimbot::CanHit(Vector start, Vector end, Animation* record, int box, bool i
 		CGameTrace tr;
 
 		// setup trace data
-		record->player->m_vecOrigin() = record->m_vecOrigin;
-		record->player->SetAbsOrigin(record->m_vecOrigin);
-		record->player->SetAbsAngles(record->m_angAbsAngles);
-		record->player->m_vecMins() = record->m_vecMins;
-		record->player->m_vecMaxs() = record->m_vecMaxs;
-		record->m_pEntity->m_BoneCache2() = reinterpret_cast<matrix3x4_t**>(matrix);
+		record->player->m_vecOrigin() = record->origin;
+		record->player->SetAbsOrigin   (record->abs_origin);
+		record->player->SetAbsAngles   (record->abs_ang);
+		record->player->m_vecMins()   = record->obb_mins;
+		record->player->m_vecMaxs()   = record->obb_maxs;
+		record->player->get_bone_cache() = reinterpret_cast<matrix3x4_t**>(matrix);
 
 		// setup ray and trace.
 		Ray_t tt;
@@ -914,7 +914,7 @@ bool Aimbot::CanHit(Vector start, Vector end, Animation* record, int box, bool i
 		record->player->SetAbsAngles(backup_abs_angles);
 		record->player->m_vecMins() = backup_obb_mins;
 		record->player->m_vecMaxs() = backup_obb_maxs;
-		record->m_pEntity->m_BoneCache2() = backup_cache;
+		record->player->get_bone_cache() = backup_cache;
 
 		// check if we hit a valid player / hitgroup on the player and increment total hits.
 		if (tr.hit_entity == record->player && game::IsValidHitgroup(tr.hitgroup))

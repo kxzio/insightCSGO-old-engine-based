@@ -411,6 +411,7 @@ public:
 
 
 	OPTION(bool, ragebot_enabled, false);
+	OPTION(bool, ragebot_ignore_limbs, false);
 	OPTION(bool, ragebot_autowall, false);
 	OPTION(bool, ragebot_remove_recoil, false);
 	OPTION(bool, ragebot_autofire, false);

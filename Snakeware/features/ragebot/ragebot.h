@@ -4,6 +4,7 @@
 #include "lagcompensation/lag-compensation.h"
 #include "animation-system/animation-system.h"
 #include <time.h>
+#include "../../helpers/unique_vector.h"
 
 // Recode ragebot from supremacy & onetap.idb
 // by @Snake
