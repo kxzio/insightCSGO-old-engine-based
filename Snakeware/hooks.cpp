@@ -42,6 +42,7 @@ int32_t originalShotsMissed = 0;
 int32_t tickHitPlayer = 0;
 int32_t tickHitWall = 0;
 
+#include "helpers/det0ur-hook/det0urs-hook.h"
 
 
 
@@ -50,9 +51,11 @@ namespace Hooks {
 	void Initialize() {
 
 		INetChannel* g_NetChannel = (INetChannel*)g_ClientState->m_NetChannel;
-		static uint32_t g_PlayerHook[1] = { reinterpret_cast<uint32_t>(C_BasePlayer::GetVT()) };
+		
 
-		player_hook.setup(g_PlayerHook);
+		static const auto vtPlayer = Utils::PatternScan("client.dll", "55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 89 7C 24 0C") + 0x47;
+		DWORD* ex_pointer = (DWORD*)*(DWORD*)(vtPlayer);
+
 		net_hook.setup(g_NetChannel);
 		prediction_hook.setup(g_Prediction);
 		engine_hook.setup(g_EngineClient);
@@ -78,7 +81,11 @@ namespace Hooks {
 		}
 		//prediction_hook.hook_index(index::SetupMove, HkSetupMove);
 
-	   // player_hook.hook_index(223, hkUpdateClientSideAnimation );
+
+		
+
+
+
 		prediction_hook.hook_index(index::InPrediction, InPrediction);
 		prediction_hook.hook_index(index::RunCommand, HkRunCommand);
 		direct3d_hook.hook_index(index::EndScene, hkEndScene);
@@ -110,7 +117,7 @@ namespace Hooks {
 	//--------------------------------------------------------------------------------
 	void Shutdown()
 	{
-		player_hook.unhook_all();
+		
 		prediction_hook.unhook_all();
 		engine_hook.unhook_all();
 		hlclient_hook.unhook_all();
@@ -286,17 +293,19 @@ namespace Hooks {
 
 	
 	using FnUpdateClientSideAnimation = void(__thiscall*)(C_BasePlayer*);
-	void __fastcall hkUpdateClientSideAnimation(C_BasePlayer* player, uint32_t)
+	void __fastcall hkUpdateClientSideAnimation(C_BasePlayer* player)
 	{
 		static auto OriginalUpdate  = player_hook.get_original< FnUpdateClientSideAnimation >(223);
 		const auto  ValidPlayer = player->IsLocalPlayer() || player->IsEnemy();
 
 		if (!g_LocalPlayer || !g_LocalPlayer->IsAlive() || !ValidPlayer)
 			return OriginalUpdate(player);
-
-		if (Snakeware::UpdateAnims)
-		{
+		// Переделать это так как это пиздец какой костыль.......
+		// From nemesis dump
+		if (Snakeware::UpdateAnims){
+	
 			OriginalUpdate(player);
+			
 		}
 	}
 
@@ -596,11 +605,22 @@ namespace Hooks {
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
 			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); 
+			Miscellaneous::Get().AutoPeek(cmd);
 			Miscellaneous::Get().SlowWalk(cmd);
+			Miscellaneous::Get().SilentWalk(cmd);
 			Miscellaneous::Get().LegitAntiAim(cmd);
 			Tickbase::Get().DoubleTap(cmd);
 
 			
+			if (GetAsyncKeyState(g_Options.exploit_doubletap_key)) 	{
+				if (g_Options.exploit_doubletap) {
+					if (!Tickbase::Get().CanDoubleTap())
+						Snakeware::DoubleTapCharged = false;
+					else if (!Snakeware::DoubleTapCharged && Snakeware::SkipTicks == 0) {
+						Snakeware::SkipTicks =  16;
+					}
+				}
+			}
 
 			Snakeware::g_bOverrideVelMod = false;
 

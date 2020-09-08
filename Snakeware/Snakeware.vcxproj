@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -191,7 +191,11 @@
     <ClInclude Include="fonts\Main_googlefont.h" />
     <ClInclude Include="fonts\Sound_bite.h" />
     <ClInclude Include="grenade-prediction\grenade-prediction.h" />
+    <ClInclude Include="helpers\det0ur-hook\det0urs-hook.h" />
     <ClInclude Include="helpers\intrincics.h" />
+    <ClInclude Include="helpers\memory-address.h" />
+    <ClInclude Include="helpers\unique_vector.h" />
+    <ClInclude Include="helpers\x0r-protection\xor.h" />
     <ClInclude Include="imgui\imconfig.h" />
     <ClInclude Include="imgui\imgui.h" />
     <ClInclude Include="imgui\imgui_internal.h" />

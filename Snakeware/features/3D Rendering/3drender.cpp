@@ -15,6 +15,7 @@
 #include "../../valve_sdk/csgostructs.hpp"
 
 
+
 void RENDER_3D_GUI::LocalCircle()
 {
 	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;

@@ -404,12 +404,14 @@ public:
 	OPTION(int, antihit_manual_right, 41);
 	OPTION(int, antihit_manual_back, 42);
 	
-
+	OPTION(int, misc_silentwalk_key, 55);
+	OPTION(int, autopeek_key, 55);
 	OPTION(int, playerModelT, 0);
 	OPTION(int, playerModelCT, 0);
 
 
 	OPTION(bool, ragebot_enabled, false);
+	OPTION(bool, ragebot_ignore_limbs, false);
 	OPTION(bool, ragebot_autowall, false);
 	OPTION(bool, ragebot_remove_recoil, false);
 	OPTION(bool, ragebot_autofire, false);

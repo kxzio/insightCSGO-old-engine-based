@@ -3,6 +3,7 @@
 #include "../Helpers/Utils.hpp"
 #include <iterator>
 #include "../Protected/enginer.h"
+#include "../helpers/memory-address.h"
 //increase it if valve added some funcs to baseentity :lillulmoa:
 constexpr auto VALVE_ADDED_FUNCS = 0ull;
 
@@ -284,6 +285,7 @@ bool C_BasePlayer::IsLocalPlayer() const
 }
 void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angle)
 {
+	
 	using fn = void(__vectorcall*)(void*, void*, float, float, float, void*);
 	static auto ret = reinterpret_cast<fn>(Utils::PatternScan(GetModuleHandleA(solution::Get().Module),"55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 F3 0F 11 54 24"));
 
@@ -293,10 +295,13 @@ void C_BasePlayer::UpdateAnimationState(CCSGOPlayerAnimState *state, QAngle angl
 	ret(state, nullptr, 0.f, angle.yaw, angle.pitch, nullptr);
 }
 
+
+
+
 void C_BasePlayer::ResetAnimationState(CCSGOPlayerAnimState *state)
 {
 	using ResetAnimState_t = void(__thiscall*)(CCSGOPlayerAnimState*);
-	static auto ResetAnimState = (ResetAnimState_t)Utils::PatternScan(GetModuleHandleA(solution::Get().Module), "56 6A 01 68 ? ? ? ? 8B F1");
+	static auto ResetAnimState = (ResetAnimState_t)Utils::PatternScan(GetModuleHandleA(Xor(solution::Get().Module)), Xor("56 6A 01 68 ? ? ? ? 8B F1"));
 	if (!ResetAnimState)
 		return;
 
@@ -555,6 +560,71 @@ void C_BasePlayer::WeaponShootPos(Vector& pos)
 	
 	return CallVFunction<void(__thiscall*)(void*, Vector&)>(this, 284)(this, pos);
 }
+
+//Vector C_BasePlayer::CalculateSpread(int seed, float inaccuracy, float spread, bool revolver2 = false) {
+//	CCSWeaponInfo *wep_info;
+//	auto weapon     = m_hActiveWeapon();
+//	int            item_def_index;
+//	float          recoil_index, r1, r2, r3, r4, s1, c1, s2, c2;
+//
+//	// if we have no bullets, we have no spread.
+//	wep_info = weapon->GetCSWeaponData();
+//	if (!wep_info || !wep_info->iBullets)
+//		return {};
+//
+//	// get some data for later.
+//	item_def_index = weapon->m_Item().m_iItemDefinitionIndex();
+//	recoil_index   = m_flRecoilIndex();
+//
+//	// seed randomseed.
+//	RandomSeed((seed & 0xff) + 1);
+//
+//	// generate needed floats.
+//	r1 = Math::RandomFloat(0.f, 1.f);
+//	r2 = Math::RandomFloat(0.f, M_PI * 2);
+//
+//
+//	if ( g_csgo.weapon_accuracy_shotgun_spread_patterns->GetInt() > 0)
+//		g_csgo.GetShotgunSpread(item_def_index, 0, 0 /*bullet_i*/ + wep_info->iBullets * recoil_index, &r4, &r3);
+//
+//	else {
+//		r3 = Math::RandomFloat(0.f, 1.f);
+//		r4 = Math::RandomFloat(0.f, M_PI * 2);
+//	}
+//
+//	// revolver secondary spread.
+//	if (item_def_index == WEAPON_REVOLVER && revolver2) {
+//		r1 = 1.f - (r1 * r1);
+//		r3 = 1.f - (r3 * r3);
+//	}
+//
+//	// negev spread.
+//	else if (item_def_index == WEAPON_NEGEV && recoil_index < 3.f) {
+//		for (int i{ 3 }; i > recoil_index; --i) {
+//			r1 *= r1;
+//			r3 *= r3;
+//		}
+//
+//		r1 = 1.f - r1;
+//		r3 = 1.f - r3;
+//	}
+//
+//	// get needed sine / cosine values.
+//	c1 = std::cos(r2);
+//	c2 = std::cos(r4);
+//	s1 = std::sin(r2);
+//	s2 = std::sin(r4);
+//
+//	// calculate spread vector.
+//	return {
+//		(c1 * (r1 * inaccuracy)) + (c2 * (r3 * spread)),
+//		(s1 * (r1 * inaccuracy)) + (s2 * (r3 * spread)),
+//		0.f
+//	};
+//}
+
+
+
 Vector C_BasePlayer::GetShootPos()
 {
 	Vector pos;
@@ -564,7 +634,7 @@ Vector C_BasePlayer::GetShootPos()
 }
 void C_BasePlayer::UpdateClientSideAnimation()
 {
-	return CallVFunction<void(__thiscall*)(void*)>(this, 223 + VALVE_ADDED_FUNCS)(this);
+	return CallVFunction<void(__thiscall*)(void*)>(this, 223)(this);
 }
 bool C_BasePlayer::IsNotTarget() {
 	if (!this || this == g_LocalPlayer)

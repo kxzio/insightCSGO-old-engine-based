@@ -190,12 +190,14 @@ void Resolver::GetFlags(C_BasePlayer* player, Animation* record)
 }
 
 
+
+
 void Resolver::SetResolveIndex (C_BasePlayer* player, int m_iSide) {
 	// Safe-point resolver...
 	// Credit's : @Snake && Onetap crack & v3 dump's
 
 	auto state = player->GetPlayerAnimState();
-	if (!state || !g_EngineClient->IsInGame() || !g_LocalPlayer || !g_LocalPlayer->IsAlive())  return;
+	if (!g_EngineClient->IsInGame() || !g_LocalPlayer || !g_LocalPlayer->IsAlive())  return;
 
 	float m_flResolved = 0.f;
 
@@ -293,7 +295,10 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 
 		}
 
+		
+
 	}
+
 	//GetFlags(player, record);
 	
 }

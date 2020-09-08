@@ -181,6 +181,7 @@ void ConfigSystem::SetupMisc()
 	SetupValue(g_Options.misc_slowwalk_speed, 30, ("movement"), ("slowwalk_speed"));
 	SetupValue(g_Options.exploit_doubletap, false, ("exploits"), ("doubletap"));
 	SetupValue(g_Options.exploit_doubletap_key, 1, ("exploits"), ("doubletap_key"));
+	SetupValue(g_Options.autopeek_key, 55, ("misc"), ("autopeek"));
 }
 std::map<int, const char*> weapon_names =
 {

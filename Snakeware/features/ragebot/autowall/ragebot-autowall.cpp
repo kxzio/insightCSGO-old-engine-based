@@ -4,15 +4,10 @@
 #include "../../../options.hpp"
 #include "../../../Protected/enginer.h"
 
-#define HITGROUP_GENERIC   0
-#define HITGROUP_HEAD      1
-#define HITGROUP_CHEST     2
-#define HITGROUP_STOMACH   3
-#define HITGROUP_LEFTARM   4
-#define HITGROUP_RIGHTARM  5
-#define HITGROUP_LEFTLEG   6
-#define HITGROUP_RIGHTLEG  7
-#define HITGROUP_GEAR      10
+// Supreamcy autowall + skeet.idn & otv2 code
+// Credit's : @Snake
+
+// CharTex && Damage define's
 #define DAMAGE_NO		0
 #define DAMAGE_EVENTS_ONLY	1
 #define DAMAGE_YES		2
@@ -39,362 +34,182 @@
 #define CHAR_TEX_GLASS			'Y'
 #define CHAR_TEX_WARPSHIELD		'Z'
 
-returninfo CAutoWall::autowall(Vector start, Vector end, C_BasePlayer* from_ent, C_BasePlayer* to_ent, int hitgroup) {
-	returninfo rt;
 
-	fbdata bullet;
-	bullet.start = start;
-	bullet.end = end;
-	bullet.pos = start;
-	bullet.thickness = 0.f;
-	bullet.walls = 3; // Кол-во стен автоволла
 
-	Math_AngleVectors(Math_CalcAngle(start, end), bullet.dir);
+bool IsValidHitgroup(int index) {
+	if ((index >= HITGROUP_HEAD && index <= HITGROUP_RIGHTLEG) || index == HITGROUP_GEAR)
+		return true;
 
-	auto flt_player = CTraceFilterOneEntity();
-	flt_player.pEntity = to_ent;
-
-	auto flt_self = CTraceFilter();
-	flt_self.pSkip = from_ent;
-
-	if (to_ent)
-		bullet.filter = &flt_player;
-	else
-		bullet.filter = &flt_self;
-
-	auto wep = from_ent->m_hActiveWeapon();
-	if (!wep)
-		return rt;
-
-	auto inf = wep->GetCSWeaponData();
-	if (!inf)
-		return rt;
-
-	end = start + bullet.dir * (wep->IsKnife() ? 45.f : inf->flRange);
-	bullet.damage = inf->iDamage;
-
-	while (bullet.damage > 0 && bullet.walls > 0) {
-		rt.walls = bullet.walls;
-
-		Ray_t ray;
-		ray.Init(bullet.pos, end);
-
-		CTraceFilter filter;
-		filter.pSkip = from_ent;
-
-		g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &bullet.trace);
-		this->clip_trace_to_player(bullet.pos, bullet.pos + bullet.dir * 40.f, to_ent, MASK_SHOT | CONTENTS_GRATE, bullet.filter, &bullet.trace);
-
-		bullet.damage *= powf(inf->flRangeModifier, (bullet.trace.endpos - start).Length() / 500.f);
-
-		if (bullet.trace.fraction == 1.f) {
-			if (to_ent && hitgroup != INT_MIN) {
-				this->scale_damage(to_ent, inf, hitgroup, bullet.damage);
-
-				rt.damage = bullet.damage;
-				rt.hitgroup = hitgroup;
-				rt.end = bullet.trace.endpos;
-				rt.ent = to_ent;
-			}
-			else {
-				rt.damage = bullet.damage;
-				rt.hitgroup = INT_MIN;
-				rt.end = bullet.trace.endpos;
-				rt.ent = nullptr;
-			}
-		}
-
-		if (bullet.trace.hitgroup > 0 && bullet.trace.hitgroup <= 7) {
-			if (to_ent && bullet.trace.hit_entity != to_ent) {
-				rt.damage = INT_MIN;
-
-				return rt;
-			}
-			C_BasePlayer* player = (C_BasePlayer*)bullet.trace.hit_entity;
-			if (hitgroup != INT_MIN)
-				scale_damage(player, inf, hitgroup, bullet.damage);
-			else
-				scale_damage(player, inf, bullet.trace.hitgroup, bullet.damage);
-
-			rt.damage = bullet.damage;
-			rt.hitgroup = bullet.trace.hitgroup;
-			rt.end = bullet.trace.endpos;
-			rt.ent = bullet.trace.hit_entity;
-
-			break;
-		}
-
-		if (!this->handle_bullet_penetration(inf, bullet))
-			break;
-
-		rt.did_penetrate_wall = true;
-	}
-
-	rt.walls = bullet.walls;
-	return rt;
+	return false;
 }
 
-void CAutoWall::clip_trace_to_player(Vector& start, Vector& end, C_BasePlayer* ent, unsigned int mask, ITraceFilter* filter, trace_t* trace) {
-	if (!ent)
-		return;
+float WallPeneration::Scale(C_BasePlayer* player, float damage, float armor_ratio, int hitgroup) {
 
-	Vector mins = ent->GetCollideable()->OBBMins();
-	Vector maxs = ent->GetCollideable()->OBBMaxs();
+	bool  has_heavy_armor;
+	int   armor;
+	float heavy_ratio, bonus_ratio, ratio, new_damage;
 
-	Vector dir(end - start);
-	dir.Normalized();
-
-	Vector
-		center = (maxs + mins) / 2,
-		pos(center + ent->m_vecOrigin());
-
-	Vector to = pos - start;
-	float range_along = dir.Dot(to);
-
-	float range;
-	if (range_along < 0.f)
-		range = -to.Length();
-	else if (range_along > dir.Length())
-		range = -(pos - end).Length();
-	else {
-		auto ray(pos - (dir * range_along + start));
-		range = ray.Length();
-	}
-
-	if (range <= 60.f) {
-		trace_t newtrace;
-
-		Ray_t ray;
-		ray.Init(start, end);
-
-		g_EngineTrace->ClipRayToEntity(ray, mask, ent, &newtrace);
-
-		if (trace->fraction > newtrace.fraction)
-			*trace = newtrace;
-	}
-}
-
-void CAutoWall::scale_damage(C_BasePlayer* e, CCSWeaponInfo* weapon_info, int& hitgroup, float& current_damage) {
-	bool has_heavy_armor = false;
-	int armor_value = e->m_ArmorValue();
-
-	auto is_armored = [&e, &hitgroup]()-> bool {
-		C_BasePlayer* target_entity = e;
-		switch (hitgroup) {
-		case HITGROUP_HEAD:
-			return target_entity->m_bHasHelmet();
-		case HITGROUP_GENERIC:
-		case HITGROUP_CHEST:
-		case HITGROUP_STOMACH:
-		case HITGROUP_LEFTARM:
-		case HITGROUP_RIGHTARM:
-			return true;
-		default:
+	static auto is_armored = [](C_BasePlayer* player, int armor, int hitgroup) {
+		// the player has no armor.
+		if (armor <= 0)
 			return false;
-		}
+
+		// if the hitgroup is head and the player has a helment, return true.
+		// otherwise only return true if the hitgroup is not generic / legs / gear.
+		if (hitgroup == HITGROUP_HEAD && player->m_bHasHelmet())
+			return true;
+
+		else if (hitgroup >= HITGROUP_CHEST && hitgroup <= HITGROUP_RIGHTARM)
+			return true;
+
+		return false;
 	};
 
+	// check if the player has heavy armor, this is only really used in operation stuff.
+	has_heavy_armor = player->m_bHasHeavyArmor();
+
+	// scale damage based on hitgroup.
 	switch (hitgroup) {
 	case HITGROUP_HEAD:
-		current_damage *= has_heavy_armor ? 2.f : 4.f;
+		if (has_heavy_armor)
+			damage = (damage * 4.f) * 0.5f;
+		else
+			damage *= 4.f;
 		break;
+
 	case HITGROUP_STOMACH:
-		current_damage *= 1.25f;
+		damage *= 1.25f;
 		break;
+
 	case HITGROUP_LEFTLEG:
 	case HITGROUP_RIGHTLEG:
-		current_damage *= 0.75f;
+		damage *= 0.75f;
 		break;
+
 	default:
 		break;
 	}
 
-	if (armor_value > 0 && is_armored()) {
-		float bonus_value = 1.f, armor_bonus_ratio = 0.5f, armor_ratio = weapon_info->flArmorRatio / 2.f;
+	// grab amount of player armor.
+	armor = player->m_ArmorValue();
 
+	// check if the ent is armored and scale damage based on armor.
+	if (is_armored(player, armor, hitgroup)) {
+		heavy_ratio = 1.f;
+		bonus_ratio = 0.5f;
+		ratio = armor_ratio * 0.5f;
+
+		// player has heavy armor.
 		if (has_heavy_armor) {
-			armor_bonus_ratio = 0.33f;
-			armor_ratio *= 0.5f;
-			bonus_value = 0.33f;
+			// calculate ratio values.
+			bonus_ratio = 0.33f;
+			ratio = armor_ratio * 0.25f;
+			heavy_ratio = 0.33f;
+
+			// calculate new damage.
+			new_damage = (damage * ratio) * 0.85f;
 		}
 
-		auto new_damage = current_damage * armor_ratio;
+		// no heavy armor, do normal damage calculation.
+		else
+			new_damage = damage * ratio;
 
-		if (has_heavy_armor)
-			new_damage *= 0.85f;
+		if (((damage - new_damage) * (heavy_ratio * bonus_ratio)) > armor)
+			new_damage = damage - (armor / bonus_ratio);
 
-		if (((current_damage - (current_damage * armor_ratio)) * (bonus_value * armor_bonus_ratio)) > armor_value)
-			new_damage = current_damage - (armor_value / armor_bonus_ratio);
+		damage = new_damage;
+	}
 
+	return std::floor(damage);
+}
+bool WallPeneration::IsBreakable(C_BasePlayer* pPlayer) {
+	if (!pPlayer || !pPlayer->EntIndex())
+		return false;
 
-		current_damage = new_damage;
+	static auto is_breakable_fn = reinterpret_cast<bool(__thiscall*)(C_BasePlayer*)>(Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 51 56 8B F1 85 F6 74 68"));
 
+	const auto result = is_breakable_fn(pPlayer);
+	auto ClassId = pPlayer->GetClientClass()->m_ClassID;
+	if (!result &&
+		(ClassId == 10 ||
+			ClassId == 31 ||
+			(ClassId == 11 && pPlayer->GetCollideable()->GetSolid() == 1)))
+		return true;
+
+	return result;
+}
+
+void UTIL_ClipTraceToPlayers(const Vector& start, const Vector& end, uint32_t mask, ITraceFilter* filter, CGameTrace* tr, float range) {
+	static auto func = Utils::PatternScan(GetModuleHandleA("client.dll"), ("53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 0F 57 C9"));
+	if (!func)
+		return;
+
+	__asm {
+		mov  ecx, start
+		mov	 edx, end
+		push range
+		push tr
+		push filter
+		push mask
+		call func
+		add	 esp, 16
 	}
 }
 
+bool WallPeneration::TraceToExit(const Vector &start, const Vector& dir, Vector& out, CGameTrace* enter_trace, CGameTrace* exit_trace) {
+	static CTraceFilter filter{};
 
-bool HandleBulletPenetration_SelfCodedByBa1m0v(CCSWeaponInfo* wpn_data, FireBulletData& data)
-{
-	data.trace_length        += data.enter_trace.fraction * data.trace_length_remaining;
-	data.penetrate_count      = 0;
-	if (data.penetrate_count <= 0)
-	return false;
-	Vector    TheExitVector;
-	trace_t   trace_exit;
-	return false;
-	float     Damage_final__scaler = 0.16f;
-	float     Damage_final__combined = 0.0f;
-	          Damage_final__combined = 3.0f;//pretty good xd xd
-	          Damage_final__scaler = 0.05f;
+	float  dist{};
+	Vector new_end;
+	int    contents, first_contents{};
+	auto   sv_clip_penetration_traces_to_players = g_CVar->FindVar("sv_clip_penetration_traces_to_players");
+	// max pen distance is 90 units.
+	while (dist <= 90.f) {
+		// step forward a bit.
+		dist += 4.f;
 
-	float     ValueFront = fmaxf(0.f, 1.0f / Damage_final__scaler);
-	return false;
-
-	if (data.current_damage < 1.0f)
-		return false;
-
-	data.penetrate_count--; //trashcode but idk, its working p
-	return true;
-}
-
-bool CAutoWall::handle_bullet_penetration(CCSWeaponInfo* inf, fbdata& bullet) {
-	trace_t trace;
-
-	static auto dbp = g_CVar->FindVar("ff_damage_bullet_penetration");
-
-	auto sdata = g_PhysSurface->GetSurfaceData(bullet.trace.surface.surfaceProps);
-	auto mat = sdata->game.material;
-
-	auto sp_mod = sdata->game.flPenetrationModifier;
-	auto dmg_mod = 0.f;
-	auto pnt_mod = 0.f;
-
-	auto solid_surf = (bullet.trace.contents >> 3)& CONTENTS_SOLID;
-	auto light_surf = (bullet.trace.surface.flags >> 7)& SURF_LIGHT;
-
-	if (bullet.walls <= 0
-		|| inf->flPenetration <= 0.f
-		|| !this->trace_to_exit(&bullet.trace, bullet.trace.endpos, bullet.dir, &trace)
-		&& (g_EngineTrace->GetPointContents(bullet.trace.endpos, MASK_SHOT_HULL, NULL) & (MASK_SHOT_HULL)))
-		return false;
-
-	auto e_sdata = g_PhysSurface->GetSurfaceData(trace.surface.surfaceProps);
-	auto e_mat = e_sdata->game.material;
-	auto e_sp_mod = e_sdata->game.flPenetrationModifier;
-
-	if (mat == CHAR_TEX_GRATE || mat == CHAR_TEX_GLASS)
-	{
-		pnt_mod = 3.f;
-		dmg_mod = 0.05f;
-	}
-	else if (light_surf || solid_surf)
-	{
-		pnt_mod = 1.f;
-		dmg_mod = 0.16f;
-	}
-	else if (mat == CHAR_TEX_FLESH)
-	{
-		pnt_mod = dbp->GetFloat();
-		dmg_mod = 0.16f;
-	}
-	else
-	{
-		pnt_mod = (sp_mod + e_sp_mod) / 2.f;
-		dmg_mod = 0.16f;
-	}
-
-	if (mat == e_mat)
-	{
-		if (e_mat == CHAR_TEX_CARDBOARD || e_mat == CHAR_TEX_WOOD)
-			pnt_mod = 3.f;
-		else if (e_mat == CHAR_TEX_PLASTIC)
-			pnt_mod = 2.f;
-	}
-
-	auto thickness = (trace.endpos - bullet.trace.endpos).LengthSqr();
-	auto modifier = fmaxf(0.f, 1.f / pnt_mod);
-
-	auto lost_damage = fmaxf(
-		((modifier * thickness) / 24.f)
-		+ ((bullet.damage * dmg_mod)
-			+ (fmaxf(3.75 / inf->flPenetration, 0.f) * 3.f * modifier)), 0.f);
-
-	if (lost_damage > bullet.damage)
-		return false;
-
-	if (lost_damage > 0.f)
-		bullet.damage -= lost_damage;
-
-	if (bullet.damage < 1.f)
-		return false;
-
-	bullet.pos = trace.endpos;
-	bullet.walls--;
-
-	return true;
-}
-
-bool CAutoWall::trace_to_exit(trace_t* enter_trace, Vector& start, Vector& dir, trace_t* exit_trace) {
-	auto end = Vector();
-	auto distance = 0.f;
-	auto distance_check = 23;
-	auto first_contents = 0;
-
-	do {
-		distance += 4.f;
-		end = start + dir * distance;
+		// set out pos.
+		out = start + (dir * dist);
 
 		if (!first_contents)
-			first_contents = g_EngineTrace->GetPointContents(end, MASK_SHOT | CONTENTS_GRATE, NULL);
+			first_contents = g_EngineTrace->GetPointContents(out, MASK_SHOT, nullptr);
 
-		int point_contents = g_EngineTrace->GetPointContents(end, MASK_SHOT | CONTENTS_GRATE, NULL);
+		contents = g_EngineTrace->GetPointContents(out, MASK_SHOT, nullptr);
 
-		if (!(point_contents & (MASK_SHOT_HULL | CONTENTS_HITBOX)) || point_contents & CONTENTS_HITBOX && point_contents != first_contents) {
-			Vector new_end = end - (dir * 4.f);
+		if ((contents & MASK_SHOT_HULL) && (!(contents & CONTENTS_HITBOX) || (contents == first_contents)))
+			continue;
 
-			Ray_t ray;
-			ray.Init(end, new_end);
+		// move end pos a bit for tracing.
+		new_end = out - (dir * 4.f);
+		Ray_t r;
+		r.Init(out, new_end);
 
-			g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, nullptr, exit_trace);
+		Ray_t r2;
+		r2.Init(out, start);
+		// do first trace.
+		g_EngineTrace->TraceRay(r, MASK_SHOT, nullptr, exit_trace);
 
-			if (exit_trace->startsolid && exit_trace->surface.flags & SURF_HITBOX) {
-				Ray_t ray1;
-				ray1.Init(start, end);
+		// note - dex; this is some new stuff added sometime around late 2017 ( 10.31.2017 update? ).
+		if (sv_clip_penetration_traces_to_players->GetInt())
+			UTIL_ClipTraceToPlayers(out, new_end, MASK_SHOT, nullptr, exit_trace, -60.f);
 
-				CTraceFilter filter;
-				filter.pSkip = exit_trace->hit_entity;
+		// we hit an ent's hitbox, do another trace.
+		if (exit_trace->startsolid && (exit_trace->surface.flags & SURF_HITBOX)) {
+			filter.pSkip = exit_trace->hit_entity;
 
-				g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, exit_trace);
+			g_EngineTrace->TraceRay(r2, MASK_SHOT_HULL, (ITraceFilter *)&filter, exit_trace);
 
-				if (exit_trace->DidHit() && !exit_trace->startsolid)
-					return true;
-
-				continue;
-			}
-			C_BasePlayer* player = (C_BasePlayer*)enter_trace->hit_entity;
 			if (exit_trace->DidHit() && !exit_trace->startsolid) {
-				if (enter_trace->surface.flags & SURF_NODRAW || !(exit_trace->surface.flags & SURF_NODRAW)) {
-					if (exit_trace->plane.normal.Dot(dir) <= 1.f)
-						return true;
-
-					continue;
-				}
-
-				if (this->is_breakable(player) && this->is_breakable(player))
-					return true;
-
-				continue;
+				out = exit_trace->endpos;
+				return true;
 			}
 
-			if (exit_trace->surface.flags & SURF_NODRAW) {
-				if (this->is_breakable(player) && this->is_breakable(player))
-					return true;
-				else if (!(enter_trace->surface.flags & SURF_NODRAW))
-					continue;
-			}
+			continue;
+		}
 
-			if ((!enter_trace->hit_entity || enter_trace->hit_entity->EntIndex() == 0) && this->is_breakable(player)) {
-				exit_trace = enter_trace;
+		if (!exit_trace->DidHit() || exit_trace->startsolid) {
+			if (IsBreakable(enter_trace->hit_entity)) {
+				*exit_trace = *enter_trace;
 				exit_trace->endpos = start + dir;
 				return true;
 			}
@@ -402,562 +217,284 @@ bool CAutoWall::trace_to_exit(trace_t* enter_trace, Vector& start, Vector& dir, 
 			continue;
 		}
 
-		distance_check--;
-	} while (distance_check);
+		if ((exit_trace->surface.flags & SURF_NODRAW)) {
+			// note - dex; ok, when this happens the game seems to not ignore world?
+			if (IsBreakable(exit_trace->hit_entity) && IsBreakable(enter_trace->hit_entity)) {
+				out = exit_trace->endpos;
+				return true;
+			}
 
-	return false;
-}
-
-bool CAutoWall::is_breakable(C_BasePlayer* e) {
-	using func = bool(__fastcall*)(C_BasePlayer*);
-	static auto fn = reinterpret_cast<func>(Utils::PatternScan(GetModuleHandleA("client.dll"), "55 8B EC 51 56 8B F1 85 F6 74 68 83 BE"));
-
-	if (!e || !e->EntIndex())
-		return false;
-
-	auto take_damage{ (char*)((uintptr_t)e + *(size_t*)((uintptr_t)fn + 38)) };
-	auto take_damage_backup{ *take_damage };
-
-	auto* cclass = g_CHLClient->GetAllClasses();
-
-	if ((cclass->m_pNetworkName[1]) != 'F'
-		|| (cclass->m_pNetworkName[4]) != 'c'
-		|| (cclass->m_pNetworkName[5]) != 'B'
-		|| (cclass->m_pNetworkName[9]) != 'h')
-		*take_damage = 2;
-
-	bool breakable = fn(e);
-	*take_damage = take_damage_backup;
-
-	return breakable;
-}
-
-
-void CAutoWall::TraceLine(Vector& start, Vector& end, unsigned int mask, C_BasePlayer* ignore, trace_t* trace)
-{
-	Ray_t ray;
-	ray.Init(start, end);
-
-	CTraceFilter filter;
-	filter.pSkip = ignore;
-
-	g_EngineTrace->TraceRay(ray, mask, &filter, trace);
-}
-
-bool CAutoWall::CanHitFloatingPoint(const Vector& point, const Vector& source) {
-	static auto VectortoVectorVisible = [&](Vector src, Vector point) -> bool {
-		trace_t TraceInit;
-		TraceLine(src, point, MASK_SOLID, g_LocalPlayer, &TraceInit);
-		trace_t Trace;
-		TraceLine(src, point, MASK_SOLID, TraceInit.hit_entity, &Trace);
-
-		if (Trace.fraction == 1.0f || TraceInit.fraction == 1.0f)
-			return true;
-
-		return false;
-	};
-	fbdata data;
-	data.start = source;
-	CTraceFilter filter;
-	filter.pSkip = g_LocalPlayer;
-	Vector angles = Math::CalculateAngle(data.start, point);
-	Math::AngleVectors2(angles, data.dir);
-	Math::VectorNormalize(data.dir);
-
-	data.walls = 1;
-	//data.trace_length = 0.0f;
-
-	auto weaponData = g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData();
-
-	if (!weaponData)
-		return false;
-
-	data.damage = (float)weaponData->iDamage;
-	//data.trace_length_remaining = weaponData->range - data.trace_length;
-	Vector end = data.start + (data.dir * weaponData->flRange);
-	TraceLine(data.start, end, MASK_SHOT | CONTENTS_HITBOX, g_LocalPlayer, &data.trace);
-
-	if (VectortoVectorVisible(data.start, point) || handle_bullet_penetration(weaponData, data))
-		return true;
-
-	return false;
-}
-
-std::optional<CTraceSystem::wall_pen> CTraceSystem::wall_penetration(const Vector src, const Vector end,
-	Animation* target, C_BasePlayer* override_player) const
-{
-	static CCSWeaponInfo override_gun{};
-	override_gun.iDamage = 15000.f;
-	override_gun.flRangeModifier = 1.0f;
-	override_gun.flPenetration = 10.0f;
-	override_gun.flArmorRatio = 2.0f;
-	override_gun.flRange = 8192.f;
-
-	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive())
-		return std::nullopt;
-
-	const auto weapon = g_LocalPlayer->m_hActiveWeapon();
-
-	if (!weapon && !override_player)
-		return std::nullopt;
-
-	const auto data = override_player ? &override_gun :
-		weapon->GetCSWeaponData();
-
-	if (!data)
-		return std::nullopt;
-
-	std::optional<wall_pen> result = std::nullopt;
-
-	if (!override_player)
-		run_emulated(target, [&]() -> void
-			{
-				// setup trace filter.
-				CTraceFilter filter;
-				filter.pSkip = g_LocalPlayer;
-
-				// run bullet simulation
-				result = fire_bullet(data, src, end,
-					&filter, target->player);
-			});
-	else
-	{
-		// setup trace filter.
-		CTraceFilter filter;
-
-		// run bullet simulation
-		result = fire_bullet(data, src, end, &filter, override_player, true);
-	}
-
-	// filter low dmg.
-	if (result.has_value() && result.value().damage < 1.f)
-		return std::nullopt;
-
-	// report result
-	return result;
-}
-
-void CTraceSystem::run_emulated(Animation* target, const std::function<void()> fn)
-{
-	// backup player
-	const auto backup_origin = target->player->m_vecOrigin();
-	const auto backup_abs_origin = target->player->m_angAbsOrigin();
-	const auto backup_obb_mins = target->player->GetCollideable()->OBBMins();
-	const auto backup_obb_maxs = target->player->GetCollideable()->OBBMaxs();
-	const auto backup_cache = target->player->get_bone_cache();
-
-	// setup trace data
-	target->player->m_vecOrigin() = target->origin;
-	target->player->SetAbsOrigin(target->origin);
-	target->player->GetCollideable()->OBBMins() = target->obb_mins;
-	target->player->GetCollideable()->OBBMaxs() = target->obb_maxs;
-	target->player->get_bone_cache() = reinterpret_cast<matrix3x4_t**>(target->bones);
-
-	// run emulation
-	fn();
-
-	// restore trace data
-	target->player->m_vecOrigin() = backup_origin;
-	target->player->SetAbsOrigin(backup_abs_origin);
-	target->player->GetCollideable()->OBBMins() = backup_obb_mins;
-	target->player->GetCollideable()->OBBMaxs() = backup_obb_maxs;
-	target->player->get_bone_cache() = backup_cache;
-}
-
-void clip_ray_to_player(Vector& src, Vector& end, const uint32_t mask, C_BasePlayer* player, CTraceFilter* filter, trace_t* t)
-{
-	if (filter && !filter->ShouldHitEntity(player, mask))
-		return;
-
-	trace_t t_new{};
-	Ray_t r{};
-	r.Init(src, end);
-
-	g_EngineTrace->ClipRayToEntity(r, mask, player, &t_new);
-	if (t_new.fraction < t->fraction)
-		*t = t_new;
-}
-
-void ClipTraceToPlayers(const Vector& absStart, const Vector absEnd, unsigned int mask, ITraceFilter* filter, CGameTrace* tr)
-{
-	C_BaseCombatWeapon* weapon = g_LocalPlayer->m_hActiveWeapon();
-
-	static DWORD dwAddress = (DWORD)Utils::PatternScan(GetModuleHandleA("client.dll"), "53 8B DC 83 EC 08 83 E4 F0 83 C4 04 55 8B 6B 04 89 6C 24 04 8B EC 81 EC ? ? ? ? 8B 43 10");
-
-	if (!dwAddress)
-		return;
-
-	_asm
-	{
-		MOV		EAX, filter
-		LEA		ECX, tr
-		PUSH	ECX
-		PUSH	EAX
-		PUSH	mask
-		LEA		EDX, absEnd
-		LEA		ECX, absStart
-		CALL	dwAddress
-		ADD		ESP, 0xC
-	}
-}
-
-
-std::optional<CTraceSystem::wall_pen> CTraceSystem::fire_bullet(CCSWeaponInfo* data, Vector src,
-	const Vector pos, CTraceFilter* filter, C_BasePlayer* target, bool point)
-{
-	QAngle angles;
-	Math::VectorAngles(pos - src, angles);
-
-	if (angles.IsZero())
-		return std::nullopt;
-
-	Vector direction;
-	Math::AngleVectors(angles, direction);
-
-	if (!direction.IsValid())
-		return std::nullopt;
-
-	direction.Normalized();
-
-	auto penetrate_count = 5;
-	auto length = 0.f, damage = static_cast<float>(data->iDamage);
-	trace_t enter_trace{};
-
-	const auto start = src;
-
-	while (penetrate_count > 0 && damage >= 1.0f)
-	{
-		const auto length_remaining = data->flRange - length;
-		auto end = src + direction * length_remaining;
-
-		Ray_t r;
-		r.Init(src, end);
-		g_EngineTrace->TraceRay(r, MASK_SHOT_HULL | CONTENTS_HITBOX, filter, &enter_trace);
-
-		if (enter_trace.fraction == 1.f && !point)
-			break;
-
-		if (point && (enter_trace.fraction == 1.f ||
-			(start - enter_trace.endpos).Length() > (start - pos).Length()))
-			return wall_pen{
-				scale_damage(target, damage, data->flArmorRatio, HITGROUP_HEAD, false),
-				HITBOX_HEAD, HITGROUP_HEAD };
-
-		auto end_extended = end + direction * 40.f;
-
-		//clip_ray_to_player(src, end_extended, MASK_SHOT_HULL | CONTENTS_HITBOX, target, filter, &enter_trace);
-		ClipTraceToPlayers(src, end_extended, MASK_SHOT_HULL | CONTENTS_HITBOX, filter, &enter_trace);
-
-		length += enter_trace.fraction * length_remaining;
-		damage *= std::powf(data->flRangeModifier, length * .002f);
-
-		if (enter_trace.hitgroup <= 7 && enter_trace.hitgroup > 0)
-		{
-			if (!enter_trace.hit_entity || enter_trace.hit_entity != target)
-				break;
-
-			// we have reached our target!
-			return wall_pen{
-				scale_damage(target, damage, data->flArmorRatio, enter_trace.hitgroup, false),
-				enter_trace.hitbox, enter_trace.hitgroup };
+			if (!(enter_trace->surface.flags & SURF_NODRAW))
+				continue;
 		}
 
-		const auto enter_surface = g_PhysSurface->GetSurfaceData(enter_trace.surface.surfaceProps);
-
-		if (!enter_surface || enter_surface->game.flPenetrationModifier < .1f)
-			break;
-
-		if (!handle_bullet_penetration(data, enter_trace, src, direction, penetrate_count, damage, data->flPenetration))
-			break;
+		if (exit_trace->plane.normal.Dot(dir) <= 1.f) {
+			out -= (dir * (exit_trace->fraction * 4.f));
+			return true;
+		}
 	}
 
-	// nothing found
-	return std::nullopt;
+	return false;
 }
 
-bool CTraceSystem::handle_bullet_penetration(CCSWeaponInfo* weapon_data, trace_t& enter_trace,
-	Vector& eye_position, const Vector direction, int& penetrate_count, float& current_damage, const float penetration_power)
-{
-	static const auto ff_damage_reduction_bullets = g_CVar->FindVar("ff_damage_reduction_bullets");
-	static const auto ff_damage_bullet_penetration = g_CVar->FindVar("ff_damage_bullet_penetration");
 
-	const auto damage_reduction_bullets = ff_damage_reduction_bullets->GetFloat();
-	const auto damage_bullet_penetration = ff_damage_bullet_penetration->GetFloat();
+void WallPeneration::ClipTraceToPlayer(const Vector& start, const Vector& end, uint32_t mask, CGameTrace* tr, C_BasePlayer* player, float min) {
+	Vector     pos, to, dir, on_ray;
+	float      len, range_along, range;
+	Ray_t      ray;
+	CGameTrace new_trace;
 
-	trace_t exit_trace{};
-	auto enemy = reinterpret_cast<C_BasePlayer*>(enter_trace.hit_entity);
-	const auto enter_surface_data = g_PhysSurface->GetSurfaceData(enter_trace.surface.surfaceProps);
-	const int enter_material = enter_surface_data->game.material;
+	// reference: https://github.com/alliedmodders/hl2sdk/blob/3957adff10fe20d38a62fa8c018340bf2618742b/game/shared/util_shared.h#L381
 
-	const auto enter_surf_penetration_modifier = enter_surface_data->game.flPenetrationModifier;
-	float final_damage_modifier, combined_penetration_modifier;
-	const bool is_solid_surf = enter_trace.contents >> 3 & CONTENTS_SOLID;
-	const bool is_light_surf = enter_trace.surface.flags >> 7 & SURF_LIGHT;
+	// set some local vars.
+	pos = player->m_vecOrigin() + ((player->m_vecMins() + player->m_vecMaxs()) * 0.5f);
+	to = pos - start;
+	dir = start - end;
+	len = dir.Normalize();
+	range_along = dir.Dot(to);
 
-	if ((!penetrate_count && !is_light_surf && !is_solid_surf && enter_material != char_tex_grate && enter_material != char_tex_glass)
-		|| weapon_data->flPenetration <= 0.f
-		|| (!trace_to_exit(enter_trace, exit_trace, enter_trace.endpos, direction, weapon_data->iDamage > 10000.f)
-			&& !(g_EngineTrace->GetPointContents(enter_trace.endpos, MASK_SHOT_HULL) & MASK_SHOT_HULL)))
-		return false;
+	// off start point.
+	if (range_along < 0.f)
+		range = -(to).Length();
 
-	const auto exit_surface_data = g_PhysSurface->GetSurfaceData(exit_trace.surface.surfaceProps);
-	const auto exit_material = exit_surface_data->game.material;
-	const auto exit_surf_penetration_modifier = exit_surface_data->game.flPenetrationModifier;
+	// off end point.
+	else if (range_along > len)
+		range = -(pos - end).Length();
 
-	if (enter_material == char_tex_grate || enter_material == char_tex_glass)
-	{
-		combined_penetration_modifier = 3.f;
-		final_damage_modifier = 0.05f;
+	// within ray bounds.
+	else {
+		on_ray = start + (dir * range_along);
+		range = (pos - on_ray).Length();
 	}
-	else if (is_solid_surf || is_light_surf)
-	{
-		combined_penetration_modifier = 1.f;
-		final_damage_modifier = 0.16f;
+
+	if (range <= 60.f) {
+		// clip to player.
+		ray.Init(start, end);
+		g_EngineTrace->ClipRayToEntity(ray, mask, player, &new_trace);
+
+		if (tr->fraction > new_trace.fraction)
+			*tr = new_trace;
 	}
-	else if (enter_material == char_tex_flesh && (enemy->m_iTeamNum() == g_LocalPlayer->m_iTeamNum() && damage_reduction_bullets == 0.f))
-	{
-		if (damage_bullet_penetration == 0.f)
+}
+
+bool WallPeneration::Run(PenetrationInput_t* in, PenetrationOutput_t* out) {
+	static CTraceFilterSimple filter{};
+
+	int			  pen{ 4 }, enter_material, exit_material;
+	float		  damage, penetration, penetration_mod, player_damage, remaining, trace_len{}, total_pen_mod, damage_mod, modifier, damage_lost;
+	surfacedata_t *enter_surface, *exit_surface;
+	bool		  nodraw, grate;
+	Vector		  start, dir, end, pen_end;
+	CGameTrace	  trace, exit_trace;
+	C_BaseCombatWeapon  * oWeapon;
+	CCSWeaponInfo       * oWeaponInfo;
+
+
+	// if we are tracing from our local player perspective.
+	if (in->m_from == g_LocalPlayer) {
+		oWeapon     = g_LocalPlayer->m_hActiveWeapon();
+		oWeaponInfo = g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData();
+		start       = g_LocalPlayer->GetShootPos();
+	}
+
+	// not local player.
+	else {
+		oWeapon = in->m_from->m_hActiveWeapon();
+		if (!oWeapon)
 			return false;
 
-		combined_penetration_modifier = damage_bullet_penetration;
-		final_damage_modifier = 0.16f;
-	}
-	else
-	{
-		combined_penetration_modifier = (enter_surf_penetration_modifier + exit_surf_penetration_modifier) / 2.f;
-		final_damage_modifier = 0.16f;
-	}
+		// get weapon info.
+		// maybe wrong.
+		oWeaponInfo = oWeapon->GetCSWeaponData();
+		if (!oWeaponInfo)
+			return false;
 
-	if (enter_material == exit_material)
-	{
-		if (exit_material == char_tex_cardboard || exit_material == char_tex_wood)
-			combined_penetration_modifier = 3.f;
-		else if (exit_material == char_tex_plastic)
-			combined_penetration_modifier = 2.f;
+		// set trace start.
+		start = in->m_from->GetShootPos();
 	}
 
-	auto thickness = (exit_trace.endpos - enter_trace.endpos).Length();
-	thickness *= thickness;
-	thickness *= fmaxf(0.f, 1.0f / combined_penetration_modifier);
-	thickness /= 24.0f;
+	// get some weapon data.
+	damage = (float)oWeaponInfo->iDamage;
+	penetration = oWeaponInfo->flPenetration;
 
-	const auto lost_damage = fmaxf(0.0f, current_damage * final_damage_modifier + fmaxf(0.f, 1.0f / combined_penetration_modifier)
-		* 3.0f * fmaxf(0.0f, 3.0f / penetration_power) * 1.25f + thickness);
+	// used later in calculations.
+	penetration_mod = std::max(0.f, (3.f / penetration) * 1.25f);
 
-	if (lost_damage > current_damage)
-		return false;
+	// get direction to end point.
+	dir = (in->m_pos - start).Normalized();
 
-	if (lost_damage > 0.f)
-		current_damage -= lost_damage;
+	// setup trace filter for later.
+	filter.SetPassEntity(in->m_from);
+	// filter.SetPassEntity2( nullptr );
 
-	if (current_damage < 1.f)
-		return false;
+	while (damage > 0.f) {
+		// calculating remaining len.
+		remaining = oWeaponInfo->flRange - trace_len;
 
-	eye_position = exit_trace.endpos;
-	--penetrate_count;
-	return true;
-}
+		// set trace end.
+		end = start + (dir * remaining);
 
-bool BreakableEntity(IClientEntity* entity)
-{
-	ClientClass* pClass = (ClientClass*)entity->GetClientClass();
+		// setup ray and trace.
+		// TODO; use UTIL_TraceLineIgnoreTwoEntities?
+		Ray_t rRay;
+		rRay.Init(start, end);
+		g_EngineTrace->TraceRay(rRay, MASK_SHOT | CONTENTS_HITBOX, (ITraceFilter *)&filter, &trace);
 
-	if (!pClass)
-		return false;
+		// we didn't hit anything.
+		if (trace.fraction == 1.f)
+			return false;
 
-	if (pClass == nullptr)
-		return false;
+		// check for player hitboxes extending outside their collision bounds.
+		// if no target is passed we clip the trace to a specific player, otherwise we clip the trace to any player.
+		if (in->m_target)
+			ClipTraceToPlayer(start, end + (dir * 40.f), MASK_SHOT | CONTENTS_HITBOX, &trace, in->m_target, -60.f);
 
-	return pClass->m_ClassID == ClassId_CBreakableProp || pClass->m_ClassID == ClassId_CBreakableSurface;
-}
+		else
+			UTIL_ClipTraceToPlayers(start, end + (dir * 40.f), MASK_SHOT | CONTENTS_HITBOX, (ITraceFilter*)&filter, &trace, -60.f);
 
-bool CTraceSystem::trace_to_exit(CGameTrace& enterTrace, CGameTrace& exitTrace, Vector startPosition, Vector direction, const bool is_local)
-{
-	Vector start, end;
-	float maxDistance = 90.f, rayExtension = 4.f, currentDistance = 0;
-	int firstContents = 0;
+		// calculate damage based on the distance the bullet traveled.
+		trace_len += trace.fraction * remaining;
+		damage *= std::pow(oWeaponInfo->flRangeModifier, trace_len / 500.f);
 
-	while (currentDistance <= maxDistance)
-	{
-		currentDistance += rayExtension;
+		// if a target was passed.
+		if (in->m_target) {
 
-		start = startPosition + direction * currentDistance;
+			// validate that we hit the target we aimed for.
+			if (trace.hit_entity && trace.hit_entity == in->m_target && IsValidHitgroup(trace.hitgroup)) {
+				int group = (oWeapon->m_Item().m_iItemDefinitionIndex() == WEAPON_ZEUS) ? HITGROUP_GENERIC : trace.hitgroup;
 
-		if (!firstContents)
-			firstContents = g_EngineTrace->GetPointContents(start, MASK_SHOT_HULL | CONTENTS_HITBOX, nullptr);
+				// scale damage based on the hitgroup we hit.
+				player_damage = Scale(in->m_target, damage, oWeaponInfo->flArmorRatio, group);
 
-		int pointContents = g_EngineTrace->GetPointContents(start, MASK_SHOT_HULL | CONTENTS_HITBOX, nullptr);
+				// set result data for when we hit a player.
+				out->m_pen = pen != 4;
+				out->m_hitgroup = group;
+				out->m_damage = player_damage;
+				out->m_target = in->m_target;
 
-		if (!(pointContents & MASK_SHOT_HULL) || pointContents & CONTENTS_HITBOX && pointContents != firstContents)
-		{
-			end = start - (direction * rayExtension);
+				// non-penetrate damage.
+				if (pen == 4)
+					return player_damage >= in->m_damage;
 
-			Ray_t r;
-			r.Init(start, end);
-			CTraceFilter filter;
-			filter.pSkip = g_LocalPlayer;
-			g_EngineTrace->TraceRay(r, MASK_SHOT_HULL | CONTENTS_HITBOX, &filter, &exitTrace);
-
-			if (exitTrace.startsolid && exitTrace.surface.flags & SURF_HITBOX)
-			{
-				Ray_t r;
-				r.Init(start, startPosition);
-				CTraceFilter filter;
-				filter.pSkip = exitTrace.hit_entity;
-				g_EngineTrace->TraceRay(r, MASK_SHOT_HULL, &filter, &exitTrace);
-
-
-				if (exitTrace.DidHit() && !exitTrace.startsolid)
-				{
-					start = exitTrace.endpos;
-					return true;
-				}
-				continue;
-			}
-
-			if (exitTrace.DidHit() && !exitTrace.startsolid)
-			{
-
-				if (BreakableEntity(enterTrace.hit_entity) && BreakableEntity(exitTrace.hit_entity))
-					return true;
-
-				if (enterTrace.surface.flags & SURF_NODRAW || !(exitTrace.surface.flags & SURF_NODRAW) && (exitTrace.plane.normal.Dot(direction) <= 1.f))
-				{
-					float multAmount = exitTrace.fraction * 4.f;
-					start -= direction * multAmount;
-					return true;
-				}
-
-				continue;
-			}
-
-			if (!exitTrace.DidHit() || exitTrace.startsolid)
-			{
-				if (enterTrace.DidHitNonWorldEntity() && BreakableEntity(enterTrace.hit_entity))
-				{
-					exitTrace = enterTrace;
-					exitTrace.endpos = start + direction;
-					return true;
-				}
-
-				continue;
+				// penetration damage.
+				return player_damage >= in->m_damage_pen;
 			}
 		}
+
+		// no target was passed, check for any player hit or just get final damage done.
+		else {
+			out->m_pen = pen != 4;
+
+			// todo - dex; team checks / other checks / etc.
+			if (trace.hit_entity && trace.hit_entity->IsPlayer() && IsValidHitgroup(trace.hitgroup)) {
+				int group = (oWeapon->m_Item().m_iItemDefinitionIndex() == WEAPON_ZEUS) ? HITGROUP_GENERIC : trace.hitgroup;
+
+				player_damage = Scale(trace.hit_entity->Ass< C_BasePlayer* >(), damage, oWeaponInfo->flArmorRatio, group);
+
+				// set result data for when we hit a player.
+				out->m_hitgroup = group;
+				out->m_damage   = player_damage;
+				out->m_target   = trace.hit_entity->Ass< C_BasePlayer* >();
+
+				// non-penetrate damage.
+				if (pen == 4)
+					return player_damage >= in->m_damage;
+
+				// penetration damage.
+				return player_damage >= in->m_damage_pen;
+			}
+
+			// if we've reached here then we didn't hit a player yet, set damage and hitgroup.
+			out->m_damage = damage;
+		}
+
+		// don't run pen code if it's not wanted.
+		if (!in->m_can_pen)
+			return false;
+
+		// get surface at entry point.
+		enter_surface = g_PhysSurface->GetSurfaceData(trace.surface.surfaceProps);
+
+		// this happens when we're too far away from a surface and can penetrate walls or the surface's pen modifier is too low.
+		if ((trace_len > 3000.f && penetration) || enter_surface->game.flPenetrationModifier < 0.1f)
+			return false;
+
+		// store data about surface flags / contents.
+		nodraw = (trace.surface.flags & SURF_NODRAW);
+		grate = (trace.contents & CONTENTS_GRATE);
+
+		// get material at entry point.
+		enter_material = enter_surface->game.material;
+
+		// note - dex; some extra stuff the game does.
+		if (!pen && !nodraw && !grate && enter_material != CHAR_TEX_GRATE && enter_material != CHAR_TEX_GLASS)
+			return false;
+
+		// no more pen.
+		if (penetration <= 0.f || pen <= 0)
+			return false;
+
+		// try to penetrate object.
+		if (!TraceToExit(trace.endpos, dir, pen_end, &trace, &exit_trace)) {
+			if (!(g_EngineTrace->GetPointContents(pen_end, MASK_SHOT_HULL) & MASK_SHOT_HULL))
+				return false;
+		}
+
+		// get surface / material at exit point.
+		exit_surface  = g_PhysSurface->GetSurfaceData(exit_trace.surface.surfaceProps);
+		exit_material = exit_surface->game.material;
+
+		// todo - dex; check for CHAR_TEX_FLESH and ff_damage_bullet_penetration / ff_damage_reduction_bullets convars?
+		//             also need to check !isbasecombatweapon too.
+		if (enter_material == CHAR_TEX_GRATE || enter_material == CHAR_TEX_GLASS) {
+			total_pen_mod = 3.f;
+			damage_mod = 0.05f;
+		}
+
+		else if (nodraw || grate) {
+			total_pen_mod = 1.f;
+			damage_mod = 0.16f;
+		}
+
+		else {
+			total_pen_mod = (enter_surface->game.flPenetrationModifier + exit_surface->game.flPenetrationModifier) * 0.5f;
+			damage_mod = 0.16f;
+		}
+
+		// thin metals, wood and plastic get a penetration bonus.
+		if (enter_material == exit_material) {
+			if (exit_material == CHAR_TEX_CARDBOARD || exit_material == CHAR_TEX_WOOD)
+				total_pen_mod = 3.f;
+
+			else if (exit_material == CHAR_TEX_PLASTIC)
+				total_pen_mod = 2.f;
+		}
+
+		// set some local vars.
+		trace_len = (exit_trace.endpos - trace.endpos).LengthSqr();
+		modifier = fmaxf(1.f / total_pen_mod, 0.f);
+
+		// this calculates how much damage we've lost depending on thickness of the wall, our penetration, damage, and the modifiers set earlier
+		damage_lost = fmaxf(
+			((modifier * trace_len) / 24.f)
+			+ ((damage * damage_mod)
+				+ (fmaxf(3.75 / penetration, 0.f) * 3.f * modifier)), 0.f);
+
+		// subtract from damage.
+		damage -= std::max(0.f, damage_lost);
+		if (damage < 1.f)
+			return false;
+
+		// set new start pos for successive trace.
+		start = exit_trace.endpos;
+
+		// decrement pen.
+		--pen;
 	}
 
 	return false;
 }
 
-float CTraceSystem::scale_damage(C_BasePlayer* target, float damage, const float weapon_armor_ratio, int hitgroup, bool is_zeus)
-{
-	const auto is_armored = [&]() -> bool
-	{
-		if (target->m_ArmorValue() > 0.f)
-		{
-			switch (hitgroup)
-			{
-			case HITGROUP_GENERIC:
-			case HITGROUP_CHEST:
-			case HITGROUP_STOMACH:
-			case HITGROUP_LEFTARM:
-			case HITGROUP_RIGHTARM:
-				return true;
-			case HITGROUP_HEAD:
-				return target->m_bHasHelmet();
-			default:
-				break;
-			}
-		}
-
-		return false;
-	};
-
-	if (!is_zeus)
-		switch (hitgroup)
-		{
-		case HITGROUP_HEAD:
-			if (target->m_bHasHeavyArmor())
-				damage = (damage * 4.f) * .5f;
-			else
-				damage *= 4.f;
-			break;
-		case HITGROUP_STOMACH:
-			damage *= 1.25f;
-			break;
-		case HITGROUP_LEFTLEG:
-		case HITGROUP_RIGHTLEG:
-			damage *= .75f;
-			break;
-		default:
-			break;
-		}
-
-	if (is_armored())
-	{
-		auto modifier = 1.f, armor_bonus_ratio = .5f, armor_ratio = weapon_armor_ratio * .5f;
-
-		if (target->m_bHasHeavyArmor())
-		{
-			armor_bonus_ratio = 0.33f;
-			armor_ratio = (weapon_armor_ratio * 0.5f) * 0.5f;
-			modifier = 0.33f;
-		}
-
-		auto new_damage = damage * armor_ratio;
-
-		if (target->m_bHasHeavyArmor())
-			new_damage *= 0.85f;
-
-		if ((damage - damage * armor_ratio) * (modifier * armor_bonus_ratio) > target->m_ArmorValue())
-			new_damage = damage - target->m_ArmorValue() / armor_bonus_ratio;
-
-		damage = new_damage;
-
-	}
-
-	return damage;
-}
-
-float CAutoWall::get_estimated_point_damage(Vector point) {
-
-	if (!g_LocalPlayer)
-		return -1.f;
-
-	fbdata bullet;
-	auto filter = CTraceFilter();
-	filter.pSkip = g_LocalPlayer;
-
-	bullet.filter = &filter;
-	bullet.start = g_LocalPlayer->GetEyePos();
-	bullet.end = point;
-	bullet.pos = g_LocalPlayer->GetEyePos();
-	Math::AngleVectors(Math::CalcAngle(bullet.start, point), bullet.dir);
-	bullet.trace.startpos = bullet.start;
-	bullet.trace.endpos = point;
-
-	auto wep = g_LocalPlayer->m_hActiveWeapon();
-	if (!wep)
-		return 0.f;
-
-	bullet.walls = 2;
-	bullet.thickness = 0.f;
-
-	auto inf = wep->GetCSWeaponData();
-	if (!inf)
-		return 0.f;
-
-	bullet.damage = inf->iDamage;
-
-	Ray_t ray;
-	ray.Init(bullet.start, bullet.end);
-
-	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &bullet.trace);
-
-	if (bullet.trace.fraction == 1.f)
-		return 0.f;
-
-	if (handle_bullet_penetration(inf, bullet))
-		return bullet.damage;
-
-	return 0.f;
-}
+// Feel the snakeware
+// Recoded autowall
+// Credit's : @Snake
