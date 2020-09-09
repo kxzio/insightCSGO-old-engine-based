@@ -200,7 +200,52 @@ float C_BaseCombatWeapon::GetInaccuracy()
 {
 	return CallVFunction<float(__thiscall*)(void*)>(this, 482 + VALVE_ADDED_FUNCS)(this);
 }
+Vector C_BaseCombatWeapon::CalculateSpread(int seed, float inaccuracy, float spread, bool revolver2 = false) {
+	CCSWeaponInfo* wep_info;
+	auto        item_def_index = g_LocalPlayer->m_hActiveWeapon();
+	float      recoil_index, r1, r2, r3, r4, s1, c1, s2, c2;
 
+	// if we have no bullets, we have no spread.
+	wep_info = g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData();
+	if (!wep_info || !wep_info->iBullets)
+		return { };
+
+	// get some data for later.
+
+	// generate needed floats.
+
+	RandomSeed((seed & 0xff) + 1);
+
+	// revolver secondary spread.
+	if (item_def_index->GetCSWeaponData()->bIsRevolver) {
+		r1 = 1.f - (r1 * r1);
+		r3 = 1.f - (r3 * r3);
+	}
+
+	// negev spread.
+	else if (item_def_index->GetCSWeaponData()->iWeaponType == WEAPONTYPE_MACHINEGUN && recoil_index < 3.f) {
+		for (int i{ 3 }; i > recoil_index; --i) {
+			r1 *= r1;
+			r3 *= r3;
+		}
+
+		r1 = 1.f - r1;
+		r3 = 1.f - r3;
+	}
+
+	// get needed sine / cosine values.
+	c1 = std::cos(r2);
+	c2 = std::cos(r4);
+	s1 = std::sin(r2);
+	s2 = std::sin(r4);
+
+	// calculate spread vector.
+	return {
+		(c1 * (r1 * inaccuracy)) + (c2 * (r3 * spread)),
+		(s1 * (r1 * inaccuracy)) + (s2 * (r3 * spread)),
+		0.f
+	};
+}
 float C_BaseCombatWeapon::GetSpread()
 {
 	return CallVFunction<float(__thiscall*)(void*)>(this, 452 + VALVE_ADDED_FUNCS)(this);

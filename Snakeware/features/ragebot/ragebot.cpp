@@ -68,37 +68,29 @@ void AimPlayer::SetupHitboxes(Animation* record, bool history) {
 	}
 
 	// prefer, always.
-	if (g_cfg[XOR("rage_aimbot_baim_prefer_always")].get<bool>())
-		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
-
-	// prefer, lethal.
-	if (g_cfg[XOR("rage_aimbot_baim_prefer_lethal")].get<bool>())
+	if (g_Options.ragebot_baim_if_lethal[curGroup])
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::LETHAL });
 
-	// prefer, lethal x2.
-	if (g_cfg[XOR("rage_aimbot_baim_prefer_lethalx2")].get<bool>())
-		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::LETHAL2 });
-
 	// prefer, in air.
-	if (g_cfg[XOR("rage_aimbot_baim_prefer_air")].get<bool>() && !(record->flags & FL_ONGROUND))
+	if (g_Options.ragebot_baim_in_air[curGroup] && !(record->flags & FL_ONGROUND))
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
 
 	bool only{ false };
 
 	// only, always.
-	if (g_cfg[XOR("rage_aimbot_baim_always")].get<bool>() || g_aimbot.m_force_body) {
+	if (g_Options.ragebot_adaptive_baim[curGroup] || Aimbot::Get().m_force_body) {
 		only = true;
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
 	}
 
 	// only, health.
-	if (g_cfg[XOR("rage_aimbot_baim_always_health")].get<bool>() && record->player->m_iHealth() <= (int)g_cfg[XOR("rage_aimbot_baim_always_health_amount")].get<int>()) {
+	if (g_Options.ragebot_baim_if_hp[curGroup] && record->player->m_iHealth() <= 30) {
 		only = true;
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
 	}
 
 	// only, in air.
-	if (g_cfg[XOR("rage_aimbot_baim_always_air")].get<bool>() && !(record->flags & FL_ONGROUND)) {
+	if (g_Options.ragebot_baim_in_air[curGroup] && !(record->flags & FL_ONGROUND)) {
 		only = true;
 		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER });
 	}
@@ -112,11 +104,11 @@ void AimPlayer::SetupHitboxes(Animation* record, bool history) {
 
 	if (g_Options.ragebot_hitbox[0][curGroup]) {
 
-		if (g_cfg[XOR("rage_aimbot_prefer_safepoint")].get<bool>()) {
+		if (g_Options.ragebot_safepoint) {
 			m_hitboxes.push_back({ HITBOX_HEAD, HitscanMode::PREFER_SAFEPOINT, true });
 		}
 
-		m_hitboxes.push_back({ HITBOX_HEAD, g_cfg[XOR("rage_aimbot_prefered_hitbox")].get<int>() == 0 ? HitscanMode::PREFER : HitscanMode::NORMAL, false });
+		m_hitboxes.push_back({ HITBOX_HEAD, HitscanMode::NORMAL, false });
 	}
 
 	if (g_Options.ragebot_hitbox[1][curGroup]) {
@@ -124,7 +116,7 @@ void AimPlayer::SetupHitboxes(Animation* record, bool history) {
 	}
 
 	if (g_Options.ragebot_hitbox[2][curGroup]) {
-		if (g_cfg[XOR("rage_aimbot_prefer_safepoint")].get<bool>()) {
+		if (g_Options.ragebot_safepoint) {
 			m_hitboxes.push_back({ HITBOX_LOWER_CHEST, HitscanMode::PREFER_SAFEPOINT, true });
 		}
 
@@ -134,13 +126,13 @@ void AimPlayer::SetupHitboxes(Animation* record, bool history) {
 	}
 	if (g_Options.ragebot_hitbox[3][curGroup]) {
 
-		if (g_cfg[XOR("rage_aimbot_prefer_safepoint")].get<bool>()) {
+		if (g_Options.ragebot_safepoint) {
 			m_hitboxes.push_back({ HITBOX_PELVIS, HitscanMode::PREFER_SAFEPOINT, true });
 			m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::PREFER_SAFEPOINT, true });
 		}
 
-		m_hitboxes.push_back({ HITBOX_PELVIS, g_cfg[XOR("rage_aimbot_prefered_hitbox")].get<int>() == 2 ? HitscanMode::PREFER : HitscanMode::NORMAL, false });
-		m_hitboxes.push_back({ HITBOX_STOMACH, g_cfg[XOR("rage_aimbot_prefered_hitbox")].get<int>() == 1 ? HitscanMode::PREFER : HitscanMode::NORMAL, false });
+		m_hitboxes.push_back({ HITBOX_PELVIS, HitscanMode::NORMAL, false });
+		m_hitboxes.push_back({ HITBOX_STOMACH, HitscanMode::NORMAL, false });
 	}
 
 	if (g_Options.ragebot_hitbox[4][curGroup] && !ignore_limbs) {
@@ -213,32 +205,32 @@ void Aimbot::Think(CUserCmd * cmd) {
 	if (!g_Options.ragebot_enabled)
 		return;
 
-	if (!g_cl.m_weapon_fire)
+	if (!g_LocalPlayer->m_hActiveWeapon()->CanFire())
 		StripAttack();
 
 	// animation silent aim, prevent the ticks with the shot in it to become the tick that gets processed.
 	// we can do this by always choking the tick before we are able to shoot.
-	bool revolver = g_cl.m_weapon_id == REVOLVER && g_cl.m_revolver_cock != 0;
 
-	// one tick before being able to shoot.
-	if (revolver && g_cl.m_revolver_cock > 0 && g_cl.m_revolver_cock == g_cl.m_revolver_query) {
-		//*g_cl.m_packet = false;
-		return;
-	}
+	//REVOLVER DELETED
+	//REVOLVER DELETED
+	//REVOLVER DELETED  
+	//REVOLVER DELETED
+
+	//reasonj - lazy and false
 
 	// we have a normal weapon or a non cocking revolver
 	// choke if its the processing tick.
 
 
 	// no point in aimbotting if we cannot fire this tick.
-	if (!g_cl.m_weapon_fire)
+	if (!g_LocalPlayer->m_hActiveWeapon()->CanFire())
 		return;
 
 	// setup bones for all valid targets.
 	for (int i{ 1 }; i <= g_GlobalVars->maxClients; ++i) {
 		auto player = static_cast<C_BasePlayer*> (g_EntityList->GetClientEntity(i));
 
-		if (!player || player == g_cl.m_local)
+		if (!player || player == g_LocalPlayer)
 			continue;
 
 		if (!IsValidTarget(player))
@@ -254,14 +246,40 @@ void Aimbot::Think(CUserCmd * cmd) {
 
 
 	// scan available targets... if we even have any.
-	find();
+	find(cmd);
 
 	// finally set data when shooting.
 	apply();
 }
 
+void Autostope(CUserCmd cmd)
+{
+	auto weapon = g_LocalPlayer->m_hActiveWeapon().Get();
 
-void Aimbot::find() {
+	if (!g_Options.ragebot_autostop & g_LocalPlayer->m_fFlags() & FL_ONGROUND)
+		return;
+
+	if (weapon->IsGrenade() || weapon->IsKnife()) //we dont wanna stop if we holdin a knife, grenade or zeus
+		return;
+
+	Vector Velocity = g_LocalPlayer->m_vecVelocity();
+	static float Speed = 300.f;
+
+	Vector Direction;
+	Vector RealView;
+	Math::VectorAngles(Velocity, QAngle(Direction.x, Direction.y, Direction.z));
+	g_EngineClient->GetViewAngles(&QAngle(RealView.x, RealView.y, RealView.z));
+	Direction.y = RealView.y - Direction.y;
+
+	Vector Forward;
+	Math::AngleVectors(QAngle(Direction.x, Direction.y, Direction.z), Forward);
+	Vector NegativeDirection = Forward * -Speed;
+
+	cmd.forwardmove = NegativeDirection.x;
+	cmd.sidemove = NegativeDirection.y;
+}
+
+void Aimbot::find(CUserCmd* cmd) {
 	struct BestTarget_t { C_BasePlayer* player; AimPlayer* target; Vector pos; float damage; float min_damage; Animation* record; int hitbox; };
 
 	Vector       tmp_pos;
@@ -333,7 +351,7 @@ void Aimbot::find() {
 	// verify our target and set needed data.
 	if (best.player && best.record && best.target) {
 		// calculate aim angle.
-		Math::VectorAngles(best.pos - g_cl.m_shoot_pos, m_angle);
+		Math::VectorAngles(best.pos - g_LocalPlayer->GetShootPos(), m_angle);
 
 		// set member vars.
 		m_target = best.player;
@@ -353,43 +371,40 @@ void Aimbot::find() {
 			m_shoot_next_tick = false;
 		}
 
-		bool on = g_cfg[XOR("rage_aimbot_hitchance")].get<bool>() && g_cfg[XOR("cheat_mode")].get<int>() == 0;
-		bool hit = (!g_cl.m_ground && g_cl.m_weapon_id == SSG08 && g_cl.m_weapon && g_cl.m_weapon->GetInaccuracy() < 0.009f) || (on && CheckHitchance(m_target, m_angle, m_record, best.hitbox));
+		bool on = g_Options.ragebot_hitchance[curGroup] == 0;
+		bool hit = ((cmd->buttons && IN_JUMP) && g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData()->iWeaponType == WEAPONTYPE_SNIPER_RIFLE && g_LocalPlayer->IsWeapon() && g_LocalPlayer->m_hActiveWeapon()->GetInaccuracy() < 0.009f) || (on && CheckHitchance(m_target, m_angle, m_record, best.hitbox));
 
 		// set autostop shit.
-		m_stop = !(g_cl.m_buttons & IN_JUMP) && !hit;
+		m_stop = !(cmd->buttons && IN_JUMP) && !hit;
 
-		g_movement.AutoStop();
+		//autostop
+		Autostope(*cmd);
 
 		// if we can scope.
-		bool can_scope = g_cl.m_weapon && g_cl.m_weapon->m_zoomLevel() == 0 && g_cl.m_weapon->IsZoomable(true);
+		bool can_scope = g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData()->iWeaponType == WEAPONTYPE_SNIPER_RIFLE && g_LocalPlayer->m_hActiveWeapon()->m_zoomLevel() == 0;
 
 		if (can_scope) {
 			// always.
-			if (g_cfg[XOR("rage_aimbot_auto_scope")].get<int>() == 1) {
-				g_cl.m_cmd->m_buttons |= IN_ATTACK2;
+			if (g_Options.ragebot_autoscope) {
+				cmd->buttons |= IN_ATTACK2;
 				return;
 			}
 
-			// hitchance fail.
-			else if (g_cfg[XOR("rage_aimbot_auto_scope")].get<int>() == 2 && on && !hit) {
-				g_cl.m_cmd->m_buttons |= IN_ATTACK2;
-				return;
-			}
 		}
 
 		if (hit || !on) {
 
+			bool yadolbeb = true;
 			// these conditions are so cancer
-			if (!g_tickbase.m_shift_data.m_should_attempt_shift || ((!g_cfg[XOR("rage_exploit_charged")].get<bool>() || g_cl.m_goal_shift == 13 || g_tickbase.m_shift_data.m_should_disable) && g_tickbase.m_shift_data.m_should_attempt_shift) || (g_cfg[XOR("rage_exploit_charged")].get<bool>() && g_cl.m_goal_shift == 7 && g_tickbase.m_shift_data.m_should_attempt_shift && !(g_tickbase.m_shift_data.m_prepare_recharge || g_tickbase.m_shift_data.m_did_shift_before && !g_tickbase.m_shift_data.m_should_be_ready))) {
-				if (g_cfg[XOR("rage_aimbot_autofire")].get<bool>()) {
+			if (yadolbeb) {
+				if (g_Options.ragebot_autofire) {
 					// right click attack.
-					if (g_cfg[XOR("cheat_mode")].get<int>() == 1 && g_cl.m_weapon_id == REVOLVER)
-						g_cl.m_cmd->m_buttons |= IN_ATTACK2;
+					if (g_LocalPlayer->m_hActiveWeapon()->GetCSWeaponData()->bIsRevolver)
+						 cmd->buttons |= IN_ATTACK2;
 
 					// left click attack.
 					else
-						g_cl.m_cmd->m_buttons |= IN_ATTACK;
+						cmd->buttons |= IN_ATTACK;
 
 					m_old_target = best.target;
 				}
@@ -516,7 +531,6 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 			// side is more optimal then center.
 			points.push_back({ center.x, center.y, center.z + d1 });
 
-			if (g_cfg[XOR("rage_aimbot_multipoint_feet")].get<bool>()) {
 				// get point offset relative to center point
 				// and factor in hitbox scale.
 				float d2 = (bbox->bbmax.x - center.x) * scale;
@@ -527,7 +541,7 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 
 				// toe.
 				points.push_back({ center.x + d3, center.y, center.z });
-			}
+			
 		}
 
 		// nothing to do here we are done.
@@ -560,7 +574,9 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 			// add center.
 			points.push_back(center);
 
-			if (g_cfg[XOR("rage_aimbot_multipoint_head")].get<bool>()) {
+			bool pizda = true;
+
+			if (pizda) {
 				// rotation matrix 45 degrees.
 				// https://math.stackexchange.com/questions/383321/rotating-x-y-points-45-degrees
 				// std::cos( deg_to_rad( 45.f ) )
@@ -602,8 +618,7 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 			points.push_back(center);
 
 			// back.
-			if (g_cfg[XOR("rage_aimbot_multipoint_stomach")].get<bool>())
-				points.push_back({ center.x, bbox->bbmax.y - br, center.z });
+			points.push_back({ center.x, bbox->bbmax.y - br, center.z });
 		}
 
 		else if (index == HITBOX_PELVIS || index == HITBOX_UPPER_CHEST) {
@@ -617,7 +632,6 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 			points.push_back(center);
 
 			// add extra point on back.
-			if (g_cfg[XOR("rage_aimbot_multipoint_chest")].get<bool>())
 				points.push_back({ center.x, bbox->bbmax.y - r, center.z });
 		}
 
@@ -626,7 +640,6 @@ bool AimPlayer::SetupHitboxPoints(Animation* record, BoneArray* bones, int index
 			points.push_back(center);
 
 			// half bottom.
-			if (g_cfg[XOR("rage_aimbot_multipoint_legs")].get<bool>())
 				points.push_back({ bbox->bbmax.x - (bbox->m_flRadius / 2.f), bbox->bbmax.y, bbox->bbmax.z });
 		}
 
@@ -668,29 +681,22 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 	if (!m_matrix)
 		return false;
 
-	if (g_cl.m_weapon_id == ZEUS) {
-		dmg = pendmg = hp;
-		pen = true;
-	}
 
 	else {
-		dmg = g_cfg[XOR("rage_aimbot_minimal_damage")].get<float>();
-		if (g_cfg[XOR("rage_aimbot_minimal_damage_hp")].get<bool>())
-			dmg = std::ceil((dmg / 100.f) * hp);
+		dmg = g_Options.ragebot_vis_mindamage[curGroup];
 
-		if (g_aimbot.m_override_damage) {
-			dmg = g_cfg[XOR("rage_aimbot_minimal_damage_override")].get<float>();
+
+		if (GetAsyncKeyState(g_Options.ragebot_mindamage_override_key)) {
+			dmg = g_Options.ragebot_mindamage_override[curGroup];
 		}
 
-		pendmg = g_cfg[XOR("rage_aimbot_penetration_minimal_damage")].get<float>();
-		if (g_cfg[XOR("rage_aimbot_penetration_minimal_damage_hp")].get<bool>())
-			pendmg = std::ceil((pendmg / 100.f) * hp);
+		pendmg = g_Options.ragebot_mindamage[1];
 
-		if (g_aimbot.m_override_damage && g_cfg[XOR("rage_aimbot_minimal_damage_override_pen")].get<bool>()) {
-			pendmg = g_cfg[XOR("rage_aimbot_minimal_damage_override")].get<float>();
+		if (GetAsyncKeyState(g_Options.ragebot_mindamage_override_key)) {
+			pendmg = g_Options.ragebot_mindamage_override[curGroup];
 		}
 
-		pen = g_cfg[XOR("rage_aimbot_penetration")].get<bool>();
+		pen = g_Options.ragebot_autowall;
 	}
 
 	// backup player
@@ -727,7 +733,7 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 			in.m_damage_pen = pendmg;
 			in.m_can_pen    = pen;
 			in.m_target     = record->player;
-			in.m_from       = g_cl.m_local;
+			in.m_from       = g_LocalPlayer;
 			in.m_pos        = point;
 
 			// ignore mindmg.
@@ -737,10 +743,10 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 			WallPeneration::PenetrationOutput_t out;
 
 			// tests for intersection with unresolved matrix, if it returns true, the point should (!) be a safe point
-			bool is_safepoint = g_aimbot.CanHit(g_cl.m_shoot_pos, point, record, it.m_index, true, record->m_pMatrix);
+			bool is_safepoint = Aimbot::Get().CanHit(g_LocalPlayer->GetShootPos(), point, record, it.m_index, true, record->m_pMatrix);
 
 			// we only want safe pointable (nice word) hitboxes when forcing..
-			if (!is_safepoint && g_aimbot.m_force_safepoint)
+			if (!is_safepoint && g_Options.ragebot_safepoint)
 				continue;
 
 			//	if (is_safepoint && it.m_safepoint)
@@ -831,7 +837,7 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 		damage = scan.m_damage;
 		hitbox = scan.m_hitbox;
 
-		g_AimbBot.m_current_matrix = m_matrix;
+		Aimbot::Get().m_current_matrix = m_matrix;
 
 		return true;
 	}

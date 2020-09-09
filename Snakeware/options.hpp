@@ -445,6 +445,7 @@ public:
 	OPTION(int, ragebot_max_miss, 5);
 	bool            ragebot_hitbox[8][9] = { false, false, false, false, false, false, false, false };
 	bool            ragebot_baimhitbox[8][9] = { false, false, false, false, false, false, false, false };
+	bool ragebot_safepoint;
 	//
 	// RAGEBOT
 	// 

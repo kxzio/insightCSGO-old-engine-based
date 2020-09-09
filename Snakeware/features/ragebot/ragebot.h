@@ -87,7 +87,7 @@ public:
 	}
 };
 
-class Aimbot {
+class Aimbot : public Singleton <Aimbot> {
 private:
 	struct target_t {
 		C_BasePlayer* m_player;
@@ -177,7 +177,7 @@ public:
 	void init();
 	void StripAttack();
 	void Think(CUserCmd * cmd);
-	void find();
+	void find(CUserCmd* cmd);
 	bool CheckHitchance(C_BasePlayer* player, const QAngle& angle, Animation* record, int hitbox);
 	bool SelectTarget(Animation* record, const Vector& aim, float damage);
 	void apply();

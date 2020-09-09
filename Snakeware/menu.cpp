@@ -209,6 +209,7 @@ void RenderRageBotTab()
 			//ImGui::Checkbox("Backtrack", &g_Options.ragebot_position_adj); ëîìàåò ðàãå
 			//ImGui::Checkbox("Back-shoot priority", &g_Options.ragebot_backshoot); íåòó 
 			ImGui::CheckboxEX("Silent", &g_Options.ragebot_silent, "NoVisible aim");
+			
 			ImGui::CheckboxEX("Remove recoil", &g_Options.ragebot_remove_recoil, "No recoil with rifles");
 			//ImGui::SliderInt("Max misses :", &g_Options.ragebot_max_miss, 0, 10);  íÿìà â ðàãå
 			//ImGui::Text("Key's");
@@ -216,6 +217,28 @@ void RenderRageBotTab()
 			//ImGui::Hotkey("##13Keybind", &g_Options.ragebot_baim_key, ImVec2(150, 20)); íåòó â ðàãå
 			//ImGui::Text("Damage override key :");
 			//ImGuiEX::Hotkey("test", &g_Options.ragebot_mindamage_override_key, ImVec2(150, 20));
+			if (ImGui::BeginCombo("Body Prefering", "Select", 0)) {
+				//prevValue = "Hitscan";
+				const char* hitboxes[] = { "Always", "Neck", "Chest" , "Body","Arms","Legs" };
+				std::vector<std::string> vec;
+				for (size_t i = 0; i < IM_ARRAYSIZE(hitboxes); i++)
+				{
+					ImGui::Selectable(hitboxes[i], &g_Options.ragebot_hitbox[i][curGroup], ImGuiSelectableFlags_::ImGuiSelectableFlags_DontClosePopups);
+					if (g_Options.ragebot_hitbox[i][curGroup])
+						vec.push_back(hitboxes[i]);
+				}
+
+				for (size_t i = 0; i < vec.size(); i++)
+				{
+					if (vec.size() == 1)
+						prevValue += vec.at(i);
+					else if (i != vec.size())
+						prevValue += vec.at(i) + ", ";
+					else
+						prevValue += vec.at(i);
+				}
+				ImGui::EndCombo();
+			}
 			ImGui::Text("AutoPeek");
 			ImGuiEX::Hotkey("##Auto-peek", &g_Options.autopeek_key, ImVec2(150, 20));
 

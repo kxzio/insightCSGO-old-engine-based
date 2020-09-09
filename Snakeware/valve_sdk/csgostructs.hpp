@@ -272,6 +272,7 @@ public:
 	bool IsSniper ();
 	bool IsGun    ();
 	float GetInaccuracy();
+	Vector CalculateSpread(int seed, float inaccuracy, float spread, bool revolver2 = false);
 	float GetSpread();
 
 	float Hitchance();
