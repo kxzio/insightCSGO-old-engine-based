@@ -58,7 +58,7 @@
     <IntDir>$(SolutionDir)build\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>D:\DOWNLOAD\dxsdk\dxsdk\Include;C:\Users\Эдик\Desktop\Photoshop\Effectsss\SDK\Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(DXSDK_DIR)Include</IncludePath>
     <TargetName>snakewarev1</TargetName>
-    <LibraryPath>D:\DOWNLOAD\dxsdk\dxsdk\Lib\x86;C:\Users\Эдик\Desktop\Photoshop\Effectsss\SDK\Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(DXSDK_DIR)Lib\x86</LibraryPath>
+    <LibraryPath>C:\Users\Эдик\Desktop\snakeware-release-\Snakeware\helpers\det0ur-hook;D:\DOWNLOAD\dxsdk\dxsdk\Lib\x86;C:\Users\Эдик\Desktop\Photoshop\Effectsss\SDK\Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(NETFXKitsDir)Lib\um\x86;$(DXSDK_DIR)Lib\x86</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -125,6 +125,7 @@
     <ClCompile Include="features\tickbase-shift\tickbase-exploits.cpp" />
     <ClCompile Include="features\visuals.cpp" />
     <ClCompile Include="grenade-prediction\grenade-prediction.cpp" />
+    <ClCompile Include="helpers\det0ur-hook\detour_hook.cpp" />
     <ClCompile Include="helpers\input.cpp" />
     <ClCompile Include="helpers\math.cpp" />
     <ClCompile Include="helpers\utils.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="fonts\Sound_bite.h" />
     <ClInclude Include="grenade-prediction\grenade-prediction.h" />
     <ClInclude Include="helpers\det0ur-hook\det0urs-hook.h" />
+    <ClInclude Include="helpers\det0ur-hook\detour_hook.h" />
     <ClInclude Include="helpers\intrincics.h" />
     <ClInclude Include="helpers\memory-address.h" />
     <ClInclude Include="helpers\unique_vector.h" />
@@ -301,6 +303,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="imgui\LICENSE.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="helpers\det0ur-hook\detours.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

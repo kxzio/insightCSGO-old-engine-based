@@ -42,19 +42,13 @@ int32_t originalShotsMissed = 0;
 int32_t tickHitPlayer = 0;
 int32_t tickHitWall = 0;
 
-#include "helpers/det0ur-hook/det0urs-hook.h"
-
-
 
 namespace Hooks {
 
 	void Initialize() {
 
 		INetChannel* g_NetChannel = (INetChannel*)g_ClientState->m_NetChannel;
-		
 
-		static const auto vtPlayer = Utils::PatternScan("client.dll", "55 8B EC 83 E4 F8 83 EC 18 56 57 8B F9 89 7C 24 0C") + 0x47;
-		DWORD* ex_pointer = (DWORD*)*(DWORD*)(vtPlayer);
 
 		net_hook.setup(g_NetChannel);
 		prediction_hook.setup(g_Prediction);
@@ -607,7 +601,7 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); 
+			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); // ragebot call
 			Miscellaneous::Get().AutoPeek(cmd);
 			Miscellaneous::Get().SlowWalk(cmd);
 			Miscellaneous::Get().SilentWalk(cmd);

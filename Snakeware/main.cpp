@@ -6,6 +6,7 @@
 #include "helpers/input.hpp"
 
 #include "hooks.hpp"
+#include "helpers/det0ur-hook/detour_hook.h"
 #include "menu.hpp"
 #include "options.hpp"
 #include "render.hpp"
@@ -37,8 +38,8 @@ DWORD WINAPI OnDllAttach(LPVOID base)
 		Render::Get().Initialize();
         Menu::Get().Initialize();
 
-        Hooks::Initialize();
-
+        Hooks::Initialize      ();
+		DetourHooks::Initialize();
       
 
         // Menu Toggle
@@ -77,6 +78,7 @@ BOOL WINAPI OnDllDetach()
 
 	
     Hooks::Shutdown();
+	DetourHooks::Shutdown();
 
     Menu::Get().Shutdown();
     return TRUE;
