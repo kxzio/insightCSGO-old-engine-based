@@ -281,6 +281,11 @@ public:
 	CUtlVector<IRefCounted*>& m_CustomMaterials();
 	bool* m_bCustomMaterialInitialized();
 
+
+	__forceinline Vector CalculateSpread(int seed, bool revolver2 = false) {
+		return CalculateSpread(seed, GetInaccuracy(), GetSpread(), revolver2);
+	}
+
 };
 class CBoneAccessor;
 class CBoneCache;
@@ -504,7 +509,6 @@ public:
 	bool          CanSeePlayer(C_BasePlayer* player, const Vector& pos);
 	bool CanSeePoint(Vector endpos);
 	void WeaponShootPos(Vector& pos);
-	Vector CalculateSpread(int seed, float inaccuracy, float spread, bool revolver2);
 	Vector GetShootPos();
 	void UpdateClientSideAnimation();
 

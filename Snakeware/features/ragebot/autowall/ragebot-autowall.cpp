@@ -36,12 +36,7 @@
 
 
 
-bool IsValidHitgroup(int index) {
-	if ((index >= HITGROUP_HEAD && index <= HITGROUP_RIGHTLEG) || index == HITGROUP_GEAR)
-		return true;
 
-	return false;
-}
 
 float WallPeneration::Scale(C_BasePlayer* player, float damage, float armor_ratio, int hitgroup) {
 
@@ -360,7 +355,7 @@ bool WallPeneration::Run(PenetrationInput_t* in, PenetrationOutput_t* out) {
 		if (in->m_target) {
 
 			// validate that we hit the target we aimed for.
-			if (trace.hit_entity && trace.hit_entity == in->m_target && IsValidHitgroup(trace.hitgroup)) {
+			if (trace.hit_entity && trace.hit_entity == in->m_target && Utils::IsValidHitgroup(trace.hitgroup)) {
 				int group = (oWeapon->m_Item().m_iItemDefinitionIndex() == WEAPON_ZEUS) ? HITGROUP_GENERIC : trace.hitgroup;
 
 				// scale damage based on the hitgroup we hit.

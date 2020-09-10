@@ -417,7 +417,7 @@ public:
 	OPTION(bool, ragebot_autofire, false);
 	OPTION(bool, ragebot_hitchance_consider, false);
 	OPTION(bool, ragebot_position_adj, false);
-	OPTION(bool, ragebot_backshoot, false);
+	OPTION(bool, ragebot_limit_fov, false);
 	bool  ragebot_alternative_hitchance[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_delayshot[9] = { false, false, false, false, false, false, false, false };
 	bool  ragebot_autoscope;
@@ -441,6 +441,7 @@ public:
 	float ragebot_baim_if_hp[9] = { 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f, 0.f };
 	OPTION(int, ragebot_mindamage_override_key, 22);
 	OPTION(int, ragebot_baim_key, 23);
+	OPTION(int, ragebot_selection, 1);
 	OPTION(int, ragebot_fov, 228);
 	OPTION(int, ragebot_max_miss, 5);
 	bool            ragebot_hitbox[8][9] = { false, false, false, false, false, false, false, false };

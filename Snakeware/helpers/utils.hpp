@@ -10,7 +10,7 @@ namespace Utils {
 	int   EpochTime();
 	float Map(float val, float start1, float stop1, float start2, float stop2);
 	float Rad(float deg);
-
+	bool IsValidHitgroup(int index);
 	bool LineGoesThroughSmoke(Vector vStartPos, Vector vEndPos);
 	float ServerTime(CUserCmd * m_pcmd = nullptr);
 	bool HitChance(float hitchance);

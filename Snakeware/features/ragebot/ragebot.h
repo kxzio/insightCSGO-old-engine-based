@@ -3,7 +3,7 @@
 #include "../../engine-prediction/engine-prediction.h"
 #include "lagcompensation/lag-compensation.h"
 #include "animation-system/animation-system.h"
-#include <time.h>
+#include <vector>
 #include "../../helpers/unique_vector.h"
 
 // Recode ragebot from supremacy & onetap.idb
@@ -174,6 +174,7 @@ public:
 
 public:
 	// aimbot.
+	
 	void init();
 	void StripAttack();
 	void Think(CUserCmd * cmd);

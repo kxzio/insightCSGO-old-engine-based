@@ -1,9 +1,9 @@
 #include "ragebot.h"
 #include "../../helpers/math.hpp"
-#include "../../helpers/utils.hpp"
 #include "../../options.hpp"
 #include "autowall/ragebot-autowall.h"
 #include "resolver/resolver.h"
+
 
 // Recoded rageb0t 
 // From supremacy/pandora & onetap.idb
@@ -432,7 +432,7 @@ bool Aimbot::CheckHitchance(C_BasePlayer* player, const QAngle& angle, Animation
 	if (m_shoot_next_tick)
 		HITCHANCE_MAX += 25;
 
-	size_t     total_hits{ }, needed_hits{ (size_t)std::ceil((hitchance * SEED_MAX) / HITCHANCE_MAX) };
+	size_t  total_hits{ }, needed_hits{ (size_t)std::ceil((hitchance * SEED_MAX) / HITCHANCE_MAX) };
 
 	// get needed directional vectors.
 	Math::AngleQ(angle, &fwd, &right, &up);
@@ -845,11 +845,155 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 	return false;
 }
 
+bool Aimbot::SelectTarget(Animation* record, const Vector& aim, float damage) {
+	float dist, fov, height;
+	int   hp;
+
+	// fov check.
+	if (g_Options.ragebot_limit_fov) {
+		// if out of fov, retn false.
+		if (math::GetFOV(g_cl.m_view_angles, g_cl.m_shoot_pos, aim) > g_cfg[XOR("rage_aimbot_limit_fov_amount")].get<float>())
+			return false;
+	}
+
+	switch (g_Options.ragebot_selection) {
+
+		// distance.
+	case 0:
+		dist = g_LocalPlayer->GetShootPos().DistTo(record->origin);
+
+		if (dist < m_best_dist) {
+			m_best_dist = dist;
+			return true;
+		}
+
+		break;
+
+		// crosshair.
+	case 1:
+		fov = Math::GetFOV(g_cl.m_view_angles, g_cl.m_shoot_pos, aim);
+
+		if (fov < m_best_fov) {
+			m_best_fov = fov;
+			return true;
+		}
+
+		break;
+
+		// damage.
+	case 2:
+		if (damage > m_best_damage) {
+			m_best_damage = damage;
+			return true;
+		}
+
+		break;
+
+		// lowest hp.
+	case 3:
+		// fix for retarded servers?
+		hp = std::min(100, record->player->m_iHealth());
+
+		if (hp < m_best_hp) {
+			m_best_hp = hp;
+			return true;
+		}
+
+		break;
+
+		// least lag.
+	case 4:
+		if (record->lag < m_best_lag) {
+			m_best_lag = record->lag;
+			return true;
+		}
+
+		break;
+
+		// height.
+	case 5:
+		height = record->origin.z - g_LocalPlayer->m_vecOrigin().z;
+
+		if (height < m_best_height) {
+			m_best_height = height;
+			return true;
+		}
+
+		break;
+
+	default:
+		return false;
+	}
+
+	return false;
+}
+
+void Aimbot::apply() {
+	bool attack, attack2;
+
+	// attack states.
+	attack = (mcmd->buttons & IN_ATTACK);
+	attack2 = (g_LocalPlayer->m_hActiveWeapon()->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER && mcmd->buttons & IN_ATTACK2);
+
+	// ensure we're attacking.
+	if (attack || attack2) {
+		// dont choke every shot.
+		Snakeware::bSendPacket = true;
+
+		if (m_shoot_next_tick)
+			m_shoot_next_tick = false;
+
+		if (m_target) {
+			// make sure to aim at un-interpolated data.
+			// do this so BacktrackEntity selects the exact record.
+			if (m_record)
+				mcmd->tick_count = TIME_TO_TICKS(m_record->sim_time + g_cl.m_lerp);
+
+			// set angles to target.
+			    mcmd->viewangles = m_angle;
+
+			// if not silent aim, apply the viewangles.
+			if (!g_Options.ragebot_silent)
+				g_EngineClient->SetViewAngles(&m_angle);
+
+			//g_visuals.DrawHitboxMatrix(m_record, colors::white, 10.f);
+		}
+
+		// nospread.
+		if (g_Options.ragebot_remove_recoil && g_menu.main.config.mode.get() == 1)
+			NoSpread();
+
+		// norecoil.
+		if (g_menu.main.aimbot.norecoil.get())
+			mcmd->viewangles -= g_LocalPlayer->m_aimPunchAngle() * g_csgo.weapon_recoil_scale->GetFloat();
+
+		// store fired shot.
+		//g_shots.OnShotFire( m_target ? m_target : nullptr, m_target ? m_damage : -1.f, g_cl.m_weapon_info->m_bullets, m_target ? m_record : nullptr );
+
+		// set that we fired.
+		Snakeware::OnShot = true; // g_cl.m_shot = true;
+	}
+}
+
+void Aimbot::NoSpread() {
+	bool    attack2;
+	Vector  spread, forward, right, up, dir;
+	auto    weapon = g_LocalPlayer->m_hActiveWeapon();
+	if (!mcmd || !weapon)
+		return;
+
+	// revolver state.
+	attack2 = (weapon->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER && (mcmd->buttons & IN_ATTACK2));
+
+	// get spread.
+	spread = weapon->CalculateSpread(mcmd->random_seed, attack2);
+
+	// compensate.
+	mcmd->viewangles -= { -Math::Rad2Deg(std::atan(spread.Length2D())), 0.f, Math::Rad2Deg(std::atan2(spread.x, spread.y)) };
+}
 
 
-
-bool Aimbot::CanHit(Vector start, Vector end, Animation* record, int box, bool in_shot, BoneArray* bones)
-{
+bool Aimbot::CanHit(Vector start, Vector end, Animation* record, int box, bool in_shot, BoneArray* bones) {
 	if (!record || !record->player)
 		return false;
 
@@ -923,9 +1067,10 @@ bool Aimbot::CanHit(Vector start, Vector end, Animation* record, int box, bool i
 		record->player->get_bone_cache() = backup_cache;
 
 		// check if we hit a valid player / hitgroup on the player and increment total hits.
-		if (tr.hit_entity == record->player && game::IsValidHitgroup(tr.hitgroup))
+		if (tr.hit_entity == record->player && Utils::IsValidHitgroup(tr.hitgroup))
 			return true;
 	}
 
 	return false;
 }
+

@@ -30,6 +30,7 @@ namespace Math
 		i >>= 1;
 		return *(float*)&i;
 	}
+	constexpr float Rad2Deg(float val);
 	Vector VectorRotate(Vector& in1, Vector& in2);
 	void AngleMatrix(const QAngle &angles, matrix3x4_t& matrix);
 	void ConcatTransforms(const matrix3x4_t& in1, const matrix3x4_t& in2, matrix3x4_t& out);

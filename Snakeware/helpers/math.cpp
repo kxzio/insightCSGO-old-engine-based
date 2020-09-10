@@ -2,6 +2,9 @@
 #include "intrincics.h"
 namespace Math
 {
+	constexpr float Rad2Deg(float val) {
+		return val * (180.f / pi);
+	}
 	float Magnitude(Vector a)
 	{
 		return sqrt((a.x * a.x) + (a.y * a.y));

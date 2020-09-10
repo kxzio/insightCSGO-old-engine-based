@@ -22,6 +22,9 @@ struct Animation
 	bool valid{}, has_anim_state{}, is_backtrackable{};
 	alignas(16) matrix3x4_t bones[128];
 
+	BoneArray mMatrix       [128];
+	BoneArray mResolveMatrix[128];
+
 	bool dormant{};
 	Vector velocity;
 	Vector origin;

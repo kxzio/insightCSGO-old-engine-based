@@ -33,6 +33,12 @@ namespace Utils {
 	float Rad(float deg) {
 		return deg * M_PI / 180.f;
 	}
+	bool IsValidHitgroup(int index) {
+		if ((index >= HITGROUP_HEAD && index <= HITGROUP_RIGHTLEG) || index == HITGROUP_GEAR)
+			return true;
+
+		return false;
+	}
 
 	bool LineGoesThroughSmoke(Vector vStartPos, Vector vEndPos) {
 

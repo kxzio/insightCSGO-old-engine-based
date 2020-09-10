@@ -105,6 +105,9 @@ namespace Hooks {
 		engine_hook.hook_index(27, hkIsConnected);
 		engine_hook.hook_index(32, hkIsBoxVisible);
 
+		hlclient_hook.hook_index(index::LvLPreEntity, hkLvLPreEntity);
+		hlclient_hook.hook_index(index::LvLShutdown, hkLvLShutdown);
+
 		const char* message = "Cheat injected";
 		
 		PlayerHurtEvent::Get().RegisterSelf();
@@ -779,6 +782,35 @@ namespace Hooks {
 		return oDoPostScreenEffects(g_ClientMode, edx, a1);
 	}
 	//--------------------------------------------------------------------------------
+
+
+
+
+	void __fastcall hkLvLPreEntity (const char* map) {
+	
+		// hooked LevelPreEntity by @Snake
+		static auto preEnt = hlclient_hook.get_original<decltype(&hkLvLPreEntity)>(index::LvLPreEntity);
+
+		Aimbot::Get().reset(); // Reset aimbot spot's..
+		 
+		preEnt(map);
+		// Detour sig someone...
+	}
+
+
+	void  __fastcall hkLvLShutdown() {
+		// hooked LevelShutodwn by @Snake
+		static auto downEnt = hlclient_hook.get_original<decltype(&hkLvLShutdown)>(index::LvLShutdown);
+
+		Aimbot::Get().reset(); // Reset aimbot spot's..
+
+		downEnt();
+	}
+
+
+
+
+	//-------------------------------------------------------------------------------
 	void __fastcall hkFrameStageNotify(void* _this, int edx, ClientFrameStage_t stage)
 	{
 		static auto ofunc = hlclient_hook.get_original<decltype(&hkFrameStageNotify)>(index::FrameStageNotify);
