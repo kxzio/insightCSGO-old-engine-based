@@ -453,6 +453,20 @@ namespace Math
 			res = 0.f;
 		return res;
 	}
+
+	float GetFOVv2(const QAngle &view_angles, const Vector &start, const vec3_t &end) {
+		vec3_t dir, fw;
+
+		// get direction and normalize.
+		dir = (end - start).normalized();
+
+		// get the forward direction vector of the view angles.
+		AngleVectors(view_angles, &fw);
+
+		// get the angle between the view angles forward directional vector and the target location.
+		return std::max(rad_to_deg(std::acos(fw.dot(dir))), 0.f);
+	}
+
 	//--------------------------------------------------------------------------------
 	float NormalizeYaw(float yaw)
 	{
@@ -873,6 +887,19 @@ namespace Math
 			return 0.f;
 		}
 	}
+	int RandomInt(int min, int max)
+	{
+		static auto ranInt = reinterpret_cast<float(*)(float, float)>(GetProcAddress(GetModuleHandleW(L"vstdlib.dll"), "RandomInt"));
+		if (ranInt)
+		{
+			return ranInt(min, max);
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
 	void FixAngles(QAngle & angle)
 	{
 	

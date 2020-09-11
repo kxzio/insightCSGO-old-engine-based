@@ -31,6 +31,8 @@ public :
 
 	void UpdateResolve      (Animation * record,C_BasePlayer * player);
 
+	void ResolvePoses       (C_BasePlayer * player, Animation * record);
+
 
 
 	void ResolvePitch       (C_BasePlayer* player);

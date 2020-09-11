@@ -117,6 +117,7 @@ public:
 
 	AimPlayer* m_old_target;
 	CUserCmd * mcmd;
+	QAngle     engineAng;
 	// target selection stuff.
 	float m_best_dist;
 	float m_best_fov;

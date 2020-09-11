@@ -848,11 +848,14 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 bool Aimbot::SelectTarget(Animation* record, const Vector& aim, float damage) {
 	float dist, fov, height;
 	int   hp;
+	g_EngineClient->GetViewAngles(&engineAng);
+
 
 	// fov check.
+	// Ну вообще в getFov в аргументах был еще aim ну да похуй
 	if (g_Options.ragebot_limit_fov) {
 		// if out of fov, retn false.
-		if (math::GetFOV(g_cl.m_view_angles, g_cl.m_shoot_pos, aim) > g_cfg[XOR("rage_aimbot_limit_fov_amount")].get<float>())
+		if (Math::GetFOV(engineAng, Math::CalcAngle(g_LocalPlayer->GetEyePos(), aim)) > g_Options.ragebot_fov) // // Pizdec...
 			return false;
 	}
 
@@ -871,7 +874,7 @@ bool Aimbot::SelectTarget(Animation* record, const Vector& aim, float damage) {
 
 		// crosshair.
 	case 1:
-		fov = Math::GetFOV(g_cl.m_view_angles, g_cl.m_shoot_pos, aim);
+		fov = Math::GetFOV(engineAng, Math::CalcAngle(g_LocalPlayer->GetEyePos(), aim)); // Pizdec...
 
 		if (fov < m_best_fov) {
 			m_best_fov = fov;

@@ -40,6 +40,7 @@ namespace Math
 	void vector_i_rotate(Vector in1, matrix3x4_t in2, Vector& out);
 	bool intersect_line_with_bb(Vector& start, Vector& end, Vector& min, Vector& max);
 	float RandomFloat(float min, float max);
+	int RandomInt(int min, int max);
 	void FixAngles(QAngle &angle);
 	QAngle NormalizeAng(QAngle angs);
 	void AngleVectors2(const Vector& angles, Vector& forward);

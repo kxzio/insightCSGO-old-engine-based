@@ -302,3 +302,16 @@ void Resolver::UpdateResolve(Animation * record ,C_BasePlayer* player) {
 	//GetFlags(player, record);
 	
 }
+
+void Resolver::ResolvePoses(C_BasePlayer* player, Animation* record) {
+	// only do this bs when in air.
+	if ( !(record->flags & FL_ONGROUND) || !(player->m_fFlags() & FL_ONGROUND)) {
+		// ang = pose min + pose val x ( pose range )
+
+		// lean_yaw
+		player->m_flPoseParameter()[2] = Math::RandomInt(0, 4) * 0.25f;
+
+		// body_yaw
+		player->m_flPoseParameter()[11] = Math::RandomInt(1, 3) * 0.25f;
+	}
+}
