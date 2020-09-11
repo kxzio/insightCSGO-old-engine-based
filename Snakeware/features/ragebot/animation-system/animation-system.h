@@ -11,7 +11,7 @@ struct Animation
 	explicit Animation(C_BasePlayer* player, QAngle last_reliable_angle);
 	void Restore(C_BasePlayer* player) const;
 	void Apply(C_BasePlayer* player) const;
-	void BulidServerBones(C_BasePlayer* player);
+	void BulidServerBones(C_BasePlayer* player, bool Resolve = false);
 
 	bool is_valid(float range, float max_unlag);
 	

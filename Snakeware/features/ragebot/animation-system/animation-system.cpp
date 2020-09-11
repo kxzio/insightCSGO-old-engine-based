@@ -101,7 +101,7 @@ void Animation::Apply(C_BasePlayer* player) const {
 	}*/
 }
 
-void Animation::BulidServerBones(C_BasePlayer* player) {
+void Animation::BulidServerBones(C_BasePlayer* player,bool Resolve) {
 
 	const auto backup_occlusion_flags      = player->GetOcclusionFlags();
 	const auto backup_occlusion_framecount = player->GetOcclusionFramecount();
@@ -116,20 +116,28 @@ void Animation::BulidServerBones(C_BasePlayer* player) {
 	jiggle_bones->SetValue(0);
 		
 
-	player->GetEffect () |= 0x8;
+	player->GetEffect () |= C_BaseEntity::E_F_NOINTERP;
 
-	const auto backup_bone_array   = player->GetBoneArrayForWrite();
 
-	player->GetBoneArrayForWrite() = bones;
+	player->InvalidateBoneCache();
+	if (!Resolve) {
+		player->SetupBones(mMatrix, 128, 0x7FF00, g_GlobalVars->curtime);
+	}
+	else {
+		const auto backup_bone = player->GetBoneArrayForWrite();
+		player->GetBoneArrayForWrite() = mResolveMatrix;
 
-	player->SetupBones (nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
+		player->SetupBones(nullptr, -1, 0x7FF00, g_GlobalVars->curtime);
 
-	player->GetBoneArrayForWrite()   = backup_bone_array;
+		player->GetBoneArrayForWrite() = backup_bone;
+	}
+
+
 	player->GetOcclusionFlags()      = backup_occlusion_flags;
 	player->GetOcclusionFramecount() = backup_occlusion_framecount;
 	jiggle_bones->SetValue(old_jiggle_bones_value);
 
-	player->GetEffect () &= ~0x8;
+	player->GetEffect () &= ~C_BaseEntity::E_F_NOINTERP;
 }
 
 
@@ -337,7 +345,7 @@ void Animations::UpdatePlayerAnimations() {
 		//UpdatePlayerIndex(player, &record);
 
 		// use uninterpolated data to generate our bone matrix
-		record.BulidServerBones(player);
+		record.BulidServerBones(player, true);
 
 		// restore correctly synced values
 		backup.Restore(player);

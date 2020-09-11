@@ -23,39 +23,5 @@ namespace DetourHooks  {
 		DetourRemove ((PBYTE)originalStandartBlendingRules,     (PBYTE)hkStandardBlendingRules);
 	}
 
-	void __fastcall hkUpdateClientsideAnimation(C_BasePlayer * player, uint32_t) {
-		
-
-		if (!player || !player->IsAlive())
-			return originalUpdateClientsideAnimation(player);
-
-		// Ну вообще я видел тут реализацию с массивом по типу UpdateAnims[player->EntIndex()] 
-		if (Snakeware::UpdateAnims) {
-
-            originalUpdateClientsideAnimation(player);
-
-		}
-	}
-
-
-
-
-	void _fastcall hkDoExtraBoneProcessing(void * ecx, uint32_t, studiohdr_t * hdr, Vector * pos, Quaternion * q, const matrix3x4_t & matrix, uint8_t * bone_computed, void * context) {
-
-		return;
-	}
-
-	void _fastcall hkStandardBlendingRules(C_BasePlayer * player, uint32_t, studiohdr_t * hdr, Vector * pos, Quaternion * q, const float time, int mask)
-	{
-		if (!player)
-			return originalStandartBlendingRules(player, hdr, pos, q, time, mask);
-
-		*(int*)((DWORD)player + 0x2698) = 0;
-		mask |= 0x200;
-
-		player->GetEffect() |= C_BaseEntity::E_F_NOINTERP;
-		originalStandartBlendingRules(player, hdr, pos, q, time, mask);
-		player->GetEffect() &= ~C_BaseEntity::E_F_NOINTERP;
-	}
 
 };
