@@ -4,6 +4,7 @@
 #include <iterator>
 #include "../Protected/enginer.h"
 #include "../helpers/memory-address.h"
+
 //increase it if valve added some funcs to baseentity :lillulmoa:
 constexpr auto VALVE_ADDED_FUNCS = 0ull;
 
@@ -558,11 +559,12 @@ bool C_BasePlayer::CanSeePoint(Vector endpos)
 	g_EngineTrace->TraceRay(ray, MASK_SHOT | CONTENTS_GRATE, &filter, &tr);
 	return tr.fraction > 0.97f;
 }
-void C_BasePlayer::WeaponShootPos(Vector& pos)
-{
+
+void C_BasePlayer::WeaponShootPos(Vector& pos) {
 	
 	return CallVFunction<void(__thiscall*)(void*, Vector&)>(this, 284)(this, pos);
 }
+
 
 Vector C_BaseCombatWeapon::CalculateSpread(int seed, float inaccuracy, float spread, bool revolver2 = false) {
 	CCSWeaponInfo *wep_info;
@@ -589,7 +591,7 @@ Vector C_BaseCombatWeapon::CalculateSpread(int seed, float inaccuracy, float spr
 
 
 	if (weapon_accuracy_shotgun_spread_patterns->GetInt() > 0) {
-		g_csgo.GetShotgunSpread(item_def_index, 0, 0 /*bullet_i*/ + wep_info->iBullets * recoil_index, &r4, &r3);
+		 GetShotgunSpread(item_def_index, 0, 0 /*bullet_i*/ + wep_info->iBullets * recoil_index, &r4, &r3);
 	}
 	else {
 		r3 = Math::RandomFloat(0.f, 1.f);

@@ -73,7 +73,8 @@ namespace Interfaces
 		g_RenderBeam = *(IViewRenderBeams**)(Utils::PatternScan(client, "A1 ? ? ? ? FF 10 A1 ? ? ? ? B9") + 0x1); // new
 		g_LocalPlayer     =       *(C_LocalPlayer*)(Utils::PatternScan(client, "8B 0D ? ? ? ? 83 FF FF 74 07") + 2);
 		g_WeaponSystem    = *(IWeaponSystem * *)(Utils::PatternScan(client, "8B 35 ? ? ? ? FF 10 0F B7 C0") + 2);
-		RandomSeed = reinterpret_cast<decltype(RandomSeed)>(GetProcAddress(pidoras, "RandomSeed"));
+		RandomSeed        = reinterpret_cast<decltype(RandomSeed)>(GetProcAddress(pidoras, "RandomSeed"));
+		GetShotgunSpread  = (GetShotgunSpread_t)(Utils::PatternScan(client, "55 8B EC 83 EC 10 56 8B 75 08 8D") + 1); // need for speed
     }
 
     void Dump()

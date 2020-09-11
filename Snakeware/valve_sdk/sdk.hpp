@@ -55,10 +55,11 @@
 
 struct IDirect3DDevice9;
 
-namespace Interfaces
-{
+namespace Interfaces  {
     void Initialize();
     void Dump();
+
+	
 }
 
 inline IVEngineClient*       g_EngineClient   = nullptr;
@@ -93,6 +94,8 @@ inline IMemAlloc*            g_MemAlloc       = nullptr;
 inline IViewRenderBeams*     g_RenderBeam     = nullptr;
 inline ILocalize *           g_Localize       = nullptr;
 
+using GetShotgunSpread_t = void(__stdcall*)(int, int, int, float*, float*);
+GetShotgunSpread_t       GetShotgunSpread;
 
 template<typename... Args>
 void ConMsg(const char* pMsg, Args... args)
