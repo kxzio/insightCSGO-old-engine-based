@@ -360,7 +360,7 @@ void Aimbot::find(CUserCmd* cmd) {
 		m_record = best.record;
 		m_hitbox = best.hitbox;
 
-		m_current_matrix = best.record->m_pMatrix_Resolved;
+		m_current_matrix = best.record->mResolveMatrix;
 
 		if (!m_target || m_target->IsDormant() || m_record->dormant || !m_current_matrix || !m_damage || !(m_damage >= best.min_damage || (m_damage <= best.min_damage && m_damage >= m_target->m_iHealth())))
 			return;
@@ -676,7 +676,7 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 	// get player hp.
 	int hp = std::min(100, record->player->m_iHealth());
 
-	m_matrix = record->m_pMatrix_Resolved;
+	m_matrix = record->mResolveMatrix;
 
 	if (!m_matrix)
 		return false;
@@ -743,7 +743,7 @@ bool AimPlayer::GetBestAimPosition(Vector& aim, float& damage, int& hitbox, Anim
 			WallPeneration::PenetrationOutput_t out;
 
 			// tests for intersection with unresolved matrix, if it returns true, the point should (!) be a safe point
-			bool is_safepoint = Aimbot::Get().CanHit(g_LocalPlayer->GetShootPos(), point, record, it.m_index, true, record->m_pMatrix);
+			bool is_safepoint = Aimbot::Get().CanHit(g_LocalPlayer->GetShootPos(), point, record, it.m_index, true, record->mMatrix);
 
 			// we only want safe pointable (nice word) hitboxes when forcing..
 			if (!is_safepoint && g_Options.ragebot_safepoint)
@@ -928,13 +928,27 @@ bool Aimbot::SelectTarget(Animation* record, const Vector& aim, float damage) {
 	return false;
 }
 
+float Aimbot::GetLerpTime () {
+	static auto cl_interp     = g_CVar->FindVar("cl_interp");
+	static auto cl_updaterate = g_CVar->FindVar("cl_updaterate");
+	const auto update_rate    = cl_updaterate->GetInt();
+	const auto interp_ratio   = cl_interp->GetFloat();
+
+	auto lerp = interp_ratio / update_rate;
+
+	if (lerp <= interp_ratio)
+		lerp = interp_ratio;
+
+	return lerp;
+}
+
 void Aimbot::apply() {
 	bool attack, attack2;
 
 	// attack states.
 	attack = (mcmd->buttons & IN_ATTACK);
 	attack2 = (g_LocalPlayer->m_hActiveWeapon()->m_Item().m_iItemDefinitionIndex() == WEAPON_REVOLVER && mcmd->buttons & IN_ATTACK2);
-
+	auto weapon_recoil_scale = g_CVar->FindVar("weapon_recoil_scale");
 	// ensure we're attacking.
 	if (attack || attack2) {
 		// dont choke every shot.
@@ -947,7 +961,7 @@ void Aimbot::apply() {
 			// make sure to aim at un-interpolated data.
 			// do this so BacktrackEntity selects the exact record.
 			if (m_record)
-				mcmd->tick_count = TIME_TO_TICKS(m_record->sim_time + g_cl.m_lerp);
+				mcmd->tick_count = TIME_TO_TICKS(m_record->sim_time + GetLerpTime());
 
 			// set angles to target.
 			    mcmd->viewangles = m_angle;
@@ -965,7 +979,7 @@ void Aimbot::apply() {
 
 		// norecoil.
 		if (g_menu.main.aimbot.norecoil.get())
-			mcmd->viewangles -= g_LocalPlayer->m_aimPunchAngle() * g_csgo.weapon_recoil_scale->GetFloat();
+			mcmd->viewangles -= g_LocalPlayer->m_aimPunchAngle() * weapon_recoil_scale->GetFloat();
 
 		// store fired shot.
 		//g_shots.OnShotFire( m_target ? m_target : nullptr, m_target ? m_damage : -1.f, g_cl.m_weapon_info->m_bullets, m_target ? m_record : nullptr );

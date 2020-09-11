@@ -180,7 +180,8 @@ public:
 	void Think(CUserCmd * cmd);
 	void find(CUserCmd* cmd);
 	bool CheckHitchance(C_BasePlayer* player, const QAngle& angle, Animation* record, int hitbox);
-	bool SelectTarget(Animation* record, const Vector& aim, float damage);
+	bool  SelectTarget(Animation* record, const Vector& aim, float damage);
+	float GetLerpTime();
 	void apply();
 	void NoSpread();
 
