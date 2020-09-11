@@ -414,6 +414,8 @@ public:
 	OPTION(bool, ragebot_ignore_limbs, false);
 	OPTION(bool, ragebot_autowall, false);
 	OPTION(bool, ragebot_remove_recoil, false);
+	OPTION(bool, ragebot_remove_spread, false);
+	
 	OPTION(bool, ragebot_autofire, false);
 	OPTION(bool, ragebot_hitchance_consider, false);
 	OPTION(bool, ragebot_position_adj, false);

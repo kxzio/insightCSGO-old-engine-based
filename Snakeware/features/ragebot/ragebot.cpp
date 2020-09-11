@@ -977,11 +977,11 @@ void Aimbot::apply() {
 		}
 
 		// nospread.
-		if (g_Options.ragebot_remove_recoil && g_menu.main.config.mode.get() == 1)
+		if (g_Options.ragebot_remove_recoil && g_Options.ragebot_remove_spread)
 			NoSpread();
 
 		// norecoil.
-		if (g_menu.main.aimbot.norecoil.get())
+		if (g_Options.ragebot_remove_recoil)
 			mcmd->viewangles -= g_LocalPlayer->m_aimPunchAngle() * weapon_recoil_scale->GetFloat();
 
 		// store fired shot.

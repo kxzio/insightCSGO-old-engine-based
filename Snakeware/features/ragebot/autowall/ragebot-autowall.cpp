@@ -381,7 +381,7 @@ bool WallPeneration::Run(PenetrationInput_t* in, PenetrationOutput_t* out) {
 			out->m_pen = pen != 4;
 
 			// todo - dex; team checks / other checks / etc.
-			if (trace.hit_entity && trace.hit_entity->IsPlayer() && IsValidHitgroup(trace.hitgroup)) {
+			if (trace.hit_entity && trace.hit_entity->IsPlayer() && Utils::IsValidHitgroup(trace.hitgroup)) {
 				int group = (oWeapon->m_Item().m_iItemDefinitionIndex() == WEAPON_ZEUS) ? HITGROUP_GENERIC : trace.hitgroup;
 
 				player_damage = Scale(trace.hit_entity->Ass< C_BasePlayer* >(), damage, oWeaponInfo->flArmorRatio, group);
