@@ -69,6 +69,7 @@ namespace Hooks
 	typedef void(__thiscall* RunCommandFn)(void*, C_BasePlayer*, CUserCmd*, IMoveHelper*);
 	typedef bool(__thiscall* WriteUsercmdDeltaToBufferFn)(void* ecx, int nSlot, void* buf, int from, int to, bool isNewCmd);
 
+	
 
 
 
@@ -94,8 +95,8 @@ namespace Hooks
     void __fastcall hkDrawModelExecute(void* _this, int, IMatRenderContext* ctx, const DrawModelState_t& state, const ModelRenderInfo_t& pInfo, matrix3x4_t* pCustomBoneToWorld);
     void __fastcall hkFrameStageNotify(void* _this, int, ClientFrameStage_t stage);
 
-	void __fastcall hkLvLPreEntity(const char* map);
-	void __fastcall hkLvLShutdown();
+	void __fastcall hkLvLPreEntity(void* _this, const char* map);
+	void __fastcall hkLvLShutdown(void* _this);
 
 	void __fastcall hkOverrideView(void* _this, int, CViewSetup * vsView);
 	void __fastcall hkLockCursor(void* _this);

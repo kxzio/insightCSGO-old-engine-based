@@ -95,45 +95,45 @@ void RENDER_3D_GUI::AutowallCrosshair()
 {
 	if (!g_LocalPlayer || !g_LocalPlayer->IsAlive()) return;
 
-		QAngle direction, EyeAng, angles;
-		Vector forward, dst;
-		g_EngineClient->GetViewAngles(&EyeAng);
+		//QAngle direction, EyeAng, angles;
+		//Vector forward, dst;
+		//g_EngineClient->GetViewAngles(&EyeAng);
 
-		Math::AngleVectors(EyeAng, forward);//EyeAng, forward
-		dst = g_LocalPlayer->GetEyePos() + (forward * 8912.f);
+		//Math::AngleVectors(EyeAng, forward);//EyeAng, forward
+		//dst = g_LocalPlayer->GetEyePos() + (forward * 8912.f);
 
-		int screenX, screenY = 0;
-		g_EngineClient->GetScreenSize(screenX, screenY);
-
-
-		static auto percent_col = [](int per) -> Color {
-			int red = per < 50 ? 255 : floorf(255 - (per * 2 - 100) * 255.f / 100.f);
-			int green = per > 50 ? 255 : floorf((per * 2) * 255.f / 100.f);
-
-			return Color(red, green, 0);
-		};
-
-		int w, h = 0;
-		g_EngineClient->GetScreenSize(w, h);
-
-		auto dmg = CAutoWall::Get().get_estimated_point_damage(dst);
-		auto max_dmg = 50.f;
+		//int screenX, screenY = 0;
+		//g_EngineClient->GetScreenSize(screenX, screenY);
 
 
-		max_dmg = float(100);
-		if (max_dmg == 0.f)
-			max_dmg = 50.f;
+		//static auto percent_col = [](int per) -> Color {
+		//	int red = per < 50 ? 255 : floorf(255 - (per * 2 - 100) * 255.f / 100.f);
+		//	int green = per > 50 ? 255 : floorf((per * 2) * 255.f / 100.f);
 
-		auto col = percent_col(std::clamp(dmg, 0.f, max_dmg) / max_dmg * 100.f);
+		//	return Color(red, green, 0);
+		//};
 
-		std::stringstream ss;
-		ss << "DMG : " << dmg;
+		//int w, h = 0;
+		//g_EngineClient->GetScreenSize(w, h);
+
+		//auto dmg = CAutoWall::Get().get_estimated_point_damage(dst);
+		//auto max_dmg = 50.f;
+
+
+		//max_dmg = float(100);
+		//if (max_dmg == 0.f)
+		//	max_dmg = 50.f;
+
+		//auto col = percent_col(std::clamp(dmg, 0.f, max_dmg) / max_dmg * 100.f);
+
+		//std::stringstream ss;
+		//ss << "DMG : " << dmg;
 
 
 
-		Render::Get().RenderCircleFilled(screenX / 2, screenY / 2, 5, 5 * 3, Color(0, 0, 0, 20));
-		Render::Get().RenderCircleFilled(screenX / 2, screenY / 2, 5, 4 * 3, col);
-		Render::Get().RenderTextPixel(ss.str(), screenX / 2 - 15, screenY / 2 + 50, 14.f, col);
+		//Render::Get().RenderCircleFilled(screenX / 2, screenY / 2, 5, 5 * 3, Color(0, 0, 0, 20));
+		//Render::Get().RenderCircleFilled(screenX / 2, screenY / 2, 5, 4 * 3, col);
+		//Render::Get().RenderTextPixel(ss.str(), screenX / 2 - 15, screenY / 2 + 50, 14.f, col);
 	
 }
 

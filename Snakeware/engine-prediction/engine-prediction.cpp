@@ -13,17 +13,20 @@ void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
 
 	static auto weapon    = local->m_hActiveWeapon();
 	static auto oldorigin = g_LocalPlayer->m_vecOrigin();
+
+	//g_Prediction->InPrediction() = true;;
+	
 	unpred_vel = (g_LocalPlayer->m_vecOrigin() - oldorigin) * (1.0 / g_GlobalVars->interval_per_tick);
 	oldorigin = g_LocalPlayer->m_vecOrigin();
 
 	unpred_eyepos = g_LocalPlayer->GetEyePos();
 
 
-	old_vars.curtime = g_GlobalVars->curtime;
+	old_vars.curtime   = g_GlobalVars->curtime;
 	old_vars.frametime = g_GlobalVars->frametime;
 	old_vars.tickcount = g_GlobalVars->tickcount;
 
-	g_GlobalVars->curtime = TICKS_TO_TIME(local->m_nTickBase());
+	g_GlobalVars->curtime   = TICKS_TO_TIME(local->m_nTickBase());
 	g_GlobalVars->frametime =  g_EngineClient->IsPaused() ? 0.f : g_GlobalVars->interval_per_tick;
 	g_GlobalVars->tickcount = TIME_TO_TICKS(g_GlobalVars->curtime);
 
@@ -34,24 +37,30 @@ void EnginePrediction::Start(CUserCmd* cmd, C_BasePlayer* local) {
 
 	g_Prediction->SetupMove(local, cmd, g_MoveHelper, &data);
 	g_GameMovement->ProcessMovement(local, &data);
-	g_Prediction->FinishMove(local, cmd, &data);
+	
 	unpred_eyepos = g_LocalPlayer->GetEyePos();
 
-	if (weapon && local) {
-		weapon->UpdateAccuracyPenalty();
-	}
+	g_Prediction->FinishMove(local, cmd, &data);
+	g_GameMovement->FinishTrackPredictionErrors(local);
 
+
+	if (weapon && local) {
+		weapon->UpdateAccuracyPenalty();// maye wrong
+	}
 }
 
 void EnginePrediction::Finish(C_BasePlayer* local) {
-	g_GameMovement->FinishTrackPredictionErrors(local);
+
+	//g_Prediction->InPrediction = false;
+	
 	g_MoveHelper->SetHost(nullptr);
 
-	g_GlobalVars->curtime = old_vars.curtime;
+	g_GlobalVars->curtime   = old_vars.curtime;
 	g_GlobalVars->frametime = old_vars.frametime;
 	g_GlobalVars->tickcount = old_vars.tickcount;
 }
 // beta shit predict
+
 
 int EnginePrediction::get_tickbase()
 {

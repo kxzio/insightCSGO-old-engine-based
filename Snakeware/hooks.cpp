@@ -435,20 +435,20 @@ namespace Hooks {
 
 		// number of backup and new commands
 		int* pNumBackupCommands = (int*)((uintptr_t)buf - 0x30);
-		int* pNumNewCommands = (int*)((uintptr_t)buf - 0x2C);
-		auto net_channel = *reinterpret_cast<INetChannel * *>(reinterpret_cast<uintptr_t>(g_ClientState) + 0x9C);
-		int32_t new_commands = *pNumNewCommands;
+		int* pNumNewCommands    = (int*)((uintptr_t)buf - 0x2C);
+		auto net_channel        = *reinterpret_cast<INetChannel * *>(reinterpret_cast<uintptr_t>(g_ClientState) + 0x9C);
+		int32_t new_commands    = *pNumNewCommands;
+
 		// Manipulate CLC_Move
-		auto nextcmdnumber = g_ClientState->m_nLastOutgoingCmd + g_ClientState->m_nChokedCmds + 1;
-		auto totalnewcommands = std::min(Snakeware::m_nTickbaseShift, 17);
+		auto nextcmdnumber           = g_ClientState->m_nLastOutgoingCmd + g_ClientState->m_nChokedCmds + 1;
+		auto totalnewcommands        = std::min(Snakeware::m_nTickbaseShift, 17);
 		Snakeware::m_nTickbaseShift -= totalnewcommands;
 
 		from = -1;
 		*pNumNewCommands = totalnewcommands;
 		*pNumBackupCommands = 0;
 		//real cmds
-		for (to = nextcmdnumber - new_commands + 1; to <= nextcmdnumber; to++)
-		{
+		for (to = nextcmdnumber - new_commands + 1; to <= nextcmdnumber; to++) {
 			if (!ofunct(ECX, nSlot, buf, from, to, true))
 				return false;
 
@@ -460,13 +460,12 @@ namespace Hooks {
 		if (lastrealcmd)
 			fromcmd = *lastrealcmd;
 
-		CUserCmd tocmd = fromcmd;
+		CUserCmd tocmd       = fromcmd;
 		tocmd.command_number = nextcmdnumber++;
-		tocmd.tick_count += 100;
+		tocmd.tick_count ++;
 
 		//fake cmds
-		for (int i = new_commands; i <= totalnewcommands; i++)
-		{
+		for (int i = new_commands; i <= totalnewcommands; i++) {
 			WriteUsercmd(buf, &tocmd, &fromcmd);
 			fromcmd = tocmd;
 			tocmd.command_number++;
@@ -601,7 +600,7 @@ namespace Hooks {
 			g_LegitBacktrack.OnMove(cmd);
 			Miscellaneous::Get().FakeDuck(cmd);
 			AntiHit::Get().createMove(cmd);
-			RageBot::Get().CreateMove(g_LocalPlayer, cmd, Snakeware::bSendPacket); // ragebot call
+			Aimbot::Get().Think(cmd); // ragebot call
 			Miscellaneous::Get().AutoPeek(cmd);
 			Miscellaneous::Get().SlowWalk(cmd);
 			Miscellaneous::Get().SilentWalk(cmd);
@@ -779,26 +778,30 @@ namespace Hooks {
 
 
 
-
-	void __fastcall hkLvLPreEntity (const char* map) {
+	void __fastcall hkLvLPreEntity (void* _this,const char* map) {
 	
 		// hooked LevelPreEntity by @Snake
-		static auto preEnt = hlclient_hook.get_original<decltype(&hkLvLPreEntity)>(index::LvLPreEntity);
+		// <decltype(
+
+		using LevelInitPreEntityT = void(__thiscall*)(void*, const char*);
+		static auto preEnt = hlclient_hook.get_original<LevelInitPreEntityT>(index::LvLPreEntity);
 
 		Aimbot::Get().reset(); // Reset aimbot spot's..
 		 
-		preEnt(map);
+		preEnt(_this,map);
 		// Detour sig someone...
 	}
 
 
-	void  __fastcall hkLvLShutdown() {
+	void  __fastcall hkLvLShutdown(void* _this) {
 		// hooked LevelShutodwn by @Snake
-		static auto downEnt = hlclient_hook.get_original<decltype(&hkLvLShutdown)>(index::LvLShutdown);
+		// <decltype(
+		using LevelShutdownT = void(__thiscall*)(void*);
+		static auto downEnt = hlclient_hook.get_original<LevelShutdownT>(index::LvLShutdown);
 
 		Aimbot::Get().reset(); // Reset aimbot spot's..
 
-		downEnt();
+		downEnt(_this);
 	}
 
 

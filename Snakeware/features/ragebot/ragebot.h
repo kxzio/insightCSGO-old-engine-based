@@ -139,7 +139,7 @@ public:
 	bool m_force_body;
 	bool m_shoot_next_tick;
 	bool m_force_safepoint;
-	BoneArray* m_current_matrix;
+	//BoneArray* m_current_matrix;
 
 	std::vector<Sphere> m_current_sphere;
 public:

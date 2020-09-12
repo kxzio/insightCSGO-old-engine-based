@@ -977,7 +977,7 @@ void Aimbot::apply() {
 		}
 
 		// nospread.
-		if (g_Options.ragebot_remove_recoil && g_Options.ragebot_remove_spread)
+		if (!g_Options.misc_anti_untrusted && g_Options.ragebot_remove_spread)
 			NoSpread();
 
 		// norecoil.
